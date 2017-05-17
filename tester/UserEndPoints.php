@@ -86,5 +86,5 @@ function sendDelete()
     echo "DELETE RESULT:\n==========\n", print_r($delete->getLastResult(), true), PHP_EOL;
 }
 
-sendDelete();
+sendPost();
 

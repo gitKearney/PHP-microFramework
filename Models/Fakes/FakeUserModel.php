@@ -1,7 +1,13 @@
 <?php
 
-namespace Models;
+namespace Test;
 
+/**
+ * This is a test class that mimics calls to the database.
+ * It's meant to be used for testing only.
+ * The TestUserFactory should instantiate this class instead of the
+ * actual Model/User class
+ */
 class FakeUserModel extends BaseModel
 {
     protected $firstName;
