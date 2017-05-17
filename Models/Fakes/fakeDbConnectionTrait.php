@@ -1,7 +1,7 @@
 <?php
 namespace Models;
 
-trait dbConnectionTrait
+trait fakeDbConnectionTrait
 {
     function getDatabaseDns($dbType)
     {

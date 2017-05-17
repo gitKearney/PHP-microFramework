@@ -3,7 +3,7 @@
 namespace Factories;
 
 
-use Models\Users;
+use Models\Test\FakeUsers;
 use Services\UserService;
 use Services\UuidService;
 

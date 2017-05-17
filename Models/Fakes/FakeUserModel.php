@@ -1,6 +1,6 @@
 <?php
 
-namespace Test;
+namespace Models\Fakes;
 
 /**
  * This is a test class that mimics calls to the database.
@@ -8,7 +8,7 @@ namespace Test;
  * The TestUserFactory should instantiate this class instead of the
  * actual Model/User class
  */
-class FakeUserModel extends BaseModel
+class FakeUserModel extends FakeBaseModel
 {
     protected $firstName;
     protected $lastName;
