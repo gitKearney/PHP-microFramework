@@ -2,13 +2,15 @@
 
 namespace Models\Fakes;
 
+use Models\Users;
+
 /**
  * This is a test class that mimics calls to the database.
  * It's meant to be used for testing only.
  * The TestUserFactory should instantiate this class instead of the
  * actual Model/User class
  */
-class FakeUserModel extends FakeBaseModel
+class FakeUserModel extends Users
 {
     protected $firstName;
     protected $lastName;
@@ -140,7 +142,7 @@ class FakeUserModel extends FakeBaseModel
             # add the key to the where clause
             if ($key == 'id') {
                 $updateValues[':'.$key] = $value;
-                $where .= ' WHERE id = :id';
+                $where .= 'id = :id';
                 continue;
             }
 
@@ -184,45 +186,8 @@ class FakeUserModel extends FakeBaseModel
         ];
     }
 
-    /**
-     * @param $query
-     * @param array $params
-     * @return bool
-     * @throws \Exception
-     */
-    public function runQuery($query, array $params)
-    {
-        try {
-            $pdo = $this->getPdoConnection();
-
-            # TODO: run prepared statement
-        } catch( \Exception $e) {
-            $this->debugLogger->enableLogging();
-            $this->debugLogger
-                ->setMessage('failed getting PDO connection in insert')
-                ->logVariable('')
-                ->write();
-
-            throw $e;
-        }
-
-        return true;
-    }
-
     public function insert($query, array $values = [])
     {
-        try {
-            $pdo = $this->getPdoConnection();
-        } catch( \Exception $e) {
-            $this->debugLogger->enableLogging();
-            $this->debugLogger
-                ->setMessage('failed getting PDO connection in insert')
-                ->logVariable('')
-                ->write();
-
-            throw $e;
-        }
-
         return [
             'id' => '12345678-1234-1234-1234-123456789abc',
             'first_name' => $this->firstName,

@@ -4,24 +4,9 @@ namespace Models;
 
 class Users extends BaseModel
 {
-    /**
-     * @var string
-     */
     protected $firstName;
-
-    /**
-     * @var string
-     */
     protected $lastName;
-
-    /**
-     * @var string
-     */
     protected $birthday;
-
-    /**
-     * @var string
-     */
     protected $id;
 
     /**
@@ -111,77 +96,28 @@ class Users extends BaseModel
      */
     public function findUserById($id)
     {
-        $this->debugLogger->enableLogging();
-
-        $query = 'SELECT first_name, last_name, birthday FROM users'
-            .' WHERE user_id = :user_id';
-        $values[':user_id'] = $id;
-
-        try {
-            $pdo = $this->getPdoConnection(); 
-            
-            $pdoStatement = $pdo->prepare($query);
-            $queryResult = $pdoStatement->execute($values);
-
-            if ($queryResult === false) {
-                $this->debugLogger->setMessage('select failed')
-                    ->logVariable($pdo->errorInfo())
-                    ->write();
-
-                throw new \Exception('select failed');
-            }
-        } catch (\Exception $e) {
-            return ['status' => 'success'];
-        }
-
-        # we don't care if multiple rows were returned, this method will
-        # only return 1 record
-        $result = $pdoStatement->fetch(\PDO::FETCH_ASSOC);
-
-        $this->debugLogger->setMessage('result')
-            ->logVariable($result)
-            ->write();
-
-        $res =  [
-            'firstName' => '',
-            'lastName'  => '',
-            'birthday'  => '',
+        return [
+            'id' => $id,
+            'firstname' => 'Leroy',
+            'lastname'  => 'Jenkins',
+            'birthday'  => '04-18-1983',
         ];
-
-        if (isset($result['first_name'])) {
-            $res['firstName'] = $result['first_name'];
-        }
-
-        if (isset($result['last_name'])) {
-            $res['lastName'] = $result['last_name'];
-        }
-
-        if (isset($result['birthday'])) {
-            $res['birthday'] = $result['birthday'];
-        }
-
-        return $res;
     }
 
     /**
      * @param string $id
      * @return array
+     * @throws \Exception
      */
     public function deleteUserById($id)
     {
-        $this->debugLogger->enableLogging();
-
-
         $query = 'DELETE FROM users WHERE user_id = :user_id';
-        $values = [':user_id' => $id];
-
-        $this->debugLogger->setMessage('query: ')->logVariable($query)->write();
-        $this->debugLogger->setMessage('values: ')->logVariable($values)->write();
+        $params = [':user_id' => $id];
 
         try {
-            $this->runQuery($query, $values);
-        } catch (\Exception $e) {
-            return ['result' => 'success'];
+            $this->delete($query, $params);
+        } catch(\Exception $e) {
+           throw $e; 
         }
 
         return [
@@ -195,7 +131,7 @@ class Users extends BaseModel
      * @return array
      * @throws \Exception
      */
-    public function update(array $values = [])
+    public function updateUser(array $values)
     {
         $this->debugLogger->enableLogging();
 
@@ -207,8 +143,8 @@ class Users extends BaseModel
             # if the key is the id, then, set the where clause, otherwise
             # add the key to the where clause
             if ($key == 'id') {
-                $updateValues[':user_id'] = $value;
-                $where .= 'user_id = :user_id';
+                $updateValues[':'.$key] = $value;
+                $where .= 'user_id = :id';
                 continue;
             }
 
@@ -229,12 +165,8 @@ class Users extends BaseModel
 
         if (strlen($set) == 0) {
             # the user didn't pass anything in, send a success
-            return ['status' => 'success'];
+            return ['result' => 'no user found'];
         }
-
-        # update the updated_at column
-        $set .= ', updated_at = :updated_at';
-        $updateValues[':updated_at'] = date('Y-m-d H:i:s');
 
         $query = 'UPDATE users SET '.$set.' WHERE '.$where;
 
@@ -242,104 +174,14 @@ class Users extends BaseModel
         $this->debugLogger->setMessage('UPDATE ARRAY: ')->logVariable($updateValues)->write();
 
         try {
-            $this->runQuery($query, $updateValues);
+            $this->update($query, $updateValues);
         } catch (\Exception $e) {
-            return ['status' => 'success'];
+            return ['result' => 'error'];
         }
 
-        return [
-            'status'     => 'success',
-            'id'         => $values['id'],
-            'first_name' => $values['first_name'],
-            'last_name'  => $values['last_name'],
-            'birthday'   => $values['birthday'],
-        ];
+        return ['result' => 'success'];
     }
 
-    /**
-     * @param $query
-     * @param array $params
-     * @return bool
-     * @throws \Exception
-     */
-    public function runQuery($query, array $params)
-    {
-        try {
-            $pdo = $this->getPdoConnection();
-
-            $statement = $pdo->prepare($query);
-
-            $resultSet = $statement->execute($params);
-            
-            if ($resultSet === false) {
-                $this->debugLogger
-                    ->setMessage('query failed: ')
-                    ->logVariable($pdo->errorInfo())
-                    ->write();
-            }
-
-        } catch( \Exception $e) {
-            $this->debugLogger
-                ->setMessage('failed getting PDO connection')
-                ->logVariable($query)
-                ->write();
-
-            throw $e;
-        }
-
-        return true;
-    }
-
-    public function insert($query, array $values = [])
-    {
-        $this->debugLogger->setMessage('query: ')->logVariable($query)->write();
-
-        $this->debugLogger->setMessage('values: ')->logVariable($values)->write();
-
-        try {
-            $pdo = $this->getPdoConnection();
-        } catch( \Exception $e) {
-            $this->debugLogger->enableLogging();
-            $this->debugLogger
-                ->setMessage('failed getting PDO connection in insert')
-                ->logVariable('')
-                ->write();
-
-            throw $e;
-        }
-
-        try {
-            $ps = $pdo->prepare($query);
-            $result = $ps->execute($values);
-
-            if ($result === false) {
-                $this->debugLogger
-                    ->setMessage('insert result was false ')
-                    ->logVariable($pdo->errorInfo())
-                    ->write();
-            }
-        } catch (\Exception $e) {
-            $this->debugLogger->enableLogging();
-            $this->debugLogger
-                ->setMessage('failed inserting PDO error: '.$ps->errorCode())
-                ->logVariable($ps->errorInfo())
-                ->write();
-
-            throw $e;
-        }
-
-        return [
-            'id'         => $this->id,
-            'first_name' => $this->firstName,
-            'last_name'  => $this->lastName,
-            'birthday'   => $this->birthday,
-        ];
-    }
-
-    public function select($query, array $values = [])
-    {
-        $pdo = $this->getPdoConnection();
-    }
 
     public function addNewUser()
     {
@@ -357,10 +199,13 @@ class Users extends BaseModel
         ];
 
         try {
-            return $this->insert($query, $values);
+            $res = $this->insert($query, $values, 'user_id');
+
+            $this->debugLogger->setMessage('last insert id')->logVariable('$res')->write();
         } catch(\Exception $e) {
             $this->debugLogger->setMessage('got an error')->logVariable('')->write();
             throw $e;
         }
     }
+
 }

@@ -3,7 +3,7 @@ namespace Models;
 
 trait dbConnectionTrait
 {
-    function getDatabaseDns($dbType)
+    function getDatabaseDsn($dbType)
     {
         # this should actually throw an error: the user should set the database
         # type either in the .env file, or by passing in something in the
@@ -11,39 +11,34 @@ trait dbConnectionTrait
 
         switch($dbType) {
             case 'mysql':
-                return $this->getMySqlDnsString();
+                return $this->getMySqlDsnString();
             case 'postgres':
-                return $this->getPostgreSqlDnsString();
+                return $this->getPostgreSqlDsnString();
             case 'sqlite':
-                return $this->getSqLiteDnsString();
+                return $this->getSqLiteDsnString();
             default:
                 # log the error
                 return '';
         }
     }
 
-    function getMySqlDnsString()
+    function getMySqlDsnString()
     {
-        # TODO: change the IP of the host should match the IP of the server
-        # that the MySQL server lives on.
-
-        # Be sure to change the port if you use a non-standard port
         return 'mysql:host=127.0.0.1;port=3306;dbname=demo;charset=utf8';
     }
 
-    function getPostgreSqlDnsString()
+    function getPostgreSqlDsnString()
     {
         return 'pgsql:dbname=example;host=localhost';
     }
 
-    function getMongoDnsString()
+    function getMongoDsnString()
     {
-        # TODO: PDO no longer supports Mongo, need to figure out how to use
-        # MongoDB's own driver
+        # TODO: you have to use Mongo's own driver
         return '';
     }
 
-    function getSqLiteDnsString()
+    function getSqLiteDsnString()
     {
         return '';
     }
@@ -71,30 +66,32 @@ trait dbConnectionTrait
     {
         $dbType = $this->readDbTypeFromEnv();
 
-        # The ONLY time dbType should be '' is in dev environments
+
+        # TODO: remove this is testing only
         if (strlen($dbType) == 0) {
             $this->debugLogger->setMessage('DBTYPE is empty string')->logVariable('')->write();
             return '';
         }
 
-        $dnsString = $this->getDatabaseDns($dbType);
+        $dsnString = $this->getDatabaseDsn($dbType);
 
-        if (strlen($dnsString) == 0 ) {
-            $this->debugLogger->setMessage('DNS is empty string')->logVariable('')->write();
+        if (strlen($dsnString) == 0 ) {
+            $this->debugLogger->setMessage('DSN is empty string')->logVariable('')->write();
             throw new \Exception('invalid database connection');
-        } else {
-           $this->debugLogger->setMessage('DNS string is ')->logVariable($dnsString)->write();
         }
 
         try {
-            $pdo = new \PDO($dnsString,
+            $pdo = new \PDO($dsnString,
                 $this->readUserNameFromEnv(),
                 $this->readPasswordFromEnv()
             );
 
+            # set the error level on our PDO object to not fail silently
+            $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+
             return $pdo;
         } catch (\Exception $e) {
-            $this->debugLogger->enableLogging()->setMessage('FAILED TO GET CONNECTION')->logVariable($e->getMessage())->write();
+            $this->debugLogger->setMessage('FAILED TO GET CONNECTION')->logVariable($e->getMessage())->write();
         }
     }
 }

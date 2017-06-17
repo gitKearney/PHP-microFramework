@@ -17,7 +17,7 @@ class UserService extends BaseService
     /**
      * @var UuidService
      */
-    protected $uuidService;
+    protected $uuid;
 
     # GUIDs should be like this: 12345678-1234-1234-1234-123456789abc
     const GUID_REGEX = '/^[a-f\d]{8}-([a-f\d]{4}-){3}[a-f\d]{12}$/i';
@@ -32,12 +32,12 @@ class UserService extends BaseService
      * the password to a default value
      *
      * @param Users $users
-     * @param UuidService
+     * @param UuidService $uuidService
      */
-    public function __construct(Users $users, UuidService $uuid)
+    public function __construct(Users $users, UuidService $uuidService)
     {
-        $this->userModel   = $users;
-        $this->uuidService = $uuid;
+        $this->userModel = $users;
+        $this->uuid = $uuidService;
 
         # instantiate a debug logger for this service
         $this->setDebugLogger();
@@ -56,7 +56,7 @@ class UserService extends BaseService
      * @param array
      * @return bool
      */
-    public function setUserInfo(array $httpBody)
+    public function setUserInfo($httpBody)
     {
         # TODO: validate that the info is good and in here
         $this->userModel->setFirstName($httpBody['first_name']);
@@ -83,7 +83,7 @@ class UserService extends BaseService
         if (! $this->isValidGuid($userId)) {
             # user sent in an invalid GUID, return no records found
             $this->debugLogger
-                ->setMessage("valid GUID: ")
+                ->setMessage("invalid GUID: ")
                 ->logVariable($userId)
                 ->write();
 
@@ -99,10 +99,21 @@ class UserService extends BaseService
             ->logVariable($userId)
             ->write();
 
-        $user = $this->userModel->findUserById($userId);
+
+        $user = null;
+
+        $select = 'SELECT first_name, last_name, birthday '
+            .'FROM users WHERE user_id = :user_id';
+        $values = [':user_id' => $userId];
+
+        try {
+            $user = $this->userModel->select($select, $values);
+        } catch (\Exception $e) {
+            return ['result' => 'error'];
+        }
 
         if (empty($user)) {
-            return ['no users found'];
+            return ['result' => 'no users found'];
         }
 
         return $user;
@@ -111,7 +122,6 @@ class UserService extends BaseService
     public function deleteUserById($userId)
     {
         $this->debugLogger->enableLogging();
-
 
         if (! $this->isValidGuid($userId)) {
             # user sent in an invalid GUID, return no records found
@@ -131,14 +141,16 @@ class UserService extends BaseService
             ->setMessage("valid GUID: ")
             ->logVariable($userId)
             ->write();
-
-        $user = $this->userModel->deleteUserById($userId);
-
-        if (empty($user)) {
-            return ['no users found'];
+        
+        try {
+            $result = $this->userModel->deleteUserById($userId);
+        } catch (\Exception $e) {
+            return [
+                'result' => 'error',
+            ];        
         }
 
-        return $user;
+        return $result;
     }
 
     /**
@@ -158,12 +170,11 @@ class UserService extends BaseService
             ->logVariable($requestBody)
             ->write();
 
-        # set the info from the HTTP body to values on the model
-        $this->setUserInfo($requestBody);
+        # create a new GUID and add it to the body array
+        $requestBody['id'] = $this->uuid->generateUuid()->getUuid();
 
-        # now, create a GUID for our user
-        $guid = $this->uuidService->generateUuid()->getUuid();
-        $this->userModel->setUserId($guid);
+        # set data from the HTTP body to values their matching values on the model
+        $this->setUserInfo($requestBody);
 
         try {
             $result = $this->userModel->addNewUser();
@@ -178,13 +189,46 @@ class UserService extends BaseService
     }
 
     /**
-     * @param ServerRequest $request
+     * @param array $requestBody
      * @return array
      * @throws \Exception
      */
-    public function updateUser(ServerRequest $request)
+    public function updateUser(array $requestBody)
     {
-        # TODO: disable logging when putting in production
+
+
+        if (! $this->isValidGuid($requestBody['id'])) {
+            # user sent in an invalid GUID, return no records found
+            $this->debugLogger
+                ->setMessage("invalid GUID: ")
+                ->logVariable($requestBody['id'])
+                ->write();
+
+            return [
+                'result' => 'No user found',
+            ];
+        }
+
+        # update the updated_at timestamp value
+        $requestBody['updated_at'] = date('Y-m-d H:i:s');
+
+        try {
+            return $this->userModel->updateUser($requestBody);
+        } catch (\Exception $e) {
+            $m = 'ERROR! UserService::addNewUser() ';
+            $this->debugLogger->setMessage($m)->logVariable($e)->write();
+            return ['error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * This takes a ServerRequest and extracts all the relevant data from it
+     * It should primarly be used on PUT and PATCH requests
+     * @param ServerRequest $request
+     * @return array
+     */
+    public function parseServerRequest(ServerRequest $request)
+    {
         $this->debugLogger->enableLogging();
 
         # get the body from the HTTP request
@@ -206,7 +250,8 @@ class UserService extends BaseService
             ->logVariable($requestBody)
             ->write();
 
-        # check to see if the ID was set on the body, if not, process this as a PATCH request
+        # check to see if the body contains an id, if not, process this
+        # as a PATCH request instead of a PUT request
         if (! isset($requestBody['id'])) {
             # pull the id from the URI by splitting the URI field on the route
             $uriParts = preg_split('/\/users\//', $request->getServerParams()['REQUEST_URI']);
@@ -220,15 +265,8 @@ class UserService extends BaseService
             $requestBody['id']  = $uriParts[1];
         }
 
-        try {
-            return $this->userModel->update($requestBody);
-        } catch (\Exception $e) {
-            $m = 'ERROR! UserService::addNewUser() ';
-            $this->debugLogger->setMessage($m)->logVariable($e)->write();
-            return ['error' => $e->getMessage()];
-        }
+        return $requestBody;
     }
-
 
     public function isValidGuid($userId)
     {

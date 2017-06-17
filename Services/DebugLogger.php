@@ -46,6 +46,7 @@ class DebugLogger
     {
         $this->logFileName = $logFileName;
         $this->message = "";
+        $this->stringVar = "";
     }
 
     /**
@@ -112,8 +113,6 @@ class DebugLogger
      */
     public function logVariable($var)
     {
-        $this->stringVar = "";
-
         if (is_null($var)) {
             $this->stringVar = $this->logNull();
             return $this;
@@ -149,7 +148,7 @@ class DebugLogger
      * @param string $message
      * @return $this
      */
-    public function setMessage($message)
+    public function setMessage($message='')
     {
         $this->message = $message;
         return $this;

@@ -15,10 +15,12 @@ class UuidService
 
     /**
      * @desc creates a class that generates a UUID
+     * @return $this
      */
     public function __construct()
     {
         $this->uuid = '';
+        return $this;
     }
 
     /**
@@ -41,13 +43,8 @@ class UuidService
         $formattedUuid = '';
         for ($i = 0; $i < 32; $i++) {
             $formattedUuid .= substr($uuid, $i, 1);
-            # echo substr($uuid, $i, 1), PHP_EOL;
 
             # here's the hard part, we need to add dashes
-            # if i == 8
-            # if i == 12
-            # if i == 16
-            # if i == 20
             if ($i == 7) {
                 $formattedUuid .= "-";
             }

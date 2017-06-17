@@ -3,14 +3,14 @@
 namespace Factories;
 
 
-use Models\Test\FakeUsers;
+use Models\Fakes\FakeUserModel;
 use Services\UserService;
 use Services\UuidService;
 
 class UserFactory
 {
     /**
-     * @var Users
+     * @var FakeUserModel
      */
     protected $userModel;
 
@@ -28,6 +28,7 @@ class UserFactory
     {
         $this->userModel =  new Users;
         $this->uuidService = new UuidService;
+        $this->userModel = new FakeUserModel;
 
         $this->userService = new UserService($this->userModel, $this->uuidService);
 

@@ -28,7 +28,6 @@ class UserFactory
     {
         $this->userModel =  new Users;
         $this->uuidService = new UuidService;
-
         $this->userService = new UserService($this->userModel, $this->uuidService);
 
         return $this;

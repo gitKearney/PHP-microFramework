@@ -59,17 +59,15 @@ class UserController extends BaseController
     public function delete(ServerRequest $request, Response $response)
     {
         $userService = $this->userFactory->create();
+        
+        $this->debugLogger->enableLogging();
+        $this->debugLogger->setMessage("processing HTTP DELETE\n");
 
-        $this->log->debug("processing HTTP DELETE\n");
-
-        # pull the ID from the uri
         $id = null;
 
-        # split the URI field on the route
+        # split the URI field on the route and save the ID from the uri
         $vals = preg_split('/\/users\//', $request->getServerParams()['REQUEST_URI']);
         $id = $vals[1];
-
-        $this->debugLogger->enableLogging();
 
         # log the URI that we split
         $this->debugLogger->setMessage('splitting URI: ')->logVariable($vals)->write();
@@ -92,7 +90,8 @@ class UserController extends BaseController
     {
         $userService = $this->userFactory->create();
 
-        $this->log->debug("processing HTTP GET\n");
+        $this->debugLogger->enableLogging();
+        $this->debugLogger->setMessage("processing HTTP GET")->write();
 
         # pull the ID from the uri
         $id = null;
@@ -101,10 +100,7 @@ class UserController extends BaseController
         $vals = preg_split('/\/users\//', $request->getServerParams()['REQUEST_URI']);
         $id = $vals[1];
 
-        $this->debugLogger->enableLogging();
-
         # log the URI that we split
-        # TODO: how to handle multiple levels
         $this->debugLogger->setMessage('splitting URI: ')->logVariable($vals)->write();
 
         # pass the id to the service method, where we'll validate it's a get_required_files
@@ -148,9 +144,18 @@ class UserController extends BaseController
         # pass the $request to the service
         $userService = $this->userFactory->create();
 
-        $this->debugLogger->enableLogging()->setMessage('PATCH BODY (from controller)')->logVariable($request->getBody()->__toString())->write();
+        $this->debugLogger->enableLogging();
+        
+        $this->debugLogger
+            ->setMessage('PATCH BODY (from controller)')
+            ->logVariable($request->getBody()->__toString())
+            ->write();
 
-        $res = $userService->updateUser($request);
+        # extract the HTTP BODY into an array
+        $requestBody = $userService->parseServerRequest($request);
+
+        $res = $userService->updateUser($requestBody);
+
         $jsonRes = json_encode($res);
         $returnResponse = $this->response->withHeader('Content-Type', 'application/json');
         $returnResponse->getBody()->write($jsonRes);
@@ -187,11 +192,18 @@ class UserController extends BaseController
         # pass the $request to the service
         $userService = $this->userFactory->create();
 
-        $this->debugLogger->enableLogging()->setMessage('in the put method')->write();
-        $this->debugLogger->enableLogging()->setMessage('PUT BODY (from controller)')->logVariable($request->getBody()->__toString())->write();
+        $this->debugLogger->enableLogging();
 
+        $this->debugLogger
+            ->setMessage('PUT BODY (from controller)')
+            ->logVariable($request->getBody()->__toString())
+            ->write();
 
-        $res = $userService->updateUser($request);
+        # extract the HTTP BODY into an array
+        $requestBody = $userService->parseServerRequest($request);
+
+        $res = $userService->updateUser($requestBody);
+
         $jsonRes = json_encode($res);
         $returnResponse = $this->response->withHeader('Content-Type', 'application/json');
         $returnResponse->getBody()->write($jsonRes);

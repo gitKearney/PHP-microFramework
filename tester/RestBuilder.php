@@ -1,9 +1,7 @@
 <?php
 namespace restbuilder;
 /**
- * Sends HTTP DELETE, GET, PATCH, POST, PUT to a URI
- * This can be used to test end points
- * Only 301 and 302's are followed
+ * Sends HTTP DELETE, GET, PATCH, POST, PUT to a URI. Only 301 and 302's are followed
  */
 class RestBuilder {
     protected $uri;
@@ -14,7 +12,6 @@ class RestBuilder {
     protected $result;
     protected $header;
     protected $contentTypeSet;
-
     /**
      * @param string $uri the URI to send the request to
      * @param string $method the HTTP verb to send
@@ -41,10 +38,8 @@ class RestBuilder {
         } else {
             $this->postData = http_build_query($data);
         }
-
         $this->uri = $uri;
     }
-
     /**
      * @param string $header
      * @return RestBuilder
@@ -54,7 +49,6 @@ class RestBuilder {
         $this->header .= $header.PHP_EOL;
         return $this;
     }
-
     /**
      * @param array $data
      * @return RestBuilder
@@ -64,7 +58,6 @@ class RestBuilder {
         $this->postData = $data;
         return $this;
     }
-
     /**
      * @param $data
      * @return RestBuilder
@@ -74,7 +67,6 @@ class RestBuilder {
         $this->getData = http_build_query($data);
         return $this;
     }
-
     /**
      * @param string$method
      * @return RestBuilder $this
@@ -89,7 +81,6 @@ class RestBuilder {
         }
         return $this;
     }
-
     /**
      * @param string $uri
      * @return RestBuilder
@@ -99,7 +90,6 @@ class RestBuilder {
         $this->uri = $uri;
         return $this;
     }
-
     /**
      * Changes the data in the POST and PUT to JSON and sets the header to JSON
      * @return RestBuilder
@@ -109,7 +99,6 @@ class RestBuilder {
         $this->contentTypeSet = 'json';
         return $this;
     }
-
     /**
      * Sends data as URL Form Encoded
      * @return RestBuilder
@@ -119,7 +108,6 @@ class RestBuilder {
         $this->contentTypeSet = 'urlFormEncoded';
         return $this;
     }
-
     /**
      * Returns the result from the last HTTP verb
      * @return array
@@ -128,7 +116,6 @@ class RestBuilder {
     {
       return $this->result;
     }
-
     /**
      * returns the POST data. Useful for after a request has been sent to
      * see exactly what was sent to the URI
@@ -138,7 +125,6 @@ class RestBuilder {
     {
         return $this->postData;
     }
-
     /**
      * Opens up a connection to the URI using the HTTP verb specified.
      * Communicates with the URI using HTTP 1.1.

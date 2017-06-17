@@ -1,10 +1,7 @@
 <?php
-
 /**
- * creates 1,000 child processes to hit an endpoint to see how many connections
- * it supports.
- * It's not nearly as good as AB, but, it should work
- *
+ * creates 1,000 child processes to hit the built in PHP Server to see how many connections
+ * it supports
  */
 
 require_once 'RestBuilder.php';
@@ -32,7 +29,7 @@ function main()
     $children = 1;
 
     # max no. of child processes
-    $max = 1000;
+    $max = 1;
 
     $pid = null;
 
@@ -65,3 +62,4 @@ function main()
 }
 
 main();
+
