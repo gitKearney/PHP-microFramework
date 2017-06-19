@@ -64,8 +64,6 @@ abstract class BaseModel
                     ->write();
             }
 
-            $this->debugLogger->setMessage('last insert id')->logVariable($this->id)->write();
-
         } catch (\Exception $e) {
             $this->debugLogger
                 ->setMessage('failed inserting PDO error: '.$ps->errorCode())

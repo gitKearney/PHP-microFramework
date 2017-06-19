@@ -119,6 +119,10 @@ class UserService extends BaseService
         return $user;
     }
 
+    /**
+     * @param string $userId
+     * @return array
+     */
     public function deleteUserById($userId)
     {
         $this->debugLogger->enableLogging();
@@ -142,15 +146,18 @@ class UserService extends BaseService
             ->logVariable($userId)
             ->write();
         
+        $query = 'DELETE FROM users WHERE user_id = :user_id';
+        $params = [':user_id' => $userId];
+
         try {
-            $result = $this->userModel->deleteUserById($userId);
+            $result = $this->userModel->delete($query, $params);
         } catch (\Exception $e) {
             return [
                 'result' => 'error',
             ];        
         }
 
-        return $result;
+        return ['result' => 'success'];
     }
 
     /**
@@ -195,7 +202,6 @@ class UserService extends BaseService
      */
     public function updateUser(array $requestBody)
     {
-
 
         if (! $this->isValidGuid($requestBody['id'])) {
             # user sent in an invalid GUID, return no records found

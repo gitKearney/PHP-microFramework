@@ -105,28 +105,6 @@ class Users extends BaseModel
     }
 
     /**
-     * @param string $id
-     * @return array
-     * @throws \Exception
-     */
-    public function deleteUserById($id)
-    {
-        $query = 'DELETE FROM users WHERE user_id = :user_id';
-        $params = [':user_id' => $id];
-
-        try {
-            $this->delete($query, $params);
-        } catch(\Exception $e) {
-           throw $e; 
-        }
-
-        return [
-            'result' => 'success',
-            'id'     => $id,
-        ];
-    }
-
-    /**
      * @param array $values
      * @return array
      * @throws \Exception
@@ -200,8 +178,6 @@ class Users extends BaseModel
 
         try {
             $res = $this->insert($query, $values, 'user_id');
-
-            $this->debugLogger->setMessage('last insert id')->logVariable('$res')->write();
         } catch(\Exception $e) {
             $this->debugLogger->setMessage('got an error')->logVariable('')->write();
             throw $e;
