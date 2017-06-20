@@ -24,7 +24,7 @@ abstract class BaseModel
      * @return string
      * @throws \Exception
      */
-    public function insert($query, array $values = [], $id_column='id')
+    public function insert($query, array $values = [])
     {
         # NOTE: the key names of the "values" parameter MUST be in the
         # form of ':key_name'
@@ -62,6 +62,8 @@ abstract class BaseModel
                     ->setMessage('insert result was false ')
                     ->logVariable($pdo->errorInfo())
                     ->write();
+
+                throw new \Exception('error inserting');
             }
 
         } catch (\Exception $e) {
@@ -73,7 +75,7 @@ abstract class BaseModel
             throw $e;
         }
 
-        return $pdo->lastInsertId($id_column);
+        return true;
     }
 
 

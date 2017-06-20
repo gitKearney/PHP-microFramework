@@ -94,14 +94,35 @@ class Users extends BaseModel
      * @param string $id
      * @return array
      */
-    public function findUserById($id)
+    public function findUserById($userId)
     {
-        return [
-            'id' => $id,
-            'firstname' => 'Leroy',
-            'lastname'  => 'Jenkins',
-            'birthday'  => '04-18-1983',
-        ];
+        $query = 'SELECT first_name, last_name, birthday'
+            .' FROM users WHERE user_id = :user_id';
+        $params = [':user_id' => $userId];
+
+        try {
+            $result = $this->select($query, $params);
+        } catch(\Exception $e) {
+            return ['result' => 'error'];
+        }
+
+        return $result;
+    }
+
+    public function deleteUserById($userId)
+    {
+        $this->debugLogger->enableLogging();
+        
+        $query = 'DELETE FROM users WHERE user_id = :user_id';
+        $params = [':user_id' => $userId];
+        
+        try {
+            $result = $this->delete($query, $params);
+        } catch(\Exception $e) {
+            return ['result' => 'error'];
+        }
+
+        return $result;
     }
 
     /**
@@ -160,7 +181,11 @@ class Users extends BaseModel
         return ['result' => 'success'];
     }
 
-
+    /**
+     * @desc inserts a user into the database
+     * @return bool
+     * @throws \Exception
+     */
     public function addNewUser()
     {
         $this->debugLogger->enableLogging();
@@ -177,11 +202,13 @@ class Users extends BaseModel
         ];
 
         try {
-            $res = $this->insert($query, $values, 'user_id');
+            $res = $this->insert($query, $values);
         } catch(\Exception $e) {
             $this->debugLogger->setMessage('got an error')->logVariable('')->write();
-            throw $e;
+            return ['result' => 'error'];
         }
+
+        return ['result' => 'success'];
     }
 
 }

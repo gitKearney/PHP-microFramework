@@ -13,6 +13,12 @@ class UuidService
      */
     const UUID_LENGTH = 32;
 
+    # GUIDs should be like this: 12345678-1234-1234-1234-123456789abc
+    /** 
+     * @var string 
+     */
+    const GUID_REGEX = '/^[a-f\d]{8}-([a-f\d]{4}-){3}[a-f\d]{12}$/i';
+
     /**
      * @desc creates a class that generates a UUID
      * @return $this
@@ -74,4 +80,14 @@ class UuidService
     {
         return $this->uuid;
     }
+
+    public function isValidGuid($userId)
+    {
+        if (preg_match(self::GUID_REGEX, $userId)) {
+            return true;
+        }
+
+        return false;
+    }
 }
+

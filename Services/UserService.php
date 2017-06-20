@@ -19,9 +19,6 @@ class UserService extends BaseService
      */
     protected $uuid;
 
-    # GUIDs should be like this: 12345678-1234-1234-1234-123456789abc
-    const GUID_REGEX = '/^[a-f\d]{8}-([a-f\d]{4}-){3}[a-f\d]{12}$/i';
-
     /**
      * This contains all the business logic associated with our users.
      * The Factory\UserFactory class creates all the necessary classes that
@@ -43,6 +40,92 @@ class UserService extends BaseService
         $this->setDebugLogger();
 
         return $this;
+    }
+
+    /**
+     * @desc pull the GUID from the URI
+     * @param string $userId
+     * @return array
+     */
+    public function findUserById($userId)
+    {
+        $this->debugLogger->enableLogging();
+
+        if (! $this->uuid->isValidGuid($userId)) {
+            # user sent in an invalid GUID, return no records found
+            $this->debugLogger
+                ->setMessage("invalid GUID: ")
+                ->logVariable($userId)
+                ->write();
+
+            return [
+                'result' => 'No user found',
+            ];
+        }
+
+        # log the GUID to the log, the nice thing is we are able to enable
+        # logging for each route to make testing easier
+        $this->debugLogger
+            ->setMessage("valid GUID: ")
+            ->logVariable($userId)
+            ->write();
+
+        return $this->userModel->findUserById($userId);
+    }
+
+    /**
+     * @param string $userId
+     * @return array
+     */
+    public function deleteUserById($userId)
+    {
+        $this->debugLogger->enableLogging();
+
+        if (! $this->uuid->isValidGuid($userId)) {
+            # user sent in an invalid GUID, return no records found
+            $this->debugLogger
+                ->setMessage("invalid GUID: ")
+                ->logVariable($userId)
+                ->write();
+
+            return [
+                'result' => 'No user found',
+            ];
+        }
+
+        # log the GUID to the log, the nice thing is we are able to enable
+        # logging for each route to make testing easier
+        $this->debugLogger
+            ->setMessage("valid GUID: ")
+            ->logVariable($userId)
+            ->write();
+        
+        return $this->userModel->deleteUserById($userId);
+    }
+
+    /**
+     * @param ServerRequest $request
+     * @return array
+     */
+    public function addNewUser(ServerRequest $request)
+    {
+        $this->debugLogger->enableLogging();
+
+        # get the body from the HTTP request
+        $requestBody = $request->getParsedBody();
+
+        $this->debugLogger
+            ->setMessage('HTTP BODY')
+            ->logVariable($requestBody)
+            ->write();
+
+        # create a new GUID and add it to the body array
+        $requestBody['id'] = $this->uuid->generateUuid()->getUuid();
+
+        # set data from the HTTP body to values their matching values on the model
+        $this->setUserInfo($requestBody);
+
+        return $this->userModel->addNewUser();
     }
 
     /**
@@ -71,131 +154,6 @@ class UserService extends BaseService
     }
 
     /**
-     * @desc pull the GUID from the URI
-     * @param string $userId
-     * @return array
-     */
-    public function findUserById($userId)
-    {
-        $this->debugLogger->enableLogging();
-
-
-        if (! $this->isValidGuid($userId)) {
-            # user sent in an invalid GUID, return no records found
-            $this->debugLogger
-                ->setMessage("invalid GUID: ")
-                ->logVariable($userId)
-                ->write();
-
-            return [
-                'result' => 'No user found',
-            ];
-        }
-
-        # log the GUID to the log, the nice thing is we are able to enable
-        # logging for each route to make testing easier
-        $this->debugLogger
-            ->setMessage("valid GUID: ")
-            ->logVariable($userId)
-            ->write();
-
-
-        $user = null;
-
-        $select = 'SELECT first_name, last_name, birthday '
-            .'FROM users WHERE user_id = :user_id';
-        $values = [':user_id' => $userId];
-
-        try {
-            $user = $this->userModel->select($select, $values);
-        } catch (\Exception $e) {
-            return ['result' => 'error'];
-        }
-
-        if (empty($user)) {
-            return ['result' => 'no users found'];
-        }
-
-        return $user;
-    }
-
-    /**
-     * @param string $userId
-     * @return array
-     */
-    public function deleteUserById($userId)
-    {
-        $this->debugLogger->enableLogging();
-
-        if (! $this->isValidGuid($userId)) {
-            # user sent in an invalid GUID, return no records found
-            $this->debugLogger
-                ->setMessage("valid GUID: ")
-                ->logVariable($userId)
-                ->write();
-
-            return [
-                'result' => 'No user found',
-            ];
-        }
-
-        # log the GUID to the log, the nice thing is we are able to enable
-        # logging for each route to make testing easier
-        $this->debugLogger
-            ->setMessage("valid GUID: ")
-            ->logVariable($userId)
-            ->write();
-        
-        $query = 'DELETE FROM users WHERE user_id = :user_id';
-        $params = [':user_id' => $userId];
-
-        try {
-            $result = $this->userModel->delete($query, $params);
-        } catch (\Exception $e) {
-            return [
-                'result' => 'error',
-            ];        
-        }
-
-        return ['result' => 'success'];
-    }
-
-    /**
-     * @param ServerRequest $request
-     * @return array
-     */
-    public function addNewUser(ServerRequest $request)
-    {
-        # TODO: disable logging when putting in production
-        $this->debugLogger->enableLogging();
-
-        # get the body from the HTTP request
-        $requestBody = $request->getParsedBody();
-
-        $this->debugLogger
-            ->setMessage('HTTP BODY')
-            ->logVariable($requestBody)
-            ->write();
-
-        # create a new GUID and add it to the body array
-        $requestBody['id'] = $this->uuid->generateUuid()->getUuid();
-
-        # set data from the HTTP body to values their matching values on the model
-        $this->setUserInfo($requestBody);
-
-        try {
-            $result = $this->userModel->addNewUser();
-        } catch (\Exception $e) {
-            $m = 'ERROR! UserService::addNewUser() ';
-            $this->debugLogger->setMessage($m)->logVariable($e->getMessage())->write();
-            return ['error' => $e->getMessage()];
-        }
-
-        $result['status'] = 'success';
-        return $result;
-    }
-
-    /**
      * @param array $requestBody
      * @return array
      * @throws \Exception
@@ -203,7 +161,7 @@ class UserService extends BaseService
     public function updateUser(array $requestBody)
     {
 
-        if (! $this->isValidGuid($requestBody['id'])) {
+        if (! $this->uuid->isValidGuid($requestBody['id'])) {
             # user sent in an invalid GUID, return no records found
             $this->debugLogger
                 ->setMessage("invalid GUID: ")
@@ -273,13 +231,5 @@ class UserService extends BaseService
 
         return $requestBody;
     }
-
-    public function isValidGuid($userId)
-    {
-        if (preg_match(self::GUID_REGEX, $userId)) {
-            return true;
-        }
-
-        return false;
-    }
 }
+
