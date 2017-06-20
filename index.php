@@ -18,7 +18,7 @@ spl_autoload_register(function ($class_name) {
     $file = $base_dir.'/' . str_replace('\\', '/', $class_name) . '.php';
 
     file_put_contents(
-        "/tmp/kearney.debug.log",
+        "/tmp/php.debug.log",
         "trying to include: " . $file . PHP_EOL,
         FILE_APPEND
     );
@@ -63,13 +63,3 @@ $router->route('/\//', function() {
 # don't add any routes below here!
 $router->execute($_SERVER['REQUEST_URI']);
 
-/*
-$startTime = microtime(true);
-$myController = new UserController;
-
-$result = $myController->get(12);
-echo print_r($result, true);
-$endTime = microtime(true);
-
-echo 'Total Runtime: ', $endTime - $startTime, 'us', PHP_EOL;
-*/

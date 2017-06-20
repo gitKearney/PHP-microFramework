@@ -40,7 +40,7 @@ class UserController extends BaseController
         # also create a debug logger for testing
         $this->createDebugLogger();
 
-        # create a new database class and a service class
+        # create a factory to create a service and a model
         $this->userFactory = new UserFactory;
 
         # populate the request property (which is actually a server request type
