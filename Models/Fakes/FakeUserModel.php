@@ -105,7 +105,7 @@ class FakeUserModel extends Users
     public function findUserById($id)
     {
         return [
-            'id' => $id,
+            'id'        => $id,
             'firstname' => 'Leroy',
             'lastname'  => 'Jenkins',
             'birthday'  => '04-18-1983',
@@ -120,7 +120,6 @@ class FakeUserModel extends Users
     {
         return [
             'result' => 'success',
-            'id'     => $id,
         ];
     }
 
@@ -129,7 +128,7 @@ class FakeUserModel extends Users
      * @return array
      * @throws \Exception
      */
-    public function update(array $values = [])
+    public function updateUser(array $values = [])
     {
         $this->debugLogger->enableLogging();
 
@@ -171,12 +170,6 @@ class FakeUserModel extends Users
         $this->debugLogger->setMessage('UPDATE QUERY: ')->logVariable($query)->write();
         $this->debugLogger->setMessage('UPDATE ARRAY: ')->logVariable($updateValues)->write();
 
-        try {
-            $this->runQuery($query, $values);
-        } catch (\Exception $e) {
-            return ['status' => 'success'];
-        }
-
         return [
             'status'     => 'success',
             'id'         => $values['id'],
@@ -196,29 +189,31 @@ class FakeUserModel extends Users
         ];
     }
 
-    public function select($query, array $values = [])
-    {
-        $pdo = $this->getPdoConnection();
-    }
 
+    /**
+     * @return array
+     * @throws \Exception
+     */
     public function addNewUser()
     {
         $this->debugLogger->enableLogging();
 
-        $query = 'INSERT INTO users (first_name, last_name, birthday)'
-            .' VALUES (:first_name, :last_name, :birthday)';
+        $query = 'INSERT INTO users (user_id, first_name, last_name, birthday)'
+            .' VALUES (:user_id, :first_name, :last_name, :birthday)';
 
         $values = [
-            'first_name' => $this->firstName,
-            'last_name'  => $this->lastName,
-            'birthday'   => $this->birthday,
+            ':user_id'   => '',
+            ':first_name' => $this->firstName,
+            ':last_name'  => $this->lastName,
+            ':birthday'   => $this->birthday,
         ];
 
         try {
             return $this->insert($query, $values);
         } catch(\Exception $e) {
             $this->debugLogger->setMessage('got an error')->logVariable('')->write();
-            throw $e;
+
+            return ['result' => 'error'];
         }
     }
 

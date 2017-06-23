@@ -91,13 +91,13 @@ class Users extends BaseModel
     }
 
     /**
-     * @param string $id
+     * @param string $userId
      * @return array
      */
     public function findUserById($userId)
     {
-        $query = 'SELECT first_name, last_name, birthday'
-            .' FROM users WHERE user_id = :user_id';
+        $query = 'SELECT user_id as id, first_name, last_name, birthday'
+            .' FROM users WHERE user_id = :user_id LIMIT 1';
         $params = [':user_id' => $userId];
 
         try {
@@ -109,6 +109,10 @@ class Users extends BaseModel
         return $result;
     }
 
+    /**
+     * @param string $userId
+     * @return array
+     */
     public function deleteUserById($userId)
     {
         $this->debugLogger->enableLogging();
@@ -117,12 +121,12 @@ class Users extends BaseModel
         $params = [':user_id' => $userId];
         
         try {
-            $result = $this->delete($query, $params);
+            $this->delete($query, $params);
         } catch(\Exception $e) {
             return ['result' => 'error'];
         }
 
-        return $result;
+        return ['result' => 'success'];
     }
 
     /**
@@ -183,7 +187,7 @@ class Users extends BaseModel
 
     /**
      * @desc inserts a user into the database
-     * @return bool
+     * @return array
      * @throws \Exception
      */
     public function addNewUser()
