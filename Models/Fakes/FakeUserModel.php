@@ -171,7 +171,7 @@ class FakeUserModel extends Users
         $this->debugLogger->setMessage('UPDATE ARRAY: ')->logVariable($updateValues)->write();
 
         return [
-            'status'     => 'success',
+            'result'     => 'success',
             'id'         => $values['id'],
             'first_name' => $values['first_name'],
             'last_name'  => $values['last_name'],

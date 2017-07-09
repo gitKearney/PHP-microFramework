@@ -173,8 +173,11 @@ class UserController extends BaseController
         # pass the $request to the service
         $userService = $this->userFactory->create();
 
+        # get the body from the HTTP request
+        $requestBody = $request->getParsedBody();
 
-        $res = $userService->addNewUser($request);
+        $res = $userService->addNewUser($requestBody);
+
         $jsonRes = json_encode($res);
         $returnResponse = $this->response->withHeader('Content-Type', 'application/json');
         $returnResponse->getBody()->write($jsonRes);

@@ -104,15 +104,12 @@ class UserService extends BaseService
     }
 
     /**
-     * @param ServerRequest $request
+     * @param array $requestBody
      * @return array
      */
-    public function addNewUser(ServerRequest $request)
+    public function addNewUser(array $requestBody)
     {
         $this->debugLogger->enableLogging();
-
-        # get the body from the HTTP request
-        $requestBody = $request->getParsedBody();
 
         $this->debugLogger
             ->setMessage('HTTP BODY')

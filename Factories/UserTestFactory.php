@@ -2,12 +2,11 @@
 
 namespace Factories;
 
-
 use Models\Fakes\FakeUserModel;
 use Services\UserService;
 use Services\UuidService;
 
-class UserFactory
+class UserTestFactory
 {
     /**
      * @var FakeUserModel
@@ -26,7 +25,6 @@ class UserFactory
 
     public function __construct()
     {
-        $this->userModel =  new Users;
         $this->uuidService = new UuidService;
         $this->userModel = new FakeUserModel;
 
