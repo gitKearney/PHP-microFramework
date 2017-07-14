@@ -72,6 +72,15 @@ class UserService extends BaseService
 
         return $this->userModel->findUserById($userId);
     }
+    
+    /**
+     * @desc returns all users from database
+     * @return array
+     */
+    public function getAllUsers()
+    {
+        return $this->userModel->getAllUsers();
+    }
 
     /**
      * @param string $userId

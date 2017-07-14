@@ -108,6 +108,25 @@ class Users extends BaseModel
 
         return $result;
     }
+    
+    /**
+     * Returns all users form the database
+     * @return array
+     */
+    public function getAllUsers()
+    {
+        $query = 'SELECT user_id as id, first_name, last_name, birthday'
+            .' FROM users';
+        $params = [];
+        
+        try {
+            $result = $this->select($query, $params);
+        } catch(\Exception $e) {
+            return ['result' => 'error'];
+        }
+        
+        return $result;
+    }
 
     /**
      * @param string $userId

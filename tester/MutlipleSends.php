@@ -14,7 +14,7 @@ function sendHttpGet($childId)
     $get->setUri('http://localhost/users/12345678-1234-1234-1234-123456789abc')
         ->sendRequest();
 
-    echo "POST RESULT [$childId]:\n==========\n", print_r($get->getLastResult(), true), PHP_EOL;
+    echo "GET RESULT [$childId]:\n==========\n", print_r($get->getLastResult(), true), PHP_EOL;
 }
 
 function createChild()
@@ -29,7 +29,7 @@ function main()
     $children = 1;
 
     # max no. of child processes
-    $max = 1;
+    $max = 100;
 
     $pid = null;
 

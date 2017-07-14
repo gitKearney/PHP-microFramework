@@ -98,12 +98,21 @@ class UserController extends BaseController
 
         # split the URI field on the route
         $vals = preg_split('/\/users\//', $request->getServerParams()['REQUEST_URI']);
+        if (empty($vals[1])) {
+            # no GUID was passed in, get all records
+            $res = json_encode($userService->getAllUsers());
+            
+            $returnResponse = $this->response->withHeader('Content-Type', 'application/json');
+            $returnResponse->getBody()->write($res);
+            return $returnResponse;
+        }
+        
         $id = $vals[1];
-
+        
         # log the URI that we split
         $this->debugLogger->setMessage('splitting URI: ')->logVariable($vals)->write();
 
-        # pass the id to the service method, where we'll validate it's a get_required_files
+        # pass the id to the service method, where we'll validate it
         $res = json_encode($userService->findUserById($id));
 
         $returnResponse = $this->response->withHeader('Content-Type', 'application/json');
