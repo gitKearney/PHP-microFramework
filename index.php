@@ -2,7 +2,8 @@
 
 require_once 'vendor/autoload.php';
 
-# set the include so that when we import new clases they are already at
+
+# set the include so that when we import new classes they are already at
 # the correct directory
 set_include_path(get_include_path().PATH_SEPARATOR.'./');
 
@@ -43,7 +44,7 @@ $router->route('/users/', function() {
     # to tell the app we're using JSON
     foreach ($response->getHeaders() as $type => $header) {
         file_put_contents(
-            "/tmp/kearney.debug.log",
+            "/tmp/php.debug.log",
             "header: " . $type . ' '. $header[0] . PHP_EOL,
             FILE_APPEND
         );
