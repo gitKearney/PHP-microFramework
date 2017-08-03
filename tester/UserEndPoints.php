@@ -5,6 +5,11 @@ include_once 'RestBuilder.php';
 
 use restbuilder\RestBuilder;
 
+# if you want to use XDEBUG then modify the above calls to RestBuilder
+# to include this line
+#    ->addHeader('Cookie: XDEBUG_SESSION=PHPSTORM;')
+# this activate Xdebug's debugger to start listening for checkpoints
+
 /**
  * creates a new user
  */
@@ -19,9 +24,10 @@ function sendPost()
     ];
 
     $post
-        ->setUri('http://localhost/users/')
+        ->setUri('http://localhost:8000/users/')
         ->setHttpVerb('POST')
         ->setPostData($postData)
+        ->addHeader('Cookie: XDEBUG_SESSION=PHPSTORM;')
         ->sendRequest();
 
     echo "POST RESULT:\n==========\n", print_r($post->getLastResult(), true), PHP_EOL;
@@ -163,6 +169,9 @@ function printUsage()
     '* If POST command is used, the GUID does not need to set', PHP_EOL;
 }
 
+
+
 # call our main function passing in the command line arguments
+
 main($argv);
 

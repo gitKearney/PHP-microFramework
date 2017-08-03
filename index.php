@@ -2,7 +2,6 @@
 
 require_once 'vendor/autoload.php';
 
-
 # set the include so that when we import new classes they are already at
 # the correct directory
 set_include_path(get_include_path().PATH_SEPARATOR.'./');
