@@ -1,4 +1,5 @@
 vendor/
 requests.paw
 .idea/
+.DS_Store
 

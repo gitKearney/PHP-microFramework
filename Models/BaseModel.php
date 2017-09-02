@@ -1,9 +1,9 @@
 <?php
 
-namespace Models;
+namespace Main\Models;
 
-use Models\dbConnectionTrait;
-use Services\DebugLogger;
+use Main\Models\dbConnectionTrait;
+use Main\Services\DebugLogger;
 
 abstract class BaseModel
 {

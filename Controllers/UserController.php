@@ -1,8 +1,7 @@
 <?php
-namespace Controllers;
+namespace Main\Controllers;
 
-use Factories\UserFactory;
-use Services\UserService;
+use Main\Services\UserService;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
 
@@ -19,35 +18,17 @@ class UserController extends BaseController
     protected $userService;
 
     /**
-     * @var UserFactory
-     */
-    protected $userFactory;
-
-    /**
-     * The constructor calls a factory to make the service and all models
-     * associated with the User
      *
      * All of our business logic resides in the service (UserService)
      *
      * NOTE: to keep with REST, forward all calls to the method
      *       that corresponds to the HTTP Request Method
+     *
+     * @param UserService $userService
      */
-    public function __construct()
+    public function __construct(UserService $userService)
     {
-        # set up a logger so we can add debug messages
-        $this->createLogger();
-
-        # also create a debug logger for testing
-        $this->createDebugLogger();
-
-        # create a factory to create a service and a model
-        $this->userFactory = new UserFactory;
-
-        # populate the request property (which is actually a server request type
-        $this->request = $this->processRequest();
-
-        # establish a Response object
-        $this->response = new Response;
+        $this->userService = $userService;
     }
 
     /**
@@ -88,11 +69,6 @@ class UserController extends BaseController
      */
     public function get(ServerRequest $request, Response $response)
     {
-        $userService = $this->userFactory->create();
-
-        $this->debugLogger->enableLogging();
-        $this->debugLogger->setMessage("processing HTTP GET")->write();
-
         # pull the ID from the uri
         $id = null;
 
@@ -100,7 +76,7 @@ class UserController extends BaseController
         $vals = preg_split('/\/users\//', $request->getServerParams()['REQUEST_URI']);
         if (empty($vals[1])) {
             # no GUID was passed in, get all records
-            $res = json_encode($userService->getAllUsers());
+            $res = json_encode($this->userService->getAllUsers());
             
             $returnResponse = $this->response->withHeader('Content-Type', 'application/json');
             $returnResponse->getBody()->write($res);
@@ -110,13 +86,15 @@ class UserController extends BaseController
         $id = $vals[1];
         
         # log the URI that we split
-        $this->debugLogger->setMessage('splitting URI: ')->logVariable($vals)->write();
+        # file_put_contents('/tmp/debug.log', 'splitting URI: '.print_r($vals, true), FILE_APPEND);
 
         # pass the id to the service method, where we'll validate it
-        $res = json_encode($userService->findUserById($id));
+        $res = json_encode($this->userService->findUserById($id));
 
-        $returnResponse = $this->response->withHeader('Content-Type', 'application/json');
+        $returnResponse = $response->withHeader('Content-Type', 'application/json');
         $returnResponse->getBody()->write($res);
+
+        file_put_contents('/tmp/debug.log', 'splitting URI: '.print_r($returnResponse, true), FILE_APPEND);
         return $returnResponse;
     }
 

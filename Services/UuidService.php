@@ -1,5 +1,5 @@
 <?php
-namespace Services;
+namespace Main\Services;
 
 class UuidService
 {

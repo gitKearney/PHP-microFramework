@@ -1,6 +1,6 @@
 <?php
 
-namespace Models;
+namespace Main\Models;
 
 class Users extends BaseModel
 {

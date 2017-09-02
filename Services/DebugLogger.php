@@ -1,6 +1,6 @@
 <?php
 
-namespace Services;
+namespace Main\Services;
 
 /**
  * use this for local debugging.
@@ -163,7 +163,7 @@ class DebugLogger
             return;
         }
 
-        $outstring = $this->message." ".$this->stringVar.PHP_EOL;
-        file_put_contents($this->logFileName, $outstring, FILE_APPEND);
+        $outString = $this->message." ".$this->stringVar.PHP_EOL;
+        file_put_contents($this->logFileName, $outString, FILE_APPEND);
     }
 }

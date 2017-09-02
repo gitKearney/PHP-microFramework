@@ -1,6 +1,6 @@
 <?php
 
-namespace Routers;
+namespace Main\Routers;
 
 /**
  * Proudly kanged from: http://upshots.org/php/php-seriously-simple-router
@@ -22,13 +22,16 @@ class RegexRouter {
     
     /**
      * @param string $uri
-     *
+     * @param $appContainer
+     * @return array
      */
-    public function execute($uri) 
+    public function execute($uri, $appContainer)
     {
         foreach ($this->routes as $pattern => $callback) {
             if (preg_match($pattern, $uri, $params) === 1) {
                 array_shift($params);
+
+                $params['di_container'] = $appContainer;
                 return call_user_func_array($callback, array_values($params));
             }
         }

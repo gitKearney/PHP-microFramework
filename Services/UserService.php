@@ -1,9 +1,9 @@
 <?php
 
-namespace Services;
+namespace Main\Services;
 
-use Models\Users;
-use Services\UuidService;
+use Main\Models\Users;
+use Main\Services\UuidService;
 use Zend\Diactoros\Request;
 use Zend\Diactoros\ServerRequest;
 

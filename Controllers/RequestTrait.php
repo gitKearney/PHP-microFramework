@@ -1,6 +1,6 @@
 <?php
 
-namespace Controllers;
+namespace Main\Controllers;
 
 use Zend\Diactoros\ServerRequestFactory;
 use Zend\Diactoros\ServerRequest;

@@ -1,7 +1,7 @@
 <?php
-namespace Services;
+namespace Main\Services;
 
-use Services\DebugLogger;
+use Main\Services\DebugLogger;
 
 class BaseService
 {
