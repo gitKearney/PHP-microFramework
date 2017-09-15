@@ -3,8 +3,7 @@ namespace Main\Controllers;
 
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
+
 
 abstract class BaseController
 {
@@ -135,16 +134,6 @@ abstract class BaseController
                 # like TRACE,
                 return $this->unsupportedMethod();
         }
-    }
-
-    /**
-     * @desc creates a debug logger
-     * @return void
-     */
-    public function createLogger()
-    {
-        $this->log = new Logger('name');
-        $this->log->pushHandler(new StreamHandler('/tmp/debug.log', Logger::DEBUG));
     }
 
 }

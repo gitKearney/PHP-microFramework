@@ -115,6 +115,7 @@ class Users extends BaseModel
      */
     public function getAllUsers()
     {
+
         $query = 'SELECT user_id as id, first_name, last_name, birthday'
             .' FROM users';
         $params = [];

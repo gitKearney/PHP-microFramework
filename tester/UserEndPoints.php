@@ -27,7 +27,7 @@ function sendPost()
         ->setUri('http://localhost:8000/users/')
         ->setHttpVerb('POST')
         ->setPostData($postData)
-        ->addHeader('Cookie: XDEBUG_SESSION=PHPSTORM;')
+//        ->addHeader('Cookie: XDEBUG_SESSION=PHPSTORM;')
         ->sendRequest();
 
     echo "POST RESULT:\n==========\n", print_r($post->getLastResult(), true), PHP_EOL;

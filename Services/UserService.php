@@ -36,9 +36,6 @@ class UserService extends BaseService
         $this->userModel = $users;
         $this->uuid = $uuidService;
 
-        # instantiate a debug logger for this service
-        $this->setDebugLogger();
-
         return $this;
     }
 
@@ -49,26 +46,13 @@ class UserService extends BaseService
      */
     public function findUserById($userId)
     {
-        $this->debugLogger->enableLogging();
-
         if (! $this->uuid->isValidGuid($userId)) {
             # user sent in an invalid GUID, return no records found
-            $this->debugLogger
-                ->setMessage("invalid GUID: ")
-                ->logVariable($userId)
-                ->write();
 
             return [
                 'result' => 'No user found',
             ];
         }
-
-        # log the GUID to the log, the nice thing is we are able to enable
-        # logging for each route to make testing easier
-        $this->debugLogger
-            ->setMessage("valid GUID: ")
-            ->logVariable($userId)
-            ->write();
 
         return $this->userModel->findUserById($userId);
     }
@@ -92,22 +76,10 @@ class UserService extends BaseService
 
         if (! $this->uuid->isValidGuid($userId)) {
             # user sent in an invalid GUID, return no records found
-            $this->debugLogger
-                ->setMessage("invalid GUID: ")
-                ->logVariable($userId)
-                ->write();
-
             return [
                 'result' => 'No user found',
             ];
         }
-
-        # log the GUID to the log, the nice thing is we are able to enable
-        # logging for each route to make testing easier
-        $this->debugLogger
-            ->setMessage("valid GUID: ")
-            ->logVariable($userId)
-            ->write();
         
         return $this->userModel->deleteUserById($userId);
     }
@@ -118,13 +90,6 @@ class UserService extends BaseService
      */
     public function addNewUser(array $requestBody)
     {
-        $this->debugLogger->enableLogging();
-
-        $this->debugLogger
-            ->setMessage('HTTP BODY')
-            ->logVariable($requestBody)
-            ->write();
-
         # create a new GUID and add it to the body array
         $requestBody['id'] = $this->uuid->generateUuid()->getUuid();
 

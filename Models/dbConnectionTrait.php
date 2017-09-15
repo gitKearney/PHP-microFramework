@@ -45,7 +45,7 @@ trait dbConnectionTrait
 
     function readUserNameFromEnv()
     {
-        return 'root';
+        return 'someuser';
     }
 
     function readPasswordFromEnv()

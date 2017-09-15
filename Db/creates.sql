@@ -1,4 +1,11 @@
+CREATE DATABASE demo;
+
+USE demo;
+
 -- create a database user, so we're not using root all the time
+CREATE USER 'someuser'@'localhost' IDENTIFIED BY 'password';
+GRANT ALTER, INSERT, SELECT, CREATE, DELETE, UPDATE, DROP ON demo.* to 'someuser'@'localhost';
+FLUSH PRIVILEGES ;
 
 -- create a user table
 DROP TABLE IF EXISTS users;

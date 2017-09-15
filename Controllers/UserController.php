@@ -39,22 +39,14 @@ class UserController extends BaseController
      */
     public function delete(ServerRequest $request, Response $response)
     {
-        $userService = $this->userFactory->create();
-        
-        $this->debugLogger->enableLogging();
-        $this->debugLogger->setMessage("processing HTTP DELETE\n");
-
         $id = null;
 
         # split the URI field on the route and save the ID from the uri
         $vals = preg_split('/\/users\//', $request->getServerParams()['REQUEST_URI']);
         $id = $vals[1];
 
-        # log the URI that we split
-        $this->debugLogger->setMessage('splitting URI: ')->logVariable($vals)->write();
-
         # pass the id to the service method, where we'll validate it's a get_required_files
-        $res = json_encode($userService->deleteUserById($id));
+        $res = json_encode($this->userService->deleteUserById($id));
 
         $returnResponse = $this->response->withHeader('Content-Type', 'application/json');
         $returnResponse->getBody()->write($res);
@@ -78,7 +70,7 @@ class UserController extends BaseController
             # no GUID was passed in, get all records
             $res = json_encode($this->userService->getAllUsers());
             
-            $returnResponse = $this->response->withHeader('Content-Type', 'application/json');
+            $returnResponse = $response->withHeader('Content-Type', 'application/json');
             $returnResponse->getBody()->write($res);
             return $returnResponse;
         }
@@ -86,7 +78,7 @@ class UserController extends BaseController
         $id = $vals[1];
         
         # log the URI that we split
-        # file_put_contents('/tmp/debug.log', 'splitting URI: '.print_r($vals, true), FILE_APPEND);
+        logVar('splitting URI: '.print_r($vals, true));
 
         # pass the id to the service method, where we'll validate it
         $res = json_encode($this->userService->findUserById($id));
@@ -128,23 +120,16 @@ class UserController extends BaseController
      */
     public function patch(ServerRequest $request, Response $response)
     {
-        # pass the $request to the service
-        $userService = $this->userFactory->create();
 
-        $this->debugLogger->enableLogging();
-        
-        $this->debugLogger
-            ->setMessage('PATCH BODY (from controller)')
-            ->logVariable($request->getBody()->__toString())
-            ->write();
+        # get the POST body as a string: $request->getBody()->__toString()
 
         # extract the HTTP BODY into an array
-        $requestBody = $userService->parseServerRequest($request);
+        $requestBody = $this->userService->parseServerRequest($request);
 
-        $res = $userService->updateUser($requestBody);
+        $res = $this->userService->updateUser($requestBody);
 
         $jsonRes = json_encode($res);
-        $returnResponse = $this->response->withHeader('Content-Type', 'application/json');
+        $returnResponse = $response->withHeader('Content-Type', 'application/json');
         $returnResponse->getBody()->write($jsonRes);
         return $returnResponse;
     }
@@ -157,16 +142,13 @@ class UserController extends BaseController
      */
     public function post(ServerRequest $request, Response $response)
     {
-        # pass the $request to the service
-        $userService = $this->userFactory->create();
-
         # get the body from the HTTP request
         $requestBody = $request->getParsedBody();
 
-        $res = $userService->addNewUser($requestBody);
+        $res = $this->userService->addNewUser($requestBody);
 
         $jsonRes = json_encode($res);
-        $returnResponse = $this->response->withHeader('Content-Type', 'application/json');
+        $returnResponse = $response->withHeader('Content-Type', 'application/json');
         $returnResponse->getBody()->write($jsonRes);
         return $returnResponse;
     }
@@ -179,23 +161,13 @@ class UserController extends BaseController
      */
     public function put(ServerRequest $request, Response $response)
     {
-        # pass the $request to the service
-        $userService = $this->userFactory->create();
-
-        $this->debugLogger->enableLogging();
-
-        $this->debugLogger
-            ->setMessage('PUT BODY (from controller)')
-            ->logVariable($request->getBody()->__toString())
-            ->write();
-
         # extract the HTTP BODY into an array
-        $requestBody = $userService->parseServerRequest($request);
+        $requestBody = $this->userService->parseServerRequest($request);
 
-        $res = $userService->updateUser($requestBody);
+        $res = $this->userService->updateUser($requestBody);
 
         $jsonRes = json_encode($res);
-        $returnResponse = $this->response->withHeader('Content-Type', 'application/json');
+        $returnResponse = $response->withHeader('Content-Type', 'application/json');
         $returnResponse->getBody()->write($jsonRes);
         return $returnResponse;
     }
