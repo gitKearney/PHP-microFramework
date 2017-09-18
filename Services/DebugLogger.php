@@ -42,9 +42,8 @@ class DebugLogger
     /**
      * @param string $logFileName
      */
-    public function __construct($logFileName = '/tmp/php.debug.log')
+    public function __construct()
     {
-        $this->logFileName = $logFileName;
         $this->message = "";
         $this->stringVar = "";
     }
@@ -111,7 +110,7 @@ class DebugLogger
      * @param mixed $var
      * @return $this
      */
-    public function logVariable($var)
+    public function logVariable($var, $logLevel)
     {
         if (is_null($var)) {
             $this->stringVar = $this->logNull();
