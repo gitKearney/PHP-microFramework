@@ -3,16 +3,10 @@
 namespace Main\Models;
 
 use Main\Models\dbConnectionTrait;
-use Main\Services\DebugLogger;
 
 abstract class BaseModel
 {
     use dbConnectionTrait;
-
-    /**
-     * @var DebugLogger
-     */
-    protected $debugLogger;
 
     /**
      * This is a generic insert method that assumes the INSERT statement
@@ -35,21 +29,11 @@ abstract class BaseModel
         # INSERT INTO t ('key') VALUES (:val)
 
         # The values array would be defined as: [':val' => 'val']
-
-        $this->debugLogger->setMessage("query")->logVariable($query)->write();
-
-        $this->debugLogger->setMessage("values")->logVariable($values)->write();
-
         $pdo = null;
 
         try {
             $pdo = $this->getPdoConnection();
         } catch( \Exception $e) {
-            $this->debugLogger
-                ->setMessage('failed getting PDO connection in insert')
-                ->logVariable('')
-                ->write();
-
             throw $e;
         }
 
@@ -58,20 +42,10 @@ abstract class BaseModel
             $result = $ps->execute($values);
 
             if ($result === false) {
-                $this->debugLogger
-                    ->setMessage('insert result was false ')
-                    ->logVariable($pdo->errorInfo())
-                    ->write();
-
                 throw new \Exception('error inserting');
             }
 
         } catch (\Exception $e) {
-            $this->debugLogger
-                ->setMessage('failed inserting PDO error: '.$ps->errorCode())
-                ->logVariable($ps->errorInfo())
-                ->write();
-
             throw $e;
         }
 
@@ -103,11 +77,6 @@ abstract class BaseModel
             }
 
         } catch( \Exception $e) {
-            $this->debugLogger
-                ->setMessage('failed getting PDO connection in insert')
-                ->logVariable($e->getMessage())
-                ->write();
-
             throw $e;
         }
 
@@ -116,8 +85,6 @@ abstract class BaseModel
         while($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
             $results[] = $row;
         }
-
-        $this->debugLogger->setMessage('results (return array)')->logVariable($results)->write();
 
         return $results;
     }
@@ -145,14 +112,6 @@ abstract class BaseModel
      */
     public function update($query, array $params)
     {
-        $this->debugLogger
-            ->setMessage('query:')
-            ->logVariable($query)->write();
-
-        $this->debugLogger
-            ->setMessage('params:')
-            ->logVariable($params)->write();
-
         try {
             $pdo = $this->getPdoConnection();
             $statement = $pdo->prepare($query);
@@ -164,11 +123,6 @@ abstract class BaseModel
                 throw new \Exception('failed to update');
             }
         } catch (\Exception $e) {
-            $this->debugLogger
-                ->setMessage('exception updating')
-                ->logVariable($e->getMessage())
-                ->write();
-
             throw new \Exception('error '.$e->getMessage());
         }
 
@@ -183,14 +137,6 @@ abstract class BaseModel
      */
     public function delete($query, array $params)
     {
-        $this->debugLogger
-            ->setMessage('query:')
-            ->logVariable($query)->write();
-
-        $this->debugLogger
-            ->setMessage('params:')
-            ->logVariable($params)->write();
-
         try {
             $pdo       = $this->getPdoConnection();
             $statement = $pdo->prepare($query);
@@ -201,11 +147,6 @@ abstract class BaseModel
                 throw new \Exception('failed to delete');
             }
         } catch (\Exception $e) {
-            $this->debugLogger
-                ->setMessage('exception deleting')
-                ->logVariable($e->getMessage())
-                ->write();
-
             throw $e;
         }
 
