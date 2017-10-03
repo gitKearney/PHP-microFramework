@@ -11,9 +11,31 @@ use Main\Services\DebugLogger;
  * @param string $string
  * @param string $level
  */
-function logVar($string, $level='debug')
+function logVar($var, $level='debug')
 {
     global $log;
+
+    $string = $var;
+
+    if (is_null($var)) {
+        $string = 'null';
+    }
+
+    if (is_array($var)) {
+        $string = print_r($var, true);
+    }
+
+    if (is_bool($var)) {
+        $string = ($var)?'true':'false';
+    }
+
+    if (is_int($var) || is_float($var)) {
+        $string = strval($var);
+    }
+
+    if (is_object($var)) {
+        $string = print_r($var, true);
+    }
 
     switch ($level) {
         case 'debug':
