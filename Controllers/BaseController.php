@@ -135,5 +135,4 @@ abstract class BaseController
                 return $this->unsupportedMethod();
         }
     }
-
 }
