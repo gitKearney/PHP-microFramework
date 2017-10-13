@@ -43,8 +43,13 @@ trait dbConnectionTrait
         return '';
     }
 
+    /**
+     * This is supposed to read from some environment variable
+     * @return string
+     */
     function readUserNameFromEnv()
     {
+        # TODO: where to store these values? .env? array?
         return 'someuser';
     }
 
@@ -69,14 +74,14 @@ trait dbConnectionTrait
 
         # TODO: remove this is testing only
         if (strlen($dbType) == 0) {
-            $this->debugLogger->setMessage('DBTYPE is empty string')->logVariable('')->write();
+            logVar('DBTYPE is empty string');
             return '';
         }
 
         $dsnString = $this->getDatabaseDsn($dbType);
 
         if (strlen($dsnString) == 0 ) {
-            $this->debugLogger->setMessage('DSN is empty string')->logVariable('')->write();
+            logVar('DSN is empty string');
             throw new \Exception('invalid database connection');
         }
 
@@ -91,7 +96,8 @@ trait dbConnectionTrait
 
             return $pdo;
         } catch (\Exception $e) {
-            $this->debugLogger->setMessage('FAILED TO GET CONNECTION')->logVariable($e->getMessage())->write();
+            logVar('FAILED TO GET CONNECTION. ');
+            logVar($e->getMessage());
         }
     }
 }

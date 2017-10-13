@@ -167,8 +167,8 @@ class FakeUserModel extends Users
 
         $query = 'UPDATE users SET '.$set.' WHERE '.$where;
 
-        $this->debugLogger->setMessage('UPDATE QUERY: ')->logVariable($query)->write();
-        $this->debugLogger->setMessage('UPDATE ARRAY: ')->logVariable($updateValues)->write();
+        logVar('UPDATE QUERY: '.$query);
+        logVar($updateValues);
 
         return [
             'result'     => 'success',
@@ -196,8 +196,6 @@ class FakeUserModel extends Users
      */
     public function addNewUser()
     {
-        $this->debugLogger->enableLogging();
-
         $query = 'INSERT INTO users (user_id, first_name, last_name, birthday)'
             .' VALUES (:user_id, :first_name, :last_name, :birthday)';
 
@@ -211,7 +209,7 @@ class FakeUserModel extends Users
         try {
             return $this->insert($query, $values);
         } catch(\Exception $e) {
-            $this->debugLogger->setMessage('got an error')->logVariable('')->write();
+            logVar('got an error');
 
             return ['result' => 'error'];
         }

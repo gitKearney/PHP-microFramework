@@ -61,10 +61,6 @@ abstract class BaseModel
      */
     public function select($query, array $params)
     {
-        $this->debugLogger->enableLogging();
-
-        $this->debugLogger->setMessage('running select')->write();
-
         try {
             $pdo = $this->getPdoConnection();
 
@@ -73,7 +69,7 @@ abstract class BaseModel
             $resultSet = $statement->execute($params);
 
             if ($resultSet === false) {
-                $this->debugLogger->setMessage('query result is false')->write();
+                logVar('query result is false');
             }
 
         } catch( \Exception $e) {
@@ -87,21 +83,6 @@ abstract class BaseModel
         }
 
         return $results;
-    }
-
-    /**
-     * @param string $logFileName default null
-     * @return $this
-     */
-    public function setDebugLogger($logFileName = null)
-    {
-        if (is_null($logFileName)) {
-            $this->debugLogger = new DebugLogger;
-        } else {
-            $this->debugLogger = new DebugLogger($logFileName);
-        }
-
-        return $this;
     }
 
     /**
@@ -119,7 +100,7 @@ abstract class BaseModel
             $resultSet = $statement->execute($params);
 
             if ($resultSet === false) {
-                $this->debugLogger->setMessage('failed to update')->write();
+                logVar('failed to update');
                 throw new \Exception('failed to update');
             }
         } catch (\Exception $e) {
@@ -143,7 +124,7 @@ abstract class BaseModel
             $resultSet = $statement->execute($params);
 
             if ($resultSet === false) {
-                $this->debugLogger->setMessage('failed to delete')->write();
+                logVar('failed to delete');
                 throw new \Exception('failed to delete');
             }
         } catch (\Exception $e) {

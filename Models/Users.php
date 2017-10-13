@@ -14,7 +14,6 @@ class Users extends BaseModel
      */
     public function __construct()
     {
-        $this->setDebugLogger();
         return $this;
     }
 
@@ -193,8 +192,8 @@ class Users extends BaseModel
 
         $query = 'UPDATE users SET '.$set.' WHERE '.$where;
 
-        $this->debugLogger->setMessage('UPDATE QUERY: ')->logVariable($query)->write();
-        $this->debugLogger->setMessage('UPDATE ARRAY: ')->logVariable($updateValues)->write();
+        logVar('UPDATE QUERY: '.$query);
+        logVar($updateValues);
 
         try {
             $this->update($query, $updateValues);
@@ -228,7 +227,7 @@ class Users extends BaseModel
         try {
             $res = $this->insert($query, $values);
         } catch(\Exception $e) {
-            $this->debugLogger->setMessage('got an error')->logVariable('')->write();
+            logVar('got an error');
             return ['result' => 'error'];
         }
 
