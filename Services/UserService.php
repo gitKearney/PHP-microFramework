@@ -134,10 +134,7 @@ class UserService extends BaseService
 
         if (! $this->uuid->isValidGuid($requestBody['id'])) {
             # user sent in an invalid GUID, return no records found
-            $this->debugLogger
-                ->setMessage("invalid GUID: ")
-                ->logVariable($requestBody['id'])
-                ->write();
+            logVar("invalid GUID: " . $requestBody['id']);
 
             return [
                 'result' => 'No user found',
@@ -150,8 +147,6 @@ class UserService extends BaseService
         try {
             return $this->userModel->updateUser($requestBody);
         } catch (\Exception $e) {
-            $m = 'ERROR! UserService::addNewUser() ';
-            $this->debugLogger->setMessage($m)->logVariable($e)->write();
             return ['error' => $e->getMessage()];
         }
     }

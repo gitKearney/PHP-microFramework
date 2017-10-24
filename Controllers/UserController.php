@@ -78,7 +78,7 @@ class UserController extends BaseController
         $id = $vals[1];
         
         # log the URI that we split
-        logVar('splitting URI: '.print_r($vals, true));
+        logVar($vals, 'splitting URI: ');
 
         # pass the id to the service method, where we'll validate it
         $res = json_encode($this->userService->findUserById($id));
@@ -86,7 +86,6 @@ class UserController extends BaseController
         $returnResponse = $response->withHeader('Content-Type', 'application/json');
         $returnResponse->getBody()->write($res);
 
-        file_put_contents('/tmp/debug.log', 'splitting URI: '.print_r($returnResponse, true), FILE_APPEND);
         return $returnResponse;
     }
 
@@ -131,6 +130,7 @@ class UserController extends BaseController
         $jsonRes = json_encode($res);
         $returnResponse = $response->withHeader('Content-Type', 'application/json');
         $returnResponse->getBody()->write($jsonRes);
+
         return $returnResponse;
     }
 
@@ -150,6 +150,7 @@ class UserController extends BaseController
         $jsonRes = json_encode($res);
         $returnResponse = $response->withHeader('Content-Type', 'application/json');
         $returnResponse->getBody()->write($jsonRes);
+
         return $returnResponse;
     }
 
@@ -169,6 +170,7 @@ class UserController extends BaseController
         $jsonRes = json_encode($res);
         $returnResponse = $response->withHeader('Content-Type', 'application/json');
         $returnResponse->getBody()->write($jsonRes);
+
         return $returnResponse;
     }
 }

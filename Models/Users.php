@@ -155,8 +155,6 @@ class Users extends BaseModel
      */
     public function updateUser(array $values)
     {
-        $this->debugLogger->enableLogging();
-
         $where = '';
         $set = '';
         $updateValues = [];
@@ -192,13 +190,13 @@ class Users extends BaseModel
 
         $query = 'UPDATE users SET '.$set.' WHERE '.$where;
 
-        logVar('UPDATE QUERY: '.$query);
-        logVar($updateValues);
+        logVar($query, 'UPDATE QUERY: ');
+        logVar($updateValues, 'update values');
 
         try {
             $this->update($query, $updateValues);
         } catch (\Exception $e) {
-            return ['result' => 'error'];
+            throw new \Exception('Error Updating User');
         }
 
         return ['result' => 'success'];

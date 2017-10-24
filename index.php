@@ -8,33 +8,34 @@ use Monolog\Handler\StreamHandler;
 use Main\Services\DebugLogger;
 
 /**
- * @param string $string
+ * @param mixed $var
+ * @param string $msg
  * @param string $level
  */
-function logVar($var, $level='debug')
+function logVar($var, $msg = '', $level='debug')
 {
     global $log;
 
-    $string = $var;
+    $string = $msg;
 
     if (is_null($var)) {
-        $string = 'null';
+        $string .= 'null';
     }
 
     if (is_array($var)) {
-        $string = print_r($var, true);
+        $string .= print_r($var, true);
     }
 
     if (is_bool($var)) {
-        $string = ($var)?'true':'false';
+        $string .= ($var)?'true':'false';
     }
 
     if (is_int($var) || is_float($var)) {
-        $string = strval($var);
+        $string .= strval($var);
     }
 
     if (is_object($var)) {
-        $string = print_r($var, true);
+        $string .= print_r($var, true);
     }
 
     switch ($level) {
