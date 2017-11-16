@@ -63,7 +63,9 @@ class UserService extends BaseService
      */
     public function getAllUsers()
     {
-        return $this->userModel->getAllUsers();
+        $this->userModel->getAllUsers();
+
+        return $this->userModel->getResults();
     }
 
     /**
@@ -72,8 +74,6 @@ class UserService extends BaseService
      */
     public function deleteUserById($userId)
     {
-        $this->debugLogger->enableLogging();
-
         if (! $this->uuid->isValidGuid($userId)) {
             # user sent in an invalid GUID, return no records found
             return [
@@ -115,7 +115,9 @@ class UserService extends BaseService
         # TODO: validate that the info is good and in here
         $this->userModel->setFirstName($httpBody['first_name']);
         $this->userModel->setLastName($httpBody['last_name']);
+        $this->userModel->setEmail($httpBody['email']);
         $this->userModel->setBirthday($httpBody['birthday']);
+        $this->userModel->setPassword($httpBody['password']);
 
         if (isset($httpBody['id'])) {
             $this->userModel->setUserId($httpBody['id']);
@@ -159,26 +161,15 @@ class UserService extends BaseService
      */
     public function parseServerRequest(ServerRequest $request)
     {
-        $this->debugLogger->enableLogging();
-
         # get the body from the HTTP request
         $requestBody = json_decode($request->getBody()->__toString());
 
         if (is_null($requestBody)) {
             # the body isn't a JSON string, it's a form URL encoded string
             # so, convert it here
-            $this->debugLogger
-                ->setMessage('REQUEST OBJECT BODY IS NOT JSON')
-                ->write();
-
             $requestBody = [];
             parse_str($request->getBody()->__toString(), $requestBody);
         }
-
-        $this->debugLogger
-            ->setMessage('HTTP PUT/PATCH BODY')
-            ->logVariable($requestBody)
-            ->write();
 
         # check to see if the body contains an id, if not, process this
         # as a PATCH request instead of a PUT request

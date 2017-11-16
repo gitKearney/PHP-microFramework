@@ -9,8 +9,13 @@ abstract class BaseModel
     use dbConnectionTrait;
 
     /**
+     * @var array $results - store records pulled from selects
+     */
+    protected $results;
+
+    /**
      * This is a generic insert method that assumes the INSERT statement
-     * has been built, and the the values are match properly in the array
+     * has been built, and the the values match properly in the array
      *
      * @param $query
      * @param array $values
@@ -26,10 +31,9 @@ abstract class BaseModel
         # in its string
 
         # Example: The insert statement MUST be in this form:
-        # INSERT INTO t ('key') VALUES (:val)
+        # INSERT INTO table ('key') VALUES (:val)
 
         # The values array would be defined as: [':val' => 'val']
-        $pdo = null;
 
         try {
             $pdo = $this->getPdoConnection();
@@ -39,16 +43,16 @@ abstract class BaseModel
 
         try {
             $ps = $pdo->prepare($query);
-            $result = $ps->execute($values);
+            $resultSet = $ps->execute($values);
 
-            if ($result === false) {
+            if ($resultSet === false) {
                 throw new \Exception('error inserting');
             }
 
         } catch (\Exception $e) {
             throw $e;
         }
-
+        
         return true;
     }
 
@@ -64,25 +68,28 @@ abstract class BaseModel
         try {
             $pdo = $this->getPdoConnection();
 
+            logVar($pdo, 'PDO Object ');
+
             $statement = $pdo->prepare($query);
 
             $resultSet = $statement->execute($params);
 
             if ($resultSet === false) {
                 logVar('query result is false');
+                return false;
             }
 
         } catch( \Exception $e) {
             throw $e;
         }
 
-        $results = [];
+        $this->results = [];
 
         while($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
-            $results[] = $row;
+            $this->results[] = $row;
         }
 
-        return $results;
+        return true;
     }
 
     /**
@@ -96,7 +103,6 @@ abstract class BaseModel
         try {
             $pdo = $this->getPdoConnection();
             $statement = $pdo->prepare($query);
-
             $resultSet = $statement->execute($params);
 
             if ($resultSet === false) {
@@ -133,4 +139,27 @@ abstract class BaseModel
 
         return true;
     }
+
+    /**
+     * @return $this
+     */
+    public function initializeResults()
+    {
+        $this->results = [];
+        return $this;
+    }
+    
+    /**
+     * @return array
+     */
+    public function getResults()
+    {
+        return $this->results;
+    }
+
+    public function setResult(array $values)
+    {
+        return $this->results = $values;
+    }
+
 }

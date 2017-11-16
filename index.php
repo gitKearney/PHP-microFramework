@@ -5,7 +5,10 @@ require_once 'vendor/autoload.php';
 use Main\Routers\RegexRouter;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
-use Main\Services\DebugLogger;
+use Dotenv\Dotenv;
+use Pimple\Container;
+
+require_once('configs/credentials.php');
 
 /**
  * @param mixed $var
@@ -38,6 +41,10 @@ function logVar($var, $msg = '', $level='debug')
         $string .= print_r($var, true);
     }
 
+    if (is_string($var)) {
+        $string .= $var;
+    }
+
     switch ($level) {
         case 'debug':
             $log->debug($string);
@@ -66,15 +73,32 @@ function logVar($var, $msg = '', $level='debug')
     }
 }
 
+/**
+ * returns the configuration settings for our app. Think of this like getenv()
+ * only, it returns all the settings and you have to know what you're looking
+ * 
+ * Hey! This is faster than reading environment variables
+ */
+function getAppConfigSettings()
+{
+    global $config;
+
+    return $config;
+}
+
 // create a log channel
 $log = new Logger('name');
-$log->pushHandler(new StreamHandler('/tmp/php.debug.log', Logger::WARNING));
+$log->pushHandler(new StreamHandler($config->app_settings->log_location, Logger::DEBUG));
+
+# read in our configuration file
+$dotenv = new Dotenv(__DIR__);
+$dotenv->load();
 
 $container = require_once __DIR__.'/Factories/Definitions.php';
 
 $router = new RegexRouter;
 
-$router->route('/users/', function(\Pimple\Container $container) {
+$router->route('/users/', function(Container $container) {
     $userController = $container['UserController'];
 
     /**
@@ -84,6 +108,23 @@ $router->route('/users/', function(\Pimple\Container $container) {
 
     ob_start();
     echo $response->getBody()->__toString();
+    ob_end_flush();
+});
+
+$router->route('/auth/', function(Container $container) {
+
+    /**
+     * @var AuthController
+     */
+    $authController = $container['AuthController'];
+
+    /**
+     * @var \Zend\Diactoros\Response
+     */
+    $response = $authController->handleRequest();
+
+    ob_start();
+    echo $response->getBody()->__toString();;
     ob_end_flush();
 });
 

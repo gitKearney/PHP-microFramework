@@ -1,5 +1,7 @@
 vendor/
+tester/
 requests.paw
 .idea/
 .DS_Store
+.env
 

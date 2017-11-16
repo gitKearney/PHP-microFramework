@@ -14,7 +14,9 @@ CREATE TABLE users
   user_id CHAR(36) PRIMARY KEY,
   first_name VARCHAR(40) NOT NULL,
   last_name  VARCHAR(40) NOT NULL,
+  upassword  VARCHAR(128) NOT NULL,
+  email VARCHAR(64) NOT NULL,
   birthday DATE NOT NULL,
-  created_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT NOW(),
   updated_at DATETIME NULL
 );

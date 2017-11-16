@@ -51,4 +51,10 @@ To log a variable, simply call the function like so
 You can pass in any variable to the `logVar()` function. It automatically converts objects, arrays, and booleans to strings for easy reading in a log file
 
 
+Testing
+===
+
+    php -S 192.168.1.84:3000 -t .
+
+
 

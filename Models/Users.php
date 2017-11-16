@@ -6,6 +6,7 @@ class Users extends BaseModel
 {
     protected $firstName;
     protected $lastName;
+    protected $email;
     protected $birthday;
     protected $id;
 
@@ -89,14 +90,37 @@ class Users extends BaseModel
         return $this->id;
     }
 
+    public function setEmail($email)
+    {
+        $this->email = $email;
+        return $this;
+    }
+
+    public function getEmail()
+    {
+        return $this->email;
+    }
+
+    public function setPassword($password)
+    {
+        $this->upassword = password_hash($password, PASSWORD_DEFAULT);
+        return $this;
+    }
+
+    public function getPassword()
+    {
+        return $this->upassword;
+    }
+
     /**
      * @param string $userId
      * @return array
      */
     public function findUserById($userId)
     {
-        $query = 'SELECT user_id as id, first_name, last_name, birthday'
-            .' FROM users WHERE user_id = :user_id LIMIT 1';
+        $query = 'SELECT user_id as id, first_name, last_name, birthday, '
+            .'email, created_at '
+            .'FROM users WHERE user_id = :user_id LIMIT 1';
         $params = [':user_id' => $userId];
 
         try {
@@ -105,9 +129,9 @@ class Users extends BaseModel
             return ['result' => 'error'];
         }
 
-        return $result;
+        return true;
     }
-    
+
     /**
      * Returns all users form the database
      * @return array
@@ -116,16 +140,17 @@ class Users extends BaseModel
     {
 
         $query = 'SELECT user_id as id, first_name, last_name, birthday'
+            .' email, created_at'
             .' FROM users';
         $params = [];
-        
+
         try {
-            $result = $this->select($query, $params);
+            $this->select($query, $params);
         } catch(\Exception $e) {
             return ['result' => 'error'];
         }
-        
-        return $result;
+
+        return true;
     }
 
     /**
@@ -134,18 +159,18 @@ class Users extends BaseModel
      */
     public function deleteUserById($userId)
     {
-        $this->debugLogger->enableLogging();
-        
         $query = 'DELETE FROM users WHERE user_id = :user_id';
         $params = [':user_id' => $userId];
-        
+
         try {
             $this->delete($query, $params);
         } catch(\Exception $e) {
-            return ['result' => 'error'];
+            $this->results = ['result' => 'error'];
+            return false;
         }
 
-        return ['result' => 'success'];
+        $this->results = ['result' => 'success'];
+        return true;
     }
 
     /**
@@ -199,7 +224,8 @@ class Users extends BaseModel
             throw new \Exception('Error Updating User');
         }
 
-        return ['result' => 'success'];
+        $this->results = ['result' => 'success'];
+        return true;
     }
 
     /**
@@ -209,27 +235,33 @@ class Users extends BaseModel
      */
     public function addNewUser()
     {
-        $this->debugLogger->enableLogging();
-
-        $query = 'INSERT INTO users (user_id, first_name, last_name, birthday, created_at)'
-            .' VALUES (:user_id, :first_name, :last_name, :birthday, :created_at)';
+        $query = 'INSERT INTO users (user_id, first_name, last_name, upassword, '
+            .'email, birthday, created_at) '
+            .'VALUES (:user_id, :first_name, :last_name, :upassword, :email, '
+            .':birthday, :created_at)';
 
         $values = [
             ':user_id'    => $this->id,
             ':first_name' => $this->firstName,
             ':last_name'  => $this->lastName,
+            ':upassword'  => $this->upassword,
+            ':email'      => $this->email,
             ':birthday'   => $this->birthday,
             ':created_at' => date('Y-m-d H:i:s'),
         ];
 
+        logVar($query);
+        logVar($values);
+
         try {
             $res = $this->insert($query, $values);
         } catch(\Exception $e) {
-            logVar('got an error');
+            logVar($e->getMessage(), 'got an error:');
             return ['result' => 'error'];
         }
 
-        return ['result' => 'success'];
+        $this->results = ['result' => 'success'];
+        return true;
     }
 
 }

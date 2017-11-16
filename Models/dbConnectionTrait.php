@@ -22,9 +22,17 @@ trait dbConnectionTrait
         }
     }
 
+    /**
+     *
+     * @return string
+     */
     function getMySqlDsnString()
     {
-        return 'mysql:host=127.0.0.1;port=3306;dbname=demo;charset=utf8';
+        $host = getenv('DATABASE_HOST');
+        $port = getenv('DATABASE_PORT');
+        $name = getenv('DATABASE_NAME');
+
+        return "mysql:host=$host;port=$port;dbname=$name;charset=utf8";
     }
 
     function getPostgreSqlDsnString()
@@ -49,18 +57,17 @@ trait dbConnectionTrait
      */
     function readUserNameFromEnv()
     {
-        # TODO: where to store these values? .env? array?
-        return 'someuser';
+        return getenv('DATABASE_USER', true);
     }
 
     function readPasswordFromEnv()
     {
-        return 'password';
+        return getenv('DATABASE_PASS', true);
     }
 
     function readDbTypeFromEnv()
     {
-        return 'mysql';
+        return getenv('DATABASE_TYPE', true);
     }
 
     /**
@@ -69,15 +76,8 @@ trait dbConnectionTrait
      */
     function getPdoConnection()
     {
-        $dbType = $this->readDbTypeFromEnv();
-
-
-        # TODO: remove this is testing only
-        if (strlen($dbType) == 0) {
-            logVar('DBTYPE is empty string');
-            return '';
-        }
-
+        $pdo       = null; 
+        $dbType    = $this->readDbTypeFromEnv();
         $dsnString = $this->getDatabaseDsn($dbType);
 
         if (strlen($dsnString) == 0 ) {
@@ -93,11 +93,11 @@ trait dbConnectionTrait
 
             # set the error level on our PDO object to not fail silently
             $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-
-            return $pdo;
         } catch (\Exception $e) {
             logVar('FAILED TO GET CONNECTION. ');
             logVar($e->getMessage());
         }
+
+        return $pdo;
     }
 }

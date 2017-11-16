@@ -1,6 +1,6 @@
 <?php
 
-use Main\Routers\RegexRouter;
+use Main\Controllers\AuthController;
 use Main\Services\UserService;
 use Main\Services\UuidService;
 use Main\Controllers\UserController;
@@ -8,6 +8,10 @@ use Main\Models\Users;
 use Pimple\Container;
 
 $appContainer = new Container;
+
+$appContainer['AuthController'] = function(Container $container) {
+    return new AuthController($container['UserService']);
+};
 
 $appContainer['Users'] = function (Container $container) {
     return new Users;
@@ -24,5 +28,6 @@ $appContainer['UuidService'] = function(Container $container) {
 $appContainer['UserService'] = function(Container $container) {
     return new UserService($container['Users'], $container['UuidService']);
 };
+
 
 return $appContainer;
