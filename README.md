@@ -55,8 +55,8 @@ objects, arrays, and booleans to strings for easy reading in a log file
 Testing
 ===
 
-    php -S 127.0.9.1:3000 -t .
+    php -S 127.0.0.1:3000 -t .
 
-Then open your webbrowser to 127.0.9.1:3000
+Then open your webbrowser to 127.0.0.1:3000
 
 
