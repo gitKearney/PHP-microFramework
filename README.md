@@ -42,19 +42,21 @@ A global logging function exists which uses a stream object to write to a log fi
 
 To log a variable, simply call the function like so
 
-    logVar('user string: '.$variable);
+    logVar($variable, 'your message here: ');
 
     // or
 
-    logVar($variabl);
+    logVar($variable);
 
-You can pass in any variable to the `logVar()` function. It automatically converts objects, arrays, and booleans to strings for easy reading in a log file
+You can pass in any variable to the `logVar()` function. It automatically converts 
+objects, arrays, and booleans to strings for easy reading in a log file
 
 
 Testing
 ===
 
-    php -S 192.168.1.84:3000 -t .
+    php -S 127.0.9.1:3000 -t .
 
+Then open your webbrowser to 127.0.9.1:3000
 
 
