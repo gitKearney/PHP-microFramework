@@ -1,5 +1,6 @@
 vendor/
 tester/
+configs/credentials.php
 requests.paw
 .idea/
 .DS_Store

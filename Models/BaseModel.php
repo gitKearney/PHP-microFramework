@@ -20,7 +20,7 @@ abstract class BaseModel
      * @param $query
      * @param array $values
      * @param string - name of the id column
-     * @return string
+     * @return bool
      * @throws \Exception
      */
     public function insert($query, array $values = [])
@@ -36,7 +36,7 @@ abstract class BaseModel
         # The values array would be defined as: [':val' => 'val']
 
         try {
-            $pdo = $this->getPdoConnection();
+            $pdo = $this->getPdoConnection('write');
         } catch( \Exception $e) {
             throw $e;
         }
@@ -52,7 +52,7 @@ abstract class BaseModel
         } catch (\Exception $e) {
             throw $e;
         }
-        
+
         return true;
     }
 
@@ -66,9 +66,9 @@ abstract class BaseModel
     public function select($query, array $params)
     {
         try {
-            $pdo = $this->getPdoConnection();
+            $pdo = $this->getPdoConnection('read');
 
-            logVar($pdo, 'PDO Object ');
+            logVar($params, 'query '.$query."\n");
 
             $statement = $pdo->prepare($query);
 
@@ -89,6 +89,10 @@ abstract class BaseModel
             $this->results[] = $row;
         }
 
+        if (count($this->results) == 0) {
+            return false;
+        }
+
         return true;
     }
 
@@ -101,7 +105,7 @@ abstract class BaseModel
     public function update($query, array $params)
     {
         try {
-            $pdo = $this->getPdoConnection();
+            $pdo = $this->getPdoConnection('write');
             $statement = $pdo->prepare($query);
             $resultSet = $statement->execute($params);
 
@@ -125,7 +129,7 @@ abstract class BaseModel
     public function delete($query, array $params)
     {
         try {
-            $pdo       = $this->getPdoConnection();
+            $pdo       = $this->getPdoConnection('write');
             $statement = $pdo->prepare($query);
             $resultSet = $statement->execute($params);
 
@@ -141,15 +145,7 @@ abstract class BaseModel
     }
 
     /**
-     * @return $this
-     */
-    public function initializeResults()
-    {
-        $this->results = [];
-        return $this;
-    }
-    
-    /**
+     * Returns the array which stores results from selects
      * @return array
      */
     public function getResults()
@@ -157,9 +153,16 @@ abstract class BaseModel
         return $this->results;
     }
 
-    public function setResult(array $values)
+    /**
+     * allows for the array which stores results to be set to something
+     * different, or pre-populated with some data
+     *
+     * @return $this
+     */
+    public function setResults(array $values)
     {
         return $this->results = $values;
+        return $this;
     }
 
 }

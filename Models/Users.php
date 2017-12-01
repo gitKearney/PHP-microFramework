@@ -6,9 +6,12 @@ class Users extends BaseModel
 {
     protected $firstName;
     protected $lastName;
+    protected $upassword;
     protected $email;
     protected $birthday;
     protected $id;
+    protected $createdAt;
+    protected $updatedAt;
 
     /**
      * Users constructor.
@@ -114,22 +117,22 @@ class Users extends BaseModel
 
     /**
      * @param string $userId
-     * @return array
+     * @return boolean
      */
     public function findUserById($userId)
     {
-        $query = 'SELECT user_id as id, first_name, last_name, birthday, '
-            .'email, created_at '
-            .'FROM users WHERE user_id = :user_id LIMIT 1';
+        $query = 'SELECT user_id as id, first_name, last_name, birthday,'
+            .' email, upassword as password, created_at, updated_at'
+            .' FROM users WHERE user_id = :user_id LIMIT 1';
         $params = [':user_id' => $userId];
 
         try {
             $result = $this->select($query, $params);
-        } catch(\Exception $e) {
-            return ['result' => 'error'];
-        }
 
-        return true;
+            return $result;
+        } catch(\Exception $e) {
+            throw $e;
+        }
     }
 
     /**
@@ -185,13 +188,6 @@ class Users extends BaseModel
         $updateValues = [];
         foreach ($values as $key => $value) {
             # we need to build the query string
-            # if the key is the id, then, set the where clause, otherwise
-            # add the key to the where clause
-            if ($key == 'id') {
-                $updateValues[':'.$key] = $value;
-                $where .= 'user_id = :id';
-                continue;
-            }
 
             # remove the spaces from the value, we don't ever want to allow spaces
             $value = trim($value);
@@ -199,6 +195,19 @@ class Users extends BaseModel
                 # catch someone who just puts in empty spaces for the user
                 # information, and ignore this field
                 continue;
+            }
+
+            # if the key is the id, then, set the where clause, otherwise
+            # add the key to the where clause
+            if ($key == 'id') {
+                $updateValues[':user_id'] = $value;
+                $where .= 'user_id = :user_id';
+                continue;
+            }
+
+            if ($key == 'password') {
+                $updateValues[':upassword'] = password_hash($value, PASSWORD_ARGON2I);
+                $set .= 'upassword = :upassword,';
             }
 
             $set .= $key.' = :'.$key.',';
@@ -262,6 +271,20 @@ class Users extends BaseModel
 
         $this->results = ['result' => 'success'];
         return true;
+    }
+    
+    public function findUserByEmail($email)
+    {
+        $query  = 'SELECT * FROM users WHERE email = :email';
+        $values = [':email' => $email,];
+        
+        try {
+            $result = $this->select($query, $params);
+        
+            return $result;
+        } catch(\Exception $e) {
+            throw $e;
+        }
     }
 
 }

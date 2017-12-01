@@ -74,12 +74,12 @@ class AuthController extends BaseController
                 'request_uri' => $request->getServerParams()['REQUEST_URI'],
                 'vals' => $vals,
             ]);
-            
+
             $returnResponse = $response->withHeader('Content-Type', 'application/json');
             $returnResponse->getBody()->write($res);
             return $returnResponse;
         }
-        
+
         # validate credentials
         $res = json_encode([
             'vals' => $vals,
@@ -138,7 +138,9 @@ class AuthController extends BaseController
     }
 
     /**
-     * authenticate a user using credentials send in the body
+     * authenticate a user using credentials send in the body, return a JWT
+     * that the user can use on every request
+     *
      * @param ServerRequest $request
      * @param Response $response
      * @return Response
@@ -172,10 +174,10 @@ class AuthController extends BaseController
         $interval = new \DateInterval('PT1H30M');
         $currentTime->add($interval);
         $responseToken->exp = $currentTime->format('U');
-        
+
         // set a unique JSON token ID
         $responseToken->jti = base64_encode(random_bytes(32));
-        
+
         // set the user's info as our data
         $responseToken->data = $tokenUserData;
 
@@ -200,7 +202,7 @@ class AuthController extends BaseController
         # extract the HTTP BODY into an array
         # get the body from the HTTP request
         $requestBody = json_decode($request->getBody()->__toString());
-        
+
         if (is_null($requestBody)) {
             # the body isn't a JSON string, it's a form URL encoded string
             # so, convert it here
@@ -209,6 +211,7 @@ class AuthController extends BaseController
         }
 
         $jwt = $requestBody['jot'];
+        logVar($requestBody['jot'], 'jot = ');
 
         $res = JWT::decode($jwt, '<3_my_iPhone', ['HS256']);
 

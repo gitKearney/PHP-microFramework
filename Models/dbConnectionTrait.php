@@ -3,82 +3,95 @@ namespace Main\Models;
 
 trait dbConnectionTrait
 {
-    function getDatabaseDsn($dbType)
+    /**
+     * returns a dns string to connect to a database for reading only
+     * @param stdClass $readConfigs
+     * @return string
+     */
+    function getReadDatabaseDsn($readConfigs)
     {
+        $dbType    = $readConfigs->type;
+
         # this should actually throw an error: the user should set the database
         # type either in the .env file, or by passing in something in the
         # controller
 
         switch($dbType) {
             case 'mysql':
-                return $this->getMySqlDsnString();
+                $host = $readConfigs->host;
+                $port = $readConfigs->port;
+                $name = $readConfigs->name;
+                return "mysql:host=$host;port=$port;dbname=$name;charset=utf8";
             case 'postgres':
-                return $this->getPostgreSqlDsnString();
+                return 'pgsql:dbname=example;host=localhost';
             case 'sqlite':
-                return $this->getSqLiteDsnString();
+                return '';
             default:
-                # log the error
                 return '';
         }
     }
 
     /**
-     *
+     * returns a dns string to connect to a database for writing only
      * @return string
      */
-    function getMySqlDsnString()
+    function getWriteDatabaseDsn($writeConfigs)
     {
-        $host = getenv('DATABASE_HOST');
-        $port = getenv('DATABASE_PORT');
-        $name = getenv('DATABASE_NAME');
+        $config    = getAppConfigSettings();
+        $dbType    = $writeConfigs->type;
 
-        return "mysql:host=$host;port=$port;dbname=$name;charset=utf8";
+        # this should actually throw an error: the user should set the database
+        # type either in the .env file, or by passing in something in the
+        # controller
+
+        switch($dbType) {
+            case 'mysql':
+                $host = $writeConfigs->host;
+                $port = $writeConfigs->port;
+                $name = $writeConfigs->name;
+                return "mysql:host=$host;port=$port;dbname=$name;charset=utf8";
+            case 'postgres':
+                return 'pgsql:dbname=example;host=localhost';
+            case 'sqlite':
+                return '';
+            default:
+                return '';
+        }
     }
 
-    function getPostgreSqlDsnString()
-    {
-        return 'pgsql:dbname=example;host=localhost';
-    }
 
-    function getMongoDsnString()
+    function getMongoDsnString($config)
     {
         # TODO: you have to use Mongo's own driver
         return '';
     }
 
-    function getSqLiteDsnString()
-    {
-        return '';
-    }
 
     /**
-     * This is supposed to read from some environment variable
-     * @return string
-     */
-    function readUserNameFromEnv()
-    {
-        return getenv('DATABASE_USER', true);
-    }
-
-    function readPasswordFromEnv()
-    {
-        return getenv('DATABASE_PASS', true);
-    }
-
-    function readDbTypeFromEnv()
-    {
-        return getenv('DATABASE_TYPE', true);
-    }
-
-    /**
+     * @param string $mode - 'read' or 'write'
      * @return \PDO | string
      * @throws \Exception
      */
-    function getPdoConnection()
+    function getPdoConnection($mode)
     {
-        $pdo       = null; 
-        $dbType    = $this->readDbTypeFromEnv();
-        $dsnString = $this->getDatabaseDsn($dbType);
+        $pdo       = null;
+        $config    = getAppConfigSettings();
+
+        switch ($mode) {
+            case 'read':
+                $dsnString = $this->getReadDatabaseDsn($config->read_database);
+                $user      = $config->read_database->user;
+                $pass      = $config->read_database->pass;
+                break;
+            case 'write':
+                $dsnString = $this->getWriteDatabaseDsn($config->write_database);
+                $user      = $config->write_database->user;
+                $pass      = $config->write_database->pass;
+                break;
+            default:
+                throw new \Exception("invalid mode passed in: must be"
+                    ." 'read', or 'write'");
+        }
 
         if (strlen($dsnString) == 0 ) {
             logVar('DSN is empty string');
@@ -86,10 +99,7 @@ trait dbConnectionTrait
         }
 
         try {
-            $pdo = new \PDO($dsnString,
-                $this->readUserNameFromEnv(),
-                $this->readPasswordFromEnv()
-            );
+            $pdo = new \PDO($dsnString, $user, $pass);
 
             # set the error level on our PDO object to not fail silently
             $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);

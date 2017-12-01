@@ -46,17 +46,25 @@ class UserService extends BaseService
      */
     public function findUserById($userId)
     {
+        $noUserFound = [
+            'result' => 'No user found',
+        ];
+
         if (! $this->uuid->isValidGuid($userId)) {
             # user sent in an invalid GUID, return no records found
 
-            return [
-                'result' => 'No user found',
-            ];
+            return $noUserFound;
         }
 
-        return $this->userModel->findUserById($userId);
+        $result = $this->userModel->findUserById($userId);
+
+        if (!$result) {
+            return $noUserFound;
+        }
+
+        return $this->userModel->getResults();
     }
-    
+
     /**
      * @desc returns all users from database
      * @return array
@@ -80,7 +88,7 @@ class UserService extends BaseService
                 'result' => 'No user found',
             ];
         }
-        
+
         return $this->userModel->deleteUserById($userId);
     }
 
@@ -189,4 +197,3 @@ class UserService extends BaseService
         return $requestBody;
     }
 }
-
