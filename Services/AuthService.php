@@ -25,32 +25,35 @@ class AuthService
      */
     protected $uuidService;
     
-    public function __construct(
-        Users $users, 
-        JwtService $jwtService,
-        UuidService $uuidService
-    ) {
+    public function __construct(Users $users, JwtService $jwtService) 
+    {
         $this->users = $users;
         $this->jwtService = $jwtService;
-        $this->uuidService = $uuidService;
     }
     
     public function createJwt(array $requestBody)
     {
         # verify the user's information correct
         
-        $account = $users->findUserByEmail($requestBody['email']);
+        $resultSet = $this->users->findUserByEmail($requestBody['email']);
         
-        # does the user's password match what was passed in?
-        $match = password_verify($account['upassword'], $requestBody['password']);
+        if ($resultSet === false) {
+            return ['result' => 'No user found', ];
+        }
         
+        $account = $resultSet[0];
+           
+        # does the password from the body match the user's password?
+        $match = password_verify($requestBody['password'], $account['upassword']);
         if (!$match) {
-            # return an error that account not found
             return [
                 'result' => 'No user found',
             ];
         }
-        
+
         # the user's credentials match, create a JWT for the user
+        $this->jwtService->createJwt($account['user_id'], $account['email']);
+        
+        return $this->jwtService->getJwt();
     }
 }

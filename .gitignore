@@ -5,4 +5,4 @@ requests.paw
 .idea/
 .DS_Store
 .env
-
+composer.lock

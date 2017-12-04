@@ -46,23 +46,29 @@ class UserService extends BaseService
      */
     public function findUserById($userId)
     {
-        $noUserFound = [
-            'result' => 'No user found',
-        ];
-
+        # test the GUID to see if it's good
         if (! $this->uuid->isValidGuid($userId)) {
             # user sent in an invalid GUID, return no records found
-
-            return $noUserFound;
+            return [
+                'result' => 'No user found',
+            ];
         }
 
-        $result = $this->userModel->findUserById($userId);
+        try {
+            $result = $this->userModel->findUserById($userId);
+        } catch (\Exception $e) {
+            return [
+                'error' => $e->getMessage(),
+            ];
+        }
 
         if (!$result) {
-            return $noUserFound;
+            return [
+                'result' => 'No user found',
+            ];
         }
 
-        return $this->userModel->getResults();
+        return $result;
     }
 
     /**

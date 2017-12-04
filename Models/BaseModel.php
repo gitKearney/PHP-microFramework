@@ -60,7 +60,7 @@ abstract class BaseModel
     /**
      * @param $query
      * @param array $params
-     * @return array
+     * @return array|boolean
      * @throws \Exception
      */
     public function select($query, array $params)
@@ -93,7 +93,7 @@ abstract class BaseModel
             return false;
         }
 
-        return true;
+        return $this->results;
     }
 
     /**

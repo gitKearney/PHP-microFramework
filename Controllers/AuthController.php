@@ -1,6 +1,7 @@
 <?php
 namespace Main\Controllers;
 
+use Main\Services\AuthService;
 use Main\Services\UserService;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
@@ -27,9 +28,10 @@ class AuthController extends BaseController
      *
      * @param UserService $userService
      */
-    public function __construct(UserService $userService)
+    public function __construct(UserService $userService, AuthService $authService)
     {
         $this->userService = $userService;
+        $this->authService = $authService;
     }
 
     /**
@@ -111,7 +113,29 @@ class AuthController extends BaseController
      */
     public function options(ServerRequest $request, Response $response)
     {
-        echo 'TODO: handle OPTIONS requests';
+        $allowed = 'OPTIONS, GET, POST, PATCH, PUT, DELETE, HEAD';
+
+        # get the headers, if the request is a CORS preflight request OPTIONS method
+        $httpHeaders = $request->getHeaders();
+
+        # the Content-Length header MUST BE "0" 
+        if (! isset($httpHeaders['access-control-request-method'])) {
+            $returnResponse = $response->withAddedHeader('Allow', $allowed)
+                ->withHeader('Content-Type', 'text/plain')
+                ->withHeader('Content-Length', "0");
+        } else {
+
+            $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Access-Control-Allow-Methods', $allowed)
+                ->withHeader('Access-Control-Allow-Headers', 
+                    'application/x-www-form-urlencoded, X-Requested-With, content-type, Authorization')
+                ->withHeader('Content-Type', 'text/plain')
+                ->withHeader('Content-Length', "0");
+        }
+
+        $returnResponse->getBody()->write("");
+        
+        return $returnResponse;
     }
 
     /**
@@ -150,43 +174,19 @@ class AuthController extends BaseController
         # get the body from the HTTP request
         $requestBody = $request->getParsedBody();
 
-        # verify that the user is valid
-        $tokenUserData =  new \stdClass();
-        $tokenUserData->userId = '123'; // put GUID here
-        $tokenUserData->email  = 'bob@example.com'; //put email here
+        $webToken = $this->authService->createJwt($requestBody);
 
-        $responseToken = new \stdClass();
+        if (is_array($webToken)) {
+            $jsonRes = json_encode($webToken);
 
-        // create a datetime object to work with
-        $currentTime = new \DateTime("now");
+            $returnResponse = $response->withHeader('Content-Type', 'application/json');
+            $returnResponse->getBody()->write($jsonRes);
 
-        // set the issued at time
-        $responseToken->iat = $currentTime->format('U');
-
-        // set the not before time
-        $responseToken->nbf = $currentTime->format('U');
-
-        // set the issuer name
-        $responseToken->iss = 'http://example.com';
-        $responseToken->aud = 'http://example.com';
-
-        // set the expiry time to 1 hour 30 minutes
-        $interval = new \DateInterval('PT1H30M');
-        $currentTime->add($interval);
-        $responseToken->exp = $currentTime->format('U');
-
-        // set a unique JSON token ID
-        $responseToken->jti = base64_encode(random_bytes(32));
-
-        // set the user's info as our data
-        $responseToken->data = $tokenUserData;
-
-        // now, create a JSON Web Token!
-        $jot = JWT::encode($responseToken, '<3_my_iPhone');
-
-        // $jsonRes = json_encode($requestBody);
+            return $returnResponse;
+        }
+        
         $returnResponse = $response->withHeader('Content-Type', 'application/text');
-        $returnResponse->getBody()->write($jot);
+        $returnResponse->getBody()->write($webToken);
 
         return $returnResponse;
     }
@@ -213,12 +213,31 @@ class AuthController extends BaseController
         $jwt = $requestBody['jot'];
         logVar($requestBody['jot'], 'jot = ');
 
-        $res = JWT::decode($jwt, '<3_my_iPhone', ['HS256']);
+        $res = new \stdClass();
 
         $jsonRes = json_encode($res);
         $returnResponse = $response->withHeader('Content-Type', 'application/json');
         $returnResponse->getBody()->write($jsonRes);
 
         return $returnResponse;
+    }
+
+    /**
+     * Parse the URI for path elements like /auth/ or /auth/{GUID}
+     */
+    public function getUrlPathElements(ServerRequest $request)
+    {
+        # split the URI field on the route
+        $vals = preg_split('/\/auth\//', $request->getServerParams()['REQUEST_URI']);
+        if (empty($vals[1])) {
+            # if the URI is just 'http://example.com/auth/' then we won't have
+            # anything to return, return null
+            return null;
+        }
+
+        # if the URI is 'http://example.com/auth/12345', then return '12345'
+        # TODO: if your paths are something like http://example.com/auth/12345/valid
+        #       you may want to do additional parsing
+        return $vals[1];
     }
 }

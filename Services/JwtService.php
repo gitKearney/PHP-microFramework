@@ -2,14 +2,15 @@
 
 namespace Main\Services;
 
+use \Firebase\JWT\JWT;
+
 class JwtService
 {
     protected $webToken;
     
     public function __construct()
     {
-        $this->userId = $userId;
-        $this->userEmail = $userEmail;
+        ;
     }
     
     public function createJwt($userId, $userEmail)
@@ -38,7 +39,7 @@ class JwtService
         $responseToken->aud = $config->jwt->audience;
         
         // set the expiry time to x hour y minutes
-        $ttl = "PT".$config->jwt->max_hour."H".$config->jwt->max_minute."M";
+        $ttl = "PT".$config->jwt->max_hours."H".$config->jwt->max_minutes."M";
         
         $interval = new \DateInterval($ttl);
         $currentTime->add($interval);
@@ -55,9 +56,45 @@ class JwtService
         
         return $this;
     }
+
+    public function decodeWebToken($httpHeaders)
+    {
+        $config = getAppConfigSettings();
+
+        # is there an authorization header?
+        if (! isset($httpHeaders['authorization'])) {
+            throw new \Exception('Access Denied', 401);
+        }
+
+        $authHeaders = $httpHeaders['authorization'];
+        $bearerToken = '';
+
+        # search the auth headers for Bearer, if none found, error out
+        foreach($authHeaders as $index => $value) {
+            # search for the string "Bearer"
+            if (strpos($value, 'Bearer') !== false) {
+                sscanf($value, 'Bearer %s', $bearerToken);
+                break;
+            }
+        }
+
+        logVar($bearerToken, "BEARER TOKEN: ");
+
+        if (strlen($bearerToken) == 0) {
+            logVar('invalid bearer (null)');
+            throw new \Exception('Access Denied', 401);
+        }
+        
+        # make sure the JWT is good
+        try {
+            $decoded = JWT::decode($bearerToken, $config->jwt->key, array('HS256'));
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
     
     public function getJwt()
     {
-        return this->webToken;
+        return $this->webToken;
     }
 }

@@ -276,11 +276,11 @@ class Users extends BaseModel
     public function findUserByEmail($email)
     {
         $query  = 'SELECT * FROM users WHERE email = :email';
-        $values = [':email' => $email,];
+        $params = [':email' => $email,];
         
         try {
             $result = $this->select($query, $params);
-        
+                
             return $result;
         } catch(\Exception $e) {
             throw $e;

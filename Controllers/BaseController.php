@@ -135,4 +135,6 @@ abstract class BaseController
                 return $this->unsupportedMethod();
         }
     }
+
+    abstract protected function getUrlPathElements(ServerRequest $request);
 }

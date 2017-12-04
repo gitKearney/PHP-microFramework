@@ -1,6 +1,7 @@
 <?php
 namespace Main\Controllers;
 
+use Main\Services\JwtService;
 use Main\Services\UserService;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
@@ -17,6 +18,12 @@ class UserController extends BaseController
      */
     protected $userService;
 
+
+    /**
+     * @var JwtService
+     */
+    protected $jwtService;
+
     /**
      *
      * All of our business logic resides in the service (UserService)
@@ -26,8 +33,9 @@ class UserController extends BaseController
      *
      * @param UserService $userService
      */
-    public function __construct(UserService $userService)
+    public function __construct(UserService $userService, JwtService $jwtService)
     {
+        $this->jwtService  = $jwtService;
         $this->userService = $userService;
     }
 
@@ -41,11 +49,24 @@ class UserController extends BaseController
     {
         $id = null;
 
-        # split the URI field on the route and save the ID from the uri
-        $vals = preg_split('/\/users\//', $request->getServerParams()['REQUEST_URI']);
-        $id = $vals[1];
+        try {
+            $this->jwtService->decodeWebToken($request->getHeaders());
+        } catch (\Exception $e) {
+            $body = json_encode([
+                'error_code' => $e->getCode(),
+                'error_msg'  => $e->getMessage(),
+            ]);
 
-        # pass the id to the service method, where we'll validate it's a get_required_files
+            $returnResponse = $response->withHeader('Content-Type', 'application/json');
+            $returnResponse->getBody()->write($body);
+
+            return $returnResponse;
+        }
+
+        $id = $this->getUrlPathElements($request);
+
+        # pass the id to the service method, where we'll validate if it's a 
+        # valid guid
         $res = json_encode($this->userService->deleteUserById($id));
 
         $returnResponse = $this->response->withHeader('Content-Type', 'application/json');
@@ -61,24 +82,32 @@ class UserController extends BaseController
      */
     public function get(ServerRequest $request, Response $response)
     {
-        # pull the ID from the uri
-        $id = null;
+        try {
+            $this->jwtService->decodeWebToken($request->getHeaders());
+        } catch (\Exception $e) {
+            $body = json_encode([
+                'error_code' => $e->getCode(),
+                'error_msg'  => $e->getMessage(),
+            ]);
 
-        # split the URI field on the route
-        $vals = preg_split('/\/users\//', $request->getServerParams()['REQUEST_URI']);
-        if (empty($vals[1])) {
-            # no GUID was passed in, get all records
-            $res = json_encode($this->userService->getAllUsers());
-            
             $returnResponse = $response->withHeader('Content-Type', 'application/json');
-            $returnResponse->getBody()->write($res);
+            $returnResponse->getBody()->write($body);
+
             return $returnResponse;
         }
-        
-        $id = $vals[1];
-        
-        # log the URI that we split
-        logVar($vals, 'splitting URI: ');
+
+        # read the URI string and see if a GUID was passed in
+        $id = $this->getUrlPathElements($request);
+
+        # if the URI is just /users/, then our ID will be null, get all records
+        if ($id == null) {
+            # no GUID was passed in, get all records
+            $body = json_encode($this->userService->getAllUsers());
+            
+            $returnResponse = $response->withHeader('Content-Type', 'application/json');
+            $returnResponse->getBody()->write($body);
+            return $returnResponse;
+        }
 
         # pass the id to the service method, where we'll validate it
         $res = json_encode($this->userService->findUserById($id));
@@ -108,7 +137,29 @@ class UserController extends BaseController
      */
     public function options(ServerRequest $request, Response $response)
     {
-        echo 'TODO: handle OPTIONS requests';
+        $allowed = 'OPTIONS, GET, POST, PATCH, PUT, DELETE, HEAD';
+
+        # get the headers, if the request is a CORS preflight request OPTIONS method
+        $httpHeaders = $request->getHeaders();
+
+        # the Content-Length header MUST BE "0" 
+        if (! isset($httpHeaders['access-control-request-method'])) {
+            $returnResponse = $response->withAddedHeader('Allow', $allowed)
+                ->withHeader('Content-Type', 'text/plain')
+                ->withHeader('Content-Length', "0");
+        } else {
+
+            $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Access-Control-Allow-Methods', $allowed)
+                ->withHeader('Access-Control-Allow-Headers', 
+                    'application/x-www-form-urlencoded, X-Requested-With, content-type, Authorization')
+                ->withHeader('Content-Type', 'text/plain')
+                ->withHeader('Content-Length', "0");
+        }
+
+        $returnResponse->getBody()->write("");
+        
+        return $returnResponse;
     }
 
     /**
@@ -119,6 +170,19 @@ class UserController extends BaseController
      */
     public function patch(ServerRequest $request, Response $response)
     {
+        try {
+            $this->jwtService->decodeWebToken($request->getHeaders());
+        } catch (\Exception $e) {
+            $body = json_encode([
+                'error_code' => $e->getCode(),
+                'error_msg'  => $e->getMessage(),
+            ]);
+
+            $returnResponse = $response->withHeader('Content-Type', 'application/json');
+            $returnResponse->getBody()->write($body);
+
+            return $returnResponse;
+        }
 
         # get the POST body as a string: $request->getBody()->__toString()
 
@@ -162,6 +226,20 @@ class UserController extends BaseController
      */
     public function put(ServerRequest $request, Response $response)
     {
+        try {
+            $this->jwtService->decodeWebToken($request->getHeaders());
+        } catch (\Exception $e) {
+            $body = json_encode([
+                'error_code' => $e->getCode(),
+                'error_msg'  => $e->getMessage(),
+            ]);
+
+            $returnResponse = $response->withHeader('Content-Type', 'application/json');
+            $returnResponse->getBody()->write($body);
+
+            return $returnResponse;
+        }
+
         # extract the HTTP BODY into an array
         $requestBody = $this->userService->parseServerRequest($request);
 
@@ -172,5 +250,21 @@ class UserController extends BaseController
         $returnResponse->getBody()->write($jsonRes);
 
         return $returnResponse;
+    }
+
+    /**
+     * Looks at the REQUEST_URI to see if it is /users/ or /users/{guid}
+     * @param ServerRequest $request
+     */
+    protected function getUrlPathElements(ServerRequest $request)
+    {
+        # split the URI field on the route
+        $vals = preg_split('/\/users\//', $request->getServerParams()['REQUEST_URI']);
+        if (empty($vals[1])) {
+
+            return null;
+        }
+
+        return $vals[1];
     }
 }
