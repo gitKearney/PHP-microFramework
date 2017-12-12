@@ -1,42 +1,44 @@
 <?php
+
 namespace Main\Controllers;
 
 use Main\Services\JwtService;
-use Main\Services\UserService;
+use Main\Services\ProductService;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
 
 /**
  * The controller MUST extend BaseController
  *
- * This controller handles all routes for /user/
+ * This controller handles all routes for /product/
  */
-class UserController extends BaseController
+class ProductController extends BaseController
 {
-    /**
-     * @var UserService
-     */
-    protected $userService;
-
 
     /**
      * @var JwtService
      */
-    protected $jwtService;
+    private $jwtService;
+
+    /**
+     * @var ProductService
+     */
+    private $productService;
 
     /**
      *
-     * All of our business logic resides in the service (UserService)
+     * Handle HTTP request that goes to the "product" URI.
      *
      * NOTE: to keep with REST, forward all calls to the method
      *       that corresponds to the HTTP Request Method
      *
-     * @param UserService $userService
+     * @param JwtService $jwtService
+     * @param ProductService $productService
      */
-    public function __construct(UserService $userService, JwtService $jwtService)
+    public function __construct(JwtService $jwtService, ProductService $productService)
     {
         $this->jwtService  = $jwtService;
-        $this->userService = $userService;
+        $this->productService = $productService;
     }
 
     /**
@@ -49,25 +51,11 @@ class UserController extends BaseController
     {
         $id = null;
 
-        try {
-            $this->jwtService->decodeWebToken($request->getHeaders());
-        } catch (\Exception $e) {
-            $body = json_encode([
-                'error_code' => $e->getCode(),
-                'error_msg'  => $e->getMessage(),
-            ]);
-
-            $returnResponse = $response->withHeader('Content-Type', 'application/json');
-            $returnResponse->getBody()->write($body);
-
-            return $returnResponse;
-        }
-
         $id = $this->getUrlPathElements($request);
 
         # pass the id to the service method, where we'll validate if it's a 
         # valid guid
-        $res = json_encode($this->userService->deleteUserById($id));
+        $res = json_encode($this->productService->deleteProductById($id));
 
         $returnResponse = $this->response->withHeader('Content-Type', 'application/json');
         $returnResponse->getBody()->write($res);
@@ -82,27 +70,13 @@ class UserController extends BaseController
      */
     public function get(ServerRequest $request, Response $response)
     {
-        try {
-            $this->jwtService->decodeWebToken($request->getHeaders());
-        } catch (\Exception $e) {
-            $body = json_encode([
-                'error_code' => $e->getCode(),
-                'error_msg'  => $e->getMessage(),
-            ]);
-
-            $returnResponse = $response->withHeader('Content-Type', 'application/json');
-            $returnResponse->getBody()->write($body);
-
-            return $returnResponse;
-        }
-
         # read the URI string and see if a GUID was passed in
         $id = $this->getUrlPathElements($request);
 
-        # if the URI is just /users/, then our ID will be null, get all records
+        # if the URI is just /products/, then our ID will be null, get all records
         if ($id == null) {
             # no GUID was passed in, get all records
-            $body = json_encode($this->userService->getAllUsers());
+            $body = json_encode($this->productService->getAllProducts());
             
             $returnResponse = $response->withHeader('Content-Type', 'application/json');
             $returnResponse->getBody()->write($body);
@@ -110,7 +84,7 @@ class UserController extends BaseController
         }
 
         # pass the id to the service method, where we'll validate it
-        $res = json_encode($this->userService->findUserById($id));
+        $res = json_encode($this->productService->getProductInfo($id));
 
         $returnResponse = $response->withHeader('Content-Type', 'application/json');
         $returnResponse->getBody()->write($res);
@@ -170,24 +144,10 @@ class UserController extends BaseController
      */
     public function patch(ServerRequest $request, Response $response)
     {
-        try {
-            $this->jwtService->decodeWebToken($request->getHeaders());
-        } catch (\Exception $e) {
-            $body = json_encode([
-                'error_code' => $e->getCode(),
-                'error_msg'  => $e->getMessage(),
-            ]);
-
-            $returnResponse = $response->withHeader('Content-Type', 'application/json');
-            $returnResponse->getBody()->write($body);
-
-            return $returnResponse;
-        }
-
         # get the POST body as a string: $request->getBody()->__toString()
 
         # extract the HTTP BODY into an array
-        $requestBody = $this->userService->parseServerRequest($request);
+        $requestBody = $this->productService->parseServerRequest($request);
 
         $res = $this->userService->updateUser($requestBody);
 
@@ -206,10 +166,36 @@ class UserController extends BaseController
      */
     public function post(ServerRequest $request, Response $response)
     {
-        # get the body from the HTTP request
-        $requestBody = $this->userService->parseServerRequest($request);
+        # if the content type isn't set, default to empty string.
+        $contentType = $request->getHeaders()['content-type'][0] ?? '';
+        
+        logVar($contentType, 'contentType ');
 
-        $res = $this->userService->addNewUser($requestBody);
+        $requestBody =[];
+
+        # if the header is JSON (application/json), parse the data using JSON decode
+        if (strpos($contentType, 'application/json') !== false) {
+            $requestBody = json_decode($request->getBody()->__toString(), true);
+
+            logVar($requestBody, 'JSON POST BODY ');
+
+        } else if (strpos($contentType, 'application/x-www-form-urlencoded') !== false) {
+            # otherwise if the headers are application/x-www-form-urlencoded, everything
+            # should already be in an array
+            $requestBody = $request->getParsedBody();
+
+            logVar($requestBody, 'URL FORM ENCODED POST BODY ');
+        }
+
+        if (count($requestBody) == 0) {
+            $res = ['error_code' => 400, 'error_msg' => 'No input data'];
+            $jsonRes = json_encode($res);
+            $returnResponse = $response->withHeader('Content-Type', 'application/json');
+            $returnResponse->getBody()->write($jsonRes);
+            return $returnResponse;
+        }
+
+        $res = $this->productService->addNewProduct($requestBody);
 
         $jsonRes = json_encode($res);
         $returnResponse = $response->withHeader('Content-Type', 'application/json');
@@ -227,7 +213,7 @@ class UserController extends BaseController
     public function put(ServerRequest $request, Response $response)
     {
         # extract the HTTP BODY into an array
-        $requestBody = $this->userService->parseServerRequest($request);
+        $requestBody = $this->productService->parseServerRequest($request);
 
         $res = $this->userService->updateUser($requestBody);
 
@@ -239,13 +225,13 @@ class UserController extends BaseController
     }
 
     /**
-     * Looks at the REQUEST_URI to see if it is /users/ or /users/{guid}
+     * Looks at the REQUEST_URI to see if it is /path/ or /path/{guid}
      * @param ServerRequest $request
      */
     protected function getUrlPathElements(ServerRequest $request)
     {
         # split the URI field on the route
-        $vals = preg_split('/\/users\//', $request->getServerParams()['REQUEST_URI']);
+        $vals = preg_split('/\/products\//', $request->getServerParams()['REQUEST_URI']);
         if (empty($vals[1])) {
 
             return null;

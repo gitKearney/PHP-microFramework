@@ -20,3 +20,14 @@ CREATE TABLE users
   created_at DATETIME NOT NULL DEFAULT NOW(),
   updated_at DATETIME NULL
 );
+
+DROP TABLE IF EXISTS products;
+CREATE TABLE products
+(
+    product_id CHAR(36) PRIMARY KEY,
+    title VARCHAR(32) NOT NULL,
+    price FLOAT NOT NULL DEFAULT 0.00,
+    quantity INTEGER UNSIGNED NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT NOW(),
+    updated_at DATETIME NULL
+);

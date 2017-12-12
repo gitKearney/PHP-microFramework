@@ -1,13 +1,23 @@
 <?php
 
+use Pimple\Container;
+
+// Controllers
 use Main\Controllers\AuthController;
+use Main\Controllers\ProductController;
+use Main\Controllers\UserController;
+
+// Services
 use Main\Services\AuthService;
 use Main\Services\JwtService;
+use Main\Services\ProductService;
 use Main\Services\UserService;
 use Main\Services\UuidService;
-use Main\Controllers\UserController;
+
+// Models
 use Main\Models\Users;
-use Pimple\Container;
+use Main\Models\Products;
+
 
 $appContainer = new Container;
 
@@ -39,5 +49,17 @@ $appContainer['UserService'] = function(Container $container) {
     return new UserService($container['Users'], $container['UuidService']);
 };
 
+/** ProductController setup */
+$appContainer['Products'] = function(Container $container) {
+    return new Products;
+};
+
+$appContainer['ProductService'] = function(Container $container) {
+    return new ProductService($container['Products'], $container['UuidService']);
+};
+
+$appContainer['ProductController'] = function(Container $container) {
+    return new ProductController($container['JwtService'], $container['ProductService']);
+};
 
 return $appContainer;

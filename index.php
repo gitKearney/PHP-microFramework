@@ -138,6 +138,28 @@ $router->route('/auth/', function(Container $container) {
     ob_end_flush();
 });
 
+$router->route('/product/', function(Container $container) {
+
+    /**
+     * @var AuthController
+     */
+    $authController = $container['ProductController'];
+
+    /**
+     * @var \Zend\Diactoros\Response
+     */
+    $response = $authController->handleRequest();
+
+    # you MUST output the header before any HTML
+    foreach($response->getHeaders() as $index => $value) {
+        header($index.': '.$value[0]);
+    }
+
+    ob_start();
+    echo $response->getBody()->__toString();;
+    ob_end_flush();
+});
+
 $router->route('/\//', function() {
     echo '<pre>Index route</pre>';
 });

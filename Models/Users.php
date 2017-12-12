@@ -287,4 +287,28 @@ class Users extends BaseModel
         }
     }
 
+    /**
+     * @desc pull info from the request body
+     *
+     * For this default database, the user table only contains 4 fields
+     * since the ID cannot be changed, that leaves only the first and last name
+     * as changeable as well as the birthday column.
+     *
+     * Pull the params from the HTTP body and assign them to the model's data
+     * @param array
+     * @return bool
+     */
+    public function setUserInfo($httpBody)
+    {
+        # TODO: validate that the info is good and in here
+        $this->setFirstName($httpBody['first_name']);
+        $this->setLastName($httpBody['last_name']);
+        $this->setEmail($httpBody['email']);
+        $this->setBirthday($httpBody['birthday']);
+        $this->setPassword($httpBody['password']);
+        $this->setUserId($httpBody['id']);
+
+        return true;
+    }
+
 }
