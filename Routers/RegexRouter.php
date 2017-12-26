@@ -45,17 +45,15 @@ class RegexRouter {
         }
         
         $found = false;
+        $arg['di_container'] = $appContainer;
 
         foreach ($this->routes as $pattern => $callback) {
-            logVar($pattern, 'pattern is... ');
+            $params = [];
 
             if (preg_match($pattern, $uri, $params) === 1) {
-                logVar('found a match!');
+                logVar($params, 'params =');
 
-                array_shift($params);
-
-                $params['di_container'] = $appContainer;
-                return call_user_func_array($callback, array_values($params));
+                return call_user_func_array($callback, array_values($arg));
             }
         }
 

@@ -98,7 +98,7 @@ $container = require_once __DIR__.'/Factories/Definitions.php';
 
 $router = new RegexRouter;
 
-$router->route('/users/', function(Container $container) {
+$router->route('/users(\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?/', function(Container $container) {
     $userController = $container['UserController'];
 
     /**

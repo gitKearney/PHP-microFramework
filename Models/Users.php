@@ -301,7 +301,7 @@ class Users extends BaseModel
             throw $e;
         }
 
-        if (count($result) != 0) {
+        if ($result === false) {
             return new \stdClass();
         }
 

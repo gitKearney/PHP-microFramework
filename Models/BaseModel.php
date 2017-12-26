@@ -68,8 +68,6 @@ abstract class BaseModel
         try {
             $pdo = $this->getPdoConnection('read');
 
-            logVar($params, 'query '.$query."\n");
-
             $statement = $pdo->prepare($query);
 
             $resultSet = $statement->execute($params);

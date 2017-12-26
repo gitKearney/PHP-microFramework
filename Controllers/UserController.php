@@ -87,19 +87,19 @@ class UserController extends BaseController
      */
     public function get(ServerRequest $request, Response $response)
     {
-        try {
-            $this->jwtService->decodeWebToken($request->getHeaders());
-        } catch (\Exception $e) {
-            $body = json_encode([
-                'error_code' => $e->getCode(),
-                'error_msg'  => $e->getMessage(),
-            ]);
+        // try {
+        //     $this->jwtService->decodeWebToken($request->getHeaders());
+        // } catch (\Exception $e) {
+        //     $body = json_encode([
+        //         'error_code' => $e->getCode(),
+        //         'error_msg'  => $e->getMessage(),
+        //     ]);
 
-            $returnResponse = $response->withHeader('Content-Type', 'application/json');
-            $returnResponse->getBody()->write($body);
+        //     $returnResponse = $response->withHeader('Content-Type', 'application/json');
+        //     $returnResponse->getBody()->write($body);
 
-            return $returnResponse;
-        }
+        //     return $returnResponse;
+        // }
 
         # read the URI string and see if a GUID was passed in
         $id = $this->getUrlPathElements($request);
