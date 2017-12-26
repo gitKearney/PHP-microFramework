@@ -169,8 +169,6 @@ class ProductController extends BaseController
         # if the content type isn't set, default to empty string.
         $contentType = $request->getHeaders()['content-type'][0] ?? '';
         
-        logVar($contentType, 'contentType ');
-
         $requestBody =[];
 
         # if the header is JSON (application/json), parse the data using JSON decode

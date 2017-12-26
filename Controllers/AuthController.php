@@ -118,7 +118,7 @@ class AuthController extends BaseController
         # get the headers, if the request is a CORS preflight request OPTIONS method
         $httpHeaders = $request->getHeaders();
 
-        # the Content-Length header MUST BE "0" 
+        # the Content-Length header MUST BE "0"
         if (! isset($httpHeaders['access-control-request-method'])) {
             $returnResponse = $response->withAddedHeader('Allow', $allowed)
                 ->withHeader('Content-Type', 'text/plain')
@@ -127,14 +127,14 @@ class AuthController extends BaseController
 
             $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
                 ->withHeader('Access-Control-Allow-Methods', $allowed)
-                ->withHeader('Access-Control-Allow-Headers', 
+                ->withHeader('Access-Control-Allow-Headers',
                     'application/x-www-form-urlencoded, X-Requested-With, content-type, Authorization')
                 ->withHeader('Content-Type', 'text/plain')
                 ->withHeader('Content-Length', "0");
         }
 
         $returnResponse->getBody()->write("");
-        
+
         return $returnResponse;
     }
 
@@ -174,17 +174,21 @@ class AuthController extends BaseController
         # get the body from the HTTP request
         $requestBody = $request->getParsedBody();
 
-        $webToken = $this->authService->createJwt($requestBody);
-
-        if (is_array($webToken)) {
-            $jsonRes = json_encode($webToken);
+        try {
+            $webToken = $this->authService->createJwt($requestBody);
+        }
+        catch (\Exception $e) {
+            $error = new \stdClass();
+            $error->error_code = $e->getCode();
+            $error->error_msg  = $e->getMessage();
+            $jsonRes = json_encode($error);
 
             $returnResponse = $response->withHeader('Content-Type', 'application/json');
             $returnResponse->getBody()->write($jsonRes);
 
             return $returnResponse;
         }
-        
+
         $returnResponse = $response->withHeader('Content-Type', 'application/text');
         $returnResponse->getBody()->write($webToken);
 

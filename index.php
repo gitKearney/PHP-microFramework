@@ -76,7 +76,7 @@ function logVar($var, $msg = '', $level='debug')
 /**
  * returns the configuration settings for our app. Think of this like getenv()
  * only, it returns all the settings and you have to know what you're looking
- * 
+ *
  * Hey! This is faster than reading environment variables
  */
 function getAppConfigSettings()
@@ -138,7 +138,7 @@ $router->route('/auth/', function(Container $container) {
     ob_end_flush();
 });
 
-$router->route('/product/', function(Container $container) {
+$router->route('/products/', function(Container $container) {
 
     /**
      * @var AuthController
@@ -155,13 +155,19 @@ $router->route('/product/', function(Container $container) {
         header($index.': '.$value[0]);
     }
 
+    header("Access-Control-Allow-Origin: *");
     ob_start();
     echo $response->getBody()->__toString();;
     ob_end_flush();
 });
 
 $router->route('/\//', function() {
+    header("Access-Control-Allow-Origin: *");
+    ob_start();
     echo '<pre>Index route</pre>';
+    ob_end_flush();
 });
 
 $router->execute($_SERVER['REQUEST_URI'], $container);
+logVar($_SERVER['REQUEST_URI'], 'REQUEST_URI = ');
+

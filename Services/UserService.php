@@ -136,7 +136,9 @@ class UserService extends BaseService
         try {
             return $this->userModel->updateUser($requestBody);
         } catch (\Exception $e) {
-            return ['error' => $e->getMessage()];
+            $error = new \stdClass();
+            $error->error_msg = $e->getMessage();
+            $error->error_code = $e->getCode();
         }
     }
 

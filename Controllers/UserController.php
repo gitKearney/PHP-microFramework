@@ -50,7 +50,10 @@ class UserController extends BaseController
         $id = null;
 
         try {
-            $this->jwtService->decodeWebToken($request->getHeaders());
+            /**
+             * @var stdClass()
+             */
+            $user = $this->jwtService->decodeWebToken($request->getHeaders());
         } catch (\Exception $e) {
             $body = json_encode([
                 'error_code' => $e->getCode(),
@@ -63,9 +66,11 @@ class UserController extends BaseController
             return $returnResponse;
         }
 
+        # TODO: examine if user has permissions to this method
+
         $id = $this->getUrlPathElements($request);
 
-        # pass the id to the service method, where we'll validate if it's a 
+        # pass the id to the service method, where we'll validate if it's a
         # valid guid
         $res = json_encode($this->userService->deleteUserById($id));
 
@@ -103,7 +108,7 @@ class UserController extends BaseController
         if ($id == null) {
             # no GUID was passed in, get all records
             $body = json_encode($this->userService->getAllUsers());
-            
+
             $returnResponse = $response->withHeader('Content-Type', 'application/json');
             $returnResponse->getBody()->write($body);
             return $returnResponse;
@@ -142,7 +147,7 @@ class UserController extends BaseController
         # get the headers, if the request is a CORS preflight request OPTIONS method
         $httpHeaders = $request->getHeaders();
 
-        # the Content-Length header MUST BE "0" 
+        # the Content-Length header MUST BE "0"
         if (! isset($httpHeaders['access-control-request-method'])) {
             $returnResponse = $response->withAddedHeader('Allow', $allowed)
                 ->withHeader('Content-Type', 'text/plain')
@@ -151,14 +156,14 @@ class UserController extends BaseController
 
             $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
                 ->withHeader('Access-Control-Allow-Methods', $allowed)
-                ->withHeader('Access-Control-Allow-Headers', 
+                ->withHeader('Access-Control-Allow-Headers',
                     'application/x-www-form-urlencoded, X-Requested-With, content-type, Authorization')
                 ->withHeader('Content-Type', 'text/plain')
                 ->withHeader('Content-Length', "0");
         }
 
         $returnResponse->getBody()->write("");
-        
+
         return $returnResponse;
     }
 
@@ -206,8 +211,28 @@ class UserController extends BaseController
      */
     public function post(ServerRequest $request, Response $response)
     {
-        # get the body from the HTTP request
-        $requestBody = $this->userService->parseServerRequest($request);
+        # if the content type isn't set, default to empty string.
+        $contentType = $request->getHeaders()['content-type'][0] ?? '';
+
+        $requestBody =[];
+
+        # if the header is JSON (application/json), parse the data using JSON decode
+        if (strpos($contentType, 'application/json') !== false) {
+            $requestBody = json_decode($request->getBody()->__toString(), true);
+        } else if (strpos($contentType, 'application/x-www-form-urlencoded') !== false) {
+            # otherwise if the headers are application/x-www-form-urlencoded, everything
+            # should already be in an array
+            $requestBody = $request->getParsedBody();
+        }
+
+        if (count($requestBody) == 0) {
+            $res = ['error_code' => 400, 'error_msg' => 'No input data'];
+            $jsonRes = json_encode($res);
+            $returnResponse = $response->withHeader('Content-Type', 'application/json');
+            $returnResponse->getBody()->write($jsonRes);
+            return $returnResponse;
+        }
+
 
         $res = $this->userService->addNewUser($requestBody);
 

@@ -239,16 +239,19 @@ class Users extends BaseModel
 
     /**
      * @desc inserts a user into the database
-     * @return array
+     * @return stdClass
      * @throws \Exception
      */
     public function addNewUser()
     {
+        $user = new \stdClass();
+
         $query = 'INSERT INTO users (user_id, first_name, last_name, upassword, '
             .'email, birthday, created_at) '
             .'VALUES (:user_id, :first_name, :last_name, :upassword, :email, '
             .':birthday, :created_at)';
 
+        $createdDate = date('Y-m-d H:i:s');
         $values = [
             ':user_id'    => $this->id,
             ':first_name' => $this->firstName,
@@ -256,7 +259,7 @@ class Users extends BaseModel
             ':upassword'  => $this->upassword,
             ':email'      => $this->email,
             ':birthday'   => $this->birthday,
-            ':created_at' => date('Y-m-d H:i:s'),
+            ':created_at' => $createdDate,
         ];
 
         logVar($query);
@@ -266,25 +269,43 @@ class Users extends BaseModel
             $res = $this->insert($query, $values);
         } catch(\Exception $e) {
             logVar($e->getMessage(), 'got an error:');
-            return ['result' => 'error'];
+            $user->error_code = 500;
+            $user->error_message = 'Error adding record';
+            return $returnValue;
         }
 
-        $this->results = ['result' => 'success'];
-        return true;
+        # if we got a success, return an object containing the
+        # user's info
+
+        $user->id         = $this->id;
+        $user->first_name = $this->firstName;
+        $user->last_name  = $this->lastName;
+        $user->password   = $this->upassword;
+        $user->email      = $this->email;
+        $user->birthday   = $this->birthday;
+        $user->created_at = date('Y-m-d H:i:s');
+        return $user;
     }
-    
+
+    /**
+     * @return \stdClass
+     */
     public function findUserByEmail($email)
     {
         $query  = 'SELECT * FROM users WHERE email = :email';
         $params = [':email' => $email,];
-        
+
         try {
             $result = $this->select($query, $params);
-                
-            return $result;
         } catch(\Exception $e) {
             throw $e;
         }
+
+        if (count($result) != 0) {
+            return new \stdClass();
+        }
+
+        return (object) $result[0];
     }
 
     /**

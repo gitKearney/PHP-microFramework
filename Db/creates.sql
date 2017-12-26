@@ -17,6 +17,7 @@ CREATE TABLE users
   upassword  VARCHAR(128) NOT NULL,
   email VARCHAR(64) NOT NULL,
   birthday DATE NOT NULL,
+  roles ENUM('read', 'edit', 'create') NOT NULL,
   created_at DATETIME NOT NULL DEFAULT NOW(),
   updated_at DATETIME NULL
 );
