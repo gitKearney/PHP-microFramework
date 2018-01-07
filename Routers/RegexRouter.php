@@ -51,8 +51,6 @@ class RegexRouter {
             $params = [];
 
             if (preg_match($pattern, $uri, $params) === 1) {
-                logVar($params, 'params =');
-
                 return call_user_func_array($callback, array_values($arg));
             }
         }

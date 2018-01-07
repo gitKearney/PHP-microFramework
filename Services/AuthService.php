@@ -37,6 +37,12 @@ class AuthService
      */
     public function createJwt(array $requestBody)
     {
+        $email = $requestBody['email'] ?? null;
+
+        if (is_null($email)) {
+            throw new \Exception('No email passed in', 404);
+        }
+
         # verify the user's information correct
         $account = $this->users->findUserByEmail($requestBody['email']);
 

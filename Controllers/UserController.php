@@ -109,7 +109,9 @@ class UserController extends BaseController
             # no GUID was passed in, get all records
             $body = json_encode($this->userService->getAllUsers());
 
-            $returnResponse = $response->withHeader('Content-Type', 'application/json');
+            $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Content-Type', 'application/json');
+
             $returnResponse->getBody()->write($body);
             return $returnResponse;
         }
@@ -117,7 +119,9 @@ class UserController extends BaseController
         # pass the id to the service method, where we'll validate it
         $res = json_encode($this->userService->findUserById($id));
 
-        $returnResponse = $response->withHeader('Content-Type', 'application/json');
+        $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Content-Type', 'application/json');
+        
         $returnResponse->getBody()->write($res);
 
         return $returnResponse;
@@ -183,7 +187,9 @@ class UserController extends BaseController
                 'error_msg'  => $e->getMessage(),
             ]);
 
-            $returnResponse = $response->withHeader('Content-Type', 'application/json');
+            $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Content-Type', 'application/json');
+
             $returnResponse->getBody()->write($body);
 
             return $returnResponse;
@@ -197,7 +203,9 @@ class UserController extends BaseController
         $res = $this->userService->updateUser($requestBody);
 
         $jsonRes = json_encode($res);
-        $returnResponse = $response->withHeader('Content-Type', 'application/json');
+        $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Content-Type', 'application/json');
+
         $returnResponse->getBody()->write($jsonRes);
 
         return $returnResponse;
@@ -237,7 +245,10 @@ class UserController extends BaseController
         $res = $this->userService->addNewUser($requestBody);
 
         $jsonRes = json_encode($res);
-        $returnResponse = $response->withHeader('Content-Type', 'application/json');
+        $returnResponse = $response
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Content-Type', 'application/json');
+
         $returnResponse->getBody()->write($jsonRes);
 
         return $returnResponse;
@@ -257,7 +268,9 @@ class UserController extends BaseController
         $res = $this->userService->updateUser($requestBody);
 
         $jsonRes = json_encode($res);
-        $returnResponse = $response->withHeader('Content-Type', 'application/json');
+        $returnResponse = $response
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Content-Type', 'application/json');
         $returnResponse->getBody()->write($jsonRes);
 
         return $returnResponse;

@@ -86,3 +86,32 @@ VALUES
     '2015-12-31', NULL
 );
 
+-- if no role is set, it defaults to the first role
+INSERT INTO users
+(
+    user_id, first_name, last_name,
+    upassword, 
+    email, birthday, 
+    created_at, updated_at
+)
+VALUES (
+    '12345678-1234-1234-1234-123456789ac0', 'Franklin', 'Pierce',
+    '$2y$10$vSyWZeSd5ypiFxRPo4EvF.78aZgRlEsZUt8iYThvqnW.Zi103Pt2i',
+    'frankie.p@example.com', '2001-04-08',
+    '2015-12-31', NULL
+);
+
+-- test to make sure read-user can't insert record
+-- INSERT INTO users
+-- (
+--     user_id, first_name, last_name,
+--     upassword, 
+--     email, birthday, 
+--     created_at, updated_at
+-- )
+-- VALUES (
+--     '12345678-1234-1234-1234-123456789ac1', 'John', 'Adams',
+--     '$2y$10$vSyWZeSd5ypiFxRPo4EvF.78aZgRlEsZUt8iYThvqnW.Zi103Pt2i',
+--     'j.a@example.com', '2001-04-08',
+--     '2015-12-31', NULL
+-- );

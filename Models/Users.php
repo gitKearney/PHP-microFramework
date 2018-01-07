@@ -311,10 +311,6 @@ class Users extends BaseModel
     /**
      * @desc pull info from the request body
      *
-     * For this default database, the user table only contains 4 fields
-     * since the ID cannot be changed, that leaves only the first and last name
-     * as changeable as well as the birthday column.
-     *
      * Pull the params from the HTTP body and assign them to the model's data
      * @param array
      * @return bool

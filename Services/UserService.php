@@ -107,7 +107,10 @@ class UserService extends BaseService
         # create a new GUID and add it to the body array
         $requestBody['id'] = $this->uuid->generateUuid()->getUuid();
 
-        # set data from the HTTP body to values their matching values on the model
+        # set data from the HTTP body to values their matching values on the model.
+        # we are specifically avoiding just passing in the POST body.
+        # This will make you read the BODY and only add the valid fields, 
+        # and not the kdfsdfd field some hacker added to the post
         $this->userModel->setUserInfo($requestBody);
 
         return $this->userModel->addNewUser();

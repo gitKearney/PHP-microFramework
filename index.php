@@ -98,7 +98,8 @@ $container = require_once __DIR__.'/Factories/Definitions.php';
 
 $router = new RegexRouter;
 
-$router->route('/users(\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?/', function(Container $container) {
+$userRegex = '/users(\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?/';
+$router->route($userRegex, function(Container $container) {
     $userController = $container['UserController'];
 
     /**
@@ -114,7 +115,7 @@ $router->route('/users(\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f
     ob_start();
     echo $response->getBody()->__toString();
     ob_end_flush();
-});
+    });
 
 $router->route('/auth/', function(Container $container) {
 
@@ -134,7 +135,7 @@ $router->route('/auth/', function(Container $container) {
     }
 
     ob_start();
-    echo $response->getBody()->__toString();;
+    echo $response->getBody()->__toString();
     ob_end_flush();
 });
 
