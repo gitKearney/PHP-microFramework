@@ -77,16 +77,22 @@ trait dbConnectionTrait
         $pdo       = null;
         $config    = getAppConfigSettings();
 
+        $readId  = $this->readConnectionId;
+        $writeId = $this->writeConnectionId;
+
+        logVar($config->$writeId, 'writeId = ');
+        logVar($config->$readId, 'readId = ');
+
         switch ($mode) {
             case 'read':
-                $dsnString = $this->getReadDatabaseDsn($config->read_database);
-                $user      = $config->read_database->user;
-                $pass      = $config->read_database->pass;
+                $dsnString = $this->getReadDatabaseDsn($config->$readId);
+                $user      = $config->$readId->user;
+                $pass      = $config->$readId->pass;
                 break;
             case 'write':
-                $dsnString = $this->getWriteDatabaseDsn($config->write_database);
-                $user      = $config->write_database->user;
-                $pass      = $config->write_database->pass;
+                $dsnString = $this->getWriteDatabaseDsn($config->$writeId);
+                $user      = $config->$writeId->user;
+                $pass      = $config->$writeId->pass;
                 break;
             default:
                 throw new \Exception("invalid mode passed in: must be"

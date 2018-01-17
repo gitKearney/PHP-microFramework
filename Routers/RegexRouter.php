@@ -17,16 +17,6 @@ class RegexRouter {
      */
     public function route($pattern, $callback) 
     {
-        $newPattern = trim($pattern, "/");
-
-        if ($newPattern == "\\") {
-            # if this is the index route (/), just ignore it
-            $this->routes[$pattern] = $callback;
-            return;
-        }
-
-        # change the pattern to be: /^xyz[\/]*$/, this will accept abc & abc/
-        $pattern = "/^".$newPattern."[\/]*$/";
         $this->routes[$pattern] = $callback;
     }
     
@@ -37,13 +27,6 @@ class RegexRouter {
      */
     public function execute($uri, $appContainer)
     {
-        $uri   = trim($uri, "/");
-
-        # is this is our index route, 
-        if ($uri == "") {
-            $uri = '/';
-        }
-        
         $found = false;
         $arg['di_container'] = $appContainer;
 

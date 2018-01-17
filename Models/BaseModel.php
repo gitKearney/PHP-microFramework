@@ -14,6 +14,16 @@ abstract class BaseModel
     protected $results;
 
     /**
+     * @var string
+     */
+    protected $readConnectionId;
+
+    /**
+     * @var
+     */
+    protected $writeConnectionId;
+
+    /**
      * This is a generic insert method that assumes the INSERT statement
      * has been built, and the the values match properly in the array
      *
@@ -163,4 +173,25 @@ abstract class BaseModel
         return $this;
     }
 
+    public function setReadConnectionId($configName)
+    {
+        $this->readConnectionId = $configName;
+        return $this;
+    }
+
+    public function setWriteConnectionId($configName)
+    {
+        $this->writeConnectionId = $configName;
+        return $this;
+    }
+
+    public function getReadConnectionId()
+    {
+        return $this->readConnectionId;
+    }
+
+    public function getWriteConnectionId()
+    {
+        return $this->writeConnectionId;
+    }
 }

@@ -18,7 +18,13 @@ class Users extends BaseModel
      */
     public function __construct()
     {
-        return $this;
+        // TODO: change read_database & write_database to name of key with 
+        // your database credentials in config/credentials.php
+        // In this example, the app will run selects on a different server
+        // than were writes occur. So, we set the values of the connection to 
+        // be different
+        $this->readConnectionId  = 'read_database';
+        $this->writeConnectionId = 'write_database';
     }
 
     /**

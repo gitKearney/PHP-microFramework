@@ -170,5 +170,3 @@ $router->route('/\//', function() {
 });
 
 $router->execute($_SERVER['REQUEST_URI'], $container);
-logVar($_SERVER['REQUEST_URI'], 'REQUEST_URI = ');
-

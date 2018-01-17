@@ -27,7 +27,7 @@ GRANT DELETE, INSERT, UPDATE ON demo.* TO 'read_user'@'%';
 -- but, only to 1 specific database. 
 -- Again, this user can only log into the MySQL instance from a remote host.
 -- Any attempt to log in from local host will return an error
-CREATE 'demo_superuser'@'%' IDENTIFIED BY 'super_secret';
+CREATE USER 'demo_superuser'@'%' IDENTIFIED BY 'super_secret';
 
 -- The 'DROP' permission is needed to truncate tables
 GRANT ALTER, CREATE, DELETE, DROP, INDEX, INSERT, REFERENCES, SELECT, UPDATE 

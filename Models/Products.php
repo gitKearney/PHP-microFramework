@@ -16,7 +16,12 @@ class Products extends BaseModel
      */
     public function __construct()
     {
-        return $this;
+        // TODO: change product_database to name of key with your database 
+        // credentials in config/credentials.php
+        // In this example, the app will read from and write to the same server,
+        // so, we set the connection IDs to be the same
+        $this->readConnectionId  = 'product_database';
+        $this->writeConnectionId = 'product_database';
     }
 
     /**
