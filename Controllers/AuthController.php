@@ -117,8 +117,6 @@ class AuthController extends BaseController
      */
     public function options(ServerRequest $request, Response $response)
     {
-        logVar('GOT AN HTTP OPTIONS REQUEST!');
-
         $allowed = 'OPTIONS, GET, POST, PATCH, PUT, DELETE, HEAD';
 
         # get the headers, if the request is a CORS preflight request OPTIONS method
@@ -126,8 +124,6 @@ class AuthController extends BaseController
 
         # the Content-Length header MUST BE "0"
         if (! isset($httpHeaders['access-control-request-method'])) {
-            logVar('got access-control-request-method in header');
-            
             $returnResponse = $response->withAddedHeader('Allow', $allowed)
                 ->withHeader('Access-Control-Allow-Origin', '*')
                 ->withHeader('Content-Type', 'text/plain')
@@ -179,8 +175,6 @@ class AuthController extends BaseController
      */
     public function post(ServerRequest $request, Response $response)
     {
-        logVar('Got an HTTP POST request');
-
         # if the content type isn't set, default to empty string.
         $contentType = $request->getHeaders()['content-type'][0] ?? '';
 
@@ -188,30 +182,21 @@ class AuthController extends BaseController
 
         # if the header is JSON (application/json), parse the data using JSON decode
         if (strpos($contentType, 'application/json') !== false) {
-            logVar('JSON body');
             $requestBody = json_decode($request->getBody()->__toString(), true);
         } else if (strpos($contentType, 'application/x-www-form-urlencoded') !== false) {
-            logVar('URL ENCODED body');
-
             # otherwise if the headers are application/x-www-form-urlencoded, everything
             # should already be in an array
             $requestBody = $request->getParsedBody();
         }
 
-        logVar($requestBody, 'request body => ');
-
         try {
             $webToken = $this->authService->createJwt($requestBody);
         }
         catch (\TypeError $e){
-            logVar("caught TypeError :-(");
-
             $error = new \stdClass();
             $error->error_code =500;
             $error->error_msg  = 'Failed to create web token';
             $jsonRes = json_encode($error);
-
-            logVar($jsonRes, 'ERROR! Returning...');
 
             $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
                 ->withHeader('Content-Type', 'application/json');
@@ -220,14 +205,10 @@ class AuthController extends BaseController
             return $returnResponse;
         }
         catch (\Exception $e) {
-            logVar("caught error :-(");
-
             $error = new \stdClass();
             $error->error_code = $e->getCode();
             $error->error_msg  = $e->getMessage();
             $jsonRes = json_encode($error);
-
-            logVar($jsonRes, 'ERROR! Returning...');
 
             $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
                 ->withHeader('Content-Type', 'application/json');
@@ -270,7 +251,6 @@ class AuthController extends BaseController
         }
 
         $jwt = $requestBody['jot'];
-        logVar($requestBody['jot'], 'jot = ');
 
         $res = new \stdClass();
 

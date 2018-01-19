@@ -34,6 +34,7 @@ class AuthService
     /**
      * @param array $requestBody
      * @return string
+     * @throws \Exception
      */
     public function createJwt(array $requestBody)
     {

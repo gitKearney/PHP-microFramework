@@ -5,16 +5,12 @@ trait dbConnectionTrait
 {
     /**
      * returns a dns string to connect to a database for reading only
-     * @param stdClass $readConfigs
+     * @param \stdClass $readConfigs
      * @return string
      */
     function getReadDatabaseDsn($readConfigs)
     {
         $dbType    = $readConfigs->type;
-
-        # this should actually throw an error: the user should set the database
-        # type either in the .env file, or by passing in something in the
-        # controller
 
         switch($dbType) {
             case 'mysql':
@@ -33,16 +29,12 @@ trait dbConnectionTrait
 
     /**
      * returns a dns string to connect to a database for writing only
+     * @param \stdClass $writeConfigs
      * @return string
      */
     function getWriteDatabaseDsn($writeConfigs)
     {
-        $config    = getAppConfigSettings();
         $dbType    = $writeConfigs->type;
-
-        # this should actually throw an error: the user should set the database
-        # type either in the .env file, or by passing in something in the
-        # controller
 
         switch($dbType) {
             case 'mysql':
@@ -59,7 +51,10 @@ trait dbConnectionTrait
         }
     }
 
-
+    /**
+     * @param \stdClass $config
+     * @return string
+     */
     function getMongoDsnString($config)
     {
         # TODO: you have to use Mongo's own driver
@@ -80,9 +75,6 @@ trait dbConnectionTrait
         $readId  = $this->readConnectionId;
         $writeId = $this->writeConnectionId;
 
-        logVar($config->$writeId, 'writeId = ');
-        logVar($config->$readId, 'readId = ');
-
         switch ($mode) {
             case 'read':
                 $dsnString = $this->getReadDatabaseDsn($config->$readId);
@@ -100,7 +92,6 @@ trait dbConnectionTrait
         }
 
         if (strlen($dsnString) == 0 ) {
-            logVar('DSN is empty string');
             throw new \Exception('invalid database connection');
         }
 

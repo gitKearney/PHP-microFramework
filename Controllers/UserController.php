@@ -176,6 +176,7 @@ class UserController extends BaseController
      * @param ServerRequest $request
      * @param Response $response
      * @return Response
+     * @throws \Exception
      */
     public function patch(ServerRequest $request, Response $response)
     {

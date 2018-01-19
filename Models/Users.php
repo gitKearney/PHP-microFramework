@@ -124,6 +124,7 @@ class Users extends BaseModel
     /**
      * @param string $userId
      * @return boolean
+     * @throws \Exception
      */
     public function findUserById($userId)
     {
@@ -164,7 +165,7 @@ class Users extends BaseModel
 
     /**
      * @param string $userId
-     * @return array
+     * @return bool
      */
     public function deleteUserById($userId)
     {
@@ -230,9 +231,6 @@ class Users extends BaseModel
 
         $query = 'UPDATE users SET '.$set.' WHERE '.$where;
 
-        logVar($query, 'UPDATE QUERY: ');
-        logVar($updateValues, 'update values');
-
         try {
             $this->update($query, $updateValues);
         } catch (\Exception $e) {
@@ -240,12 +238,12 @@ class Users extends BaseModel
         }
 
         $this->results = ['result' => 'success'];
-        return true;
+        return $this->results;
     }
 
     /**
      * @desc inserts a user into the database
-     * @return stdClass
+     * @return \stdClass
      * @throws \Exception
      */
     public function addNewUser()
@@ -268,16 +266,13 @@ class Users extends BaseModel
             ':created_at' => $createdDate,
         ];
 
-        logVar($query);
-        logVar($values);
-
         try {
             $res = $this->insert($query, $values);
         } catch(\Exception $e) {
             logVar($e->getMessage(), 'got an error:');
             $user->error_code = 500;
             $user->error_message = 'Error adding record';
-            return $returnValue;
+            return $user;
         }
 
         # if we got a success, return an object containing the
@@ -294,7 +289,9 @@ class Users extends BaseModel
     }
 
     /**
+     * @param string $email
      * @return \stdClass
+     * @throws \Exception
      */
     public function findUserByEmail($email)
     {

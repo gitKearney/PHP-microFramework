@@ -63,7 +63,8 @@ class JwtService
     /**
      * decodes a JWT
      * @param array $httpHeaders
-     * @return stdClass
+     * @return \stdClass
+     * @throws \Exception
      */
     public function decodeWebToken($httpHeaders)
     {
@@ -86,10 +87,7 @@ class JwtService
             }
         }
 
-        logVar($bearerToken, "BEARER TOKEN: ");
-
         if (strlen($bearerToken) == 0) {
-            logVar('invalid bearer (null)');
             throw new \Exception('Access Denied', 401);
         }
 

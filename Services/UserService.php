@@ -126,8 +126,6 @@ class UserService extends BaseService
 
         if (! $this->uuid->isValidGuid($requestBody['id'])) {
             # user sent in an invalid GUID, return no records found
-            logVar("invalid GUID: " . $requestBody['id']);
-
             return [
                 'result' => 'No user found',
             ];

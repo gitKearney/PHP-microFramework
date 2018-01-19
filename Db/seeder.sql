@@ -21,7 +21,7 @@ GRANT SELECT ON demo.* TO 'read_user'@'%';
 CREATE USER 'write_user'@'%' IDENTIFIED BY 'secret';
 
 -- Grant the write only user DELETE, UPDATE, INSERT permission. Nothing else
-GRANT DELETE, INSERT, UPDATE ON demo.* TO 'read_user'@'%';
+GRANT DELETE, INSERT, UPDATE ON demo.* TO 'write_user'@'%';
 
 -- *OPTIONAL* a super user for the database only. Has essentially root permissions
 -- but, only to 1 specific database. 
