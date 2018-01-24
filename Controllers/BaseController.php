@@ -81,13 +81,12 @@ abstract class BaseController
     public function unsupportedMethod()
     {
         $response = new Response;
-        $jsonResponse = json_encode([
-            'invalid HTTP request method' =>
-                'We currently do not support this method'
-        ]);
+        
+        $returnResponse = $response
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withStatus(404);
 
-        $returnResponse = $response->withHeader('Content-Type', 'application/json');
-        $returnResponse->getBody()->write($jsonResponse);
+        $returnResponse->getBody()->write('Not Found');
         return $returnResponse;
     }
 

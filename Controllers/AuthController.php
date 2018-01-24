@@ -48,17 +48,11 @@ class AuthController extends BaseController
      */
     public function delete(ServerRequest $request, Response $response)
     {
-        $id = null;
 
-        # split the URI field on the route and save the ID from the uri
-        $vals = preg_split('/\/users\//', $request->getServerParams()['REQUEST_URI']);
-        $id = $vals[1];
-
-        # pass the id to the service method, where we'll validate it's a get_required_files
-        $res = json_encode($this->userService->deleteUserById($id));
-
-        $returnResponse = $this->response->withHeader('Content-Type', 'application/json');
-        $returnResponse->getBody()->write($res);
+        $returnResponse = $response
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('HTTP/1.0', '404 Not Found');
+        $returnResponse->getBody()->write('');
         return $returnResponse;
     }
 
@@ -70,37 +64,11 @@ class AuthController extends BaseController
      */
     public function get(ServerRequest $request, Response $response)
     {
-        # pull the ID from the uri
-        $id = null;
+        // $returnResponse = $response
+        //    ->withHeader('Access-Control-Allow-Origin', '*');
 
-        # split the URI field on the route
-        $vals = preg_split('/\/auth\//', $request->getServerParams()['REQUEST_URI']);
-        if (empty($vals[1])) {
-            # no GUID was passed in, error out
-            $res = json_encode([
-                'error' => 'no server params',
-                'request_uri' => $request->getServerParams()['REQUEST_URI'],
-                'vals' => $vals,
-            ]);
-
-            $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
-                ->withHeader('Content-Type', 'application/json');
-            
-            $returnResponse->getBody()->write($res);
-            return $returnResponse;
-        }
-
-        # validate credentials
-        $res = json_encode([
-            'vals' => $vals,
-            'request_uri' => $request->getServerParams()['REQUEST_URI'],
-        ]);
-
-        $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
-            ->withHeader('Content-Type', 'application/json');
-
-        $returnResponse->getBody()->write($res);
-
+        $returnResponse = $response->withStatus(404);
+        $returnResponse->getBody()->write('Not Found');
         return $returnResponse;
     }
 
@@ -112,10 +80,9 @@ class AuthController extends BaseController
      */
     public function head(ServerRequest $request, Response $response)
     {
-        $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
-            ->withHeader('Content-Type', 'application/json');
-        $returnResponse->getBody()->write('TODO: handle HEAD requests');
-
+        $returnResponse = $response
+            ->withHeader('Access-Control-Allow-Origin', '*');
+        $returnResponse->getBody()->write('');
         return $returnResponse;
     }
 
@@ -127,7 +94,7 @@ class AuthController extends BaseController
      */
     public function options(ServerRequest $request, Response $response)
     {
-        $allowed = 'OPTIONS, GET, POST, PATCH, PUT, DELETE, HEAD';
+        $allowed = 'OPTIONS, HEAD, POST';
 
         # get the headers, if the request is a CORS preflight request OPTIONS method
         $httpHeaders = $request->getHeaders();
@@ -160,18 +127,9 @@ class AuthController extends BaseController
      */
     public function patch(ServerRequest $request, Response $response)
     {
-        # get the POST body as a string: $request->getBody()->__toString()
-
-        # extract the HTTP BODY into an array
-        $requestBody = $this->userService->parseServerRequest($request);
-
-        $res = $this->userService->updateUser($requestBody);
-
-        $jsonRes = json_encode($res);
-        $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
-            ->withHeader('Content-Type', 'application/json');
-        $returnResponse->getBody()->write($jsonRes);
-
+        
+        $returnResponse = $response->withStatus(404);;
+        $returnResponse->getBody()->write('Not Found');
         return $returnResponse;
     }
 
@@ -218,8 +176,8 @@ class AuthController extends BaseController
         }
         catch (\Exception $e) {
             $error = new \stdClass();
-            $error->error_code = $e->getCode();
-            $error->error_msg  = $e->getMessage();
+            $error->success = false;
+            $error->message  = $e->getMessage();
             $jsonRes = json_encode($error);
 
             $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
@@ -230,7 +188,10 @@ class AuthController extends BaseController
         }
 
         $successResponse = new \stdClass();
-        $successResponse->token = $webToken;
+        
+        $successResponse->success = true;
+        $successResponse->message = 'success';
+        $successResponse->results = $webToken;
 
         $jsonRes = json_encode($successResponse);
 
@@ -251,27 +212,8 @@ class AuthController extends BaseController
      */
     public function put(ServerRequest $request, Response $response)
     {
-        # extract the HTTP BODY into an array
-        # get the body from the HTTP request
-        $requestBody = json_decode($request->getBody()->__toString());
-
-        if (is_null($requestBody)) {
-            # the body isn't a JSON string, it's a form URL encoded string
-            # so, convert it here
-            $requestBody = [];
-            parse_str($request->getBody()->__toString(), $requestBody);
-        }
-
-        $jwt = $requestBody['jot'];
-
-        $res = new \stdClass();
-
-        $jsonRes = json_encode($res);
-        $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
-            ->withHeader('Content-Type', 'application/json');
-
-        $returnResponse->getBody()->write($jsonRes);
-
+        $returnResponse = $response->withStatus(404);
+        $returnResponse->getBody()->write('Not Found');
         return $returnResponse;
     }
 
