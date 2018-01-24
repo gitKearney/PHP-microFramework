@@ -17,7 +17,12 @@ class AuthController extends BaseController
     /**
      * @var UserService
      */
-    protected $userService;
+    private $userService;
+
+    /**
+     * @var AuthService
+     */
+    private $authService;
 
     /**
      *
@@ -27,6 +32,7 @@ class AuthController extends BaseController
      *       that corresponds to the HTTP Request Method
      *
      * @param UserService $userService
+     * @param AuthService $authService
      */
     public function __construct(UserService $userService, AuthService $authService)
     {
@@ -106,7 +112,11 @@ class AuthController extends BaseController
      */
     public function head(ServerRequest $request, Response $response)
     {
-        echo 'TODO: handle HEAD requests';
+        $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Content-Type', 'application/json');
+        $returnResponse->getBody()->write('TODO: handle HEAD requests');
+
+        return $returnResponse;
     }
 
     /**
@@ -146,10 +156,10 @@ class AuthController extends BaseController
      * @param ServerRequest $request
      * @param Response $response
      * @return Response
+     * @throws \Exception
      */
     public function patch(ServerRequest $request, Response $response)
     {
-
         # get the POST body as a string: $request->getBody()->__toString()
 
         # extract the HTTP BODY into an array
@@ -192,10 +202,12 @@ class AuthController extends BaseController
         try {
             $webToken = $this->authService->createJwt($requestBody);
         }
-        catch (\TypeError $e){
+        catch (\TypeError $e) {
             $error = new \stdClass();
-            $error->error_code =500;
-            $error->error_msg  = 'Failed to create web token';
+            $error->success = false;
+            $error->message  = 'Failed to create web token';
+
+            logVar($e->getCode(), 'EXCEPTION CREATING TOKEN: ', $e->getMessage(), 'critical');
             $jsonRes = json_encode($error);
 
             $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')

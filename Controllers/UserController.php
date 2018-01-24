@@ -7,9 +7,8 @@ use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
 
 /**
- * The controller MUST extend BaseController
- *
- * This controller handles all routes for /user/
+ * Class UserController
+ * @package Main\Controllers
  */
 class UserController extends BaseController
 {
@@ -32,6 +31,7 @@ class UserController extends BaseController
      *       that corresponds to the HTTP Request Method
      *
      * @param UserService $userService
+     * @param JwtService $jwtService
      */
     public function __construct(UserService $userService, JwtService $jwtService)
     {
@@ -49,22 +49,22 @@ class UserController extends BaseController
     {
         $id = null;
 
-        try {
-            /**
-             * @var stdClass()
-             */
-            $user = $this->jwtService->decodeWebToken($request->getHeaders());
-        } catch (\Exception $e) {
-            $body = json_encode([
-                'error_code' => $e->getCode(),
-                'error_msg'  => $e->getMessage(),
-            ]);
-
-            $returnResponse = $response->withHeader('Content-Type', 'application/json');
-            $returnResponse->getBody()->write($body);
-
-            return $returnResponse;
-        }
+//        try {
+//            /**
+//             * @var \stdClass()
+//             */
+//            $user = $this->jwtService->decodeWebToken($request->getHeaders());
+//        } catch (\Exception $e) {
+//            $body = json_encode([
+//                'error_code' => $e->getCode(),
+//                'error_msg'  => $e->getMessage(),
+//            ]);
+//
+//            $returnResponse = $response->withHeader('Content-Type', 'application/json');
+//            $returnResponse->getBody()->write($body);
+//
+//            return $returnResponse;
+//        }
 
         # TODO: examine if user has permissions to this method
 
@@ -74,13 +74,13 @@ class UserController extends BaseController
         # valid guid
         $res = json_encode($this->userService->deleteUserById($id));
 
-        $returnResponse = $this->response->withHeader('Content-Type', 'application/json');
+        $returnResponse = $response->withHeader('Content-Type', 'application/json');
         $returnResponse->getBody()->write($res);
         return $returnResponse;
     }
 
     /**
-     * Method to process HTTP GET reqeusts
+     * Method to process HTTP GET requests
      * @param ServerRequest $request
      * @param Response $response
      * @return Response
@@ -180,21 +180,21 @@ class UserController extends BaseController
      */
     public function patch(ServerRequest $request, Response $response)
     {
-        try {
-            $this->jwtService->decodeWebToken($request->getHeaders());
-        } catch (\Exception $e) {
-            $body = json_encode([
-                'error_code' => $e->getCode(),
-                'error_msg'  => $e->getMessage(),
-            ]);
-
-            $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
-                ->withHeader('Content-Type', 'application/json');
-
-            $returnResponse->getBody()->write($body);
-
-            return $returnResponse;
-        }
+//        try {
+//            $this->jwtService->decodeWebToken($request->getHeaders());
+//        } catch (\Exception $e) {
+//            $body = json_encode([
+//                'error_code' => $e->getCode(),
+//                'error_msg'  => $e->getMessage(),
+//            ]);
+//
+//            $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
+//                ->withHeader('Content-Type', 'application/json');
+//
+//            $returnResponse->getBody()->write($body);
+//
+//            return $returnResponse;
+//        }
 
         # get the POST body as a string: $request->getBody()->__toString()
 
@@ -266,7 +266,13 @@ class UserController extends BaseController
         # extract the HTTP BODY into an array
         $requestBody = $this->userService->parseServerRequest($request);
 
-        $res = $this->userService->updateUser($requestBody);
+        try {
+            $res = $this->userService->updateUser($requestBody);
+        } catch (\Exception $e) {
+            $res = new \stdClass();
+            $res->error = $e->getCode();
+            $res->message = $e->getMessage();
+        }
 
         $jsonRes = json_encode($res);
         $returnResponse = $response
@@ -280,6 +286,7 @@ class UserController extends BaseController
     /**
      * Looks at the REQUEST_URI to see if it is /users/ or /users/{guid}
      * @param ServerRequest $request
+     * @return string
      */
     protected function getUrlPathElements(ServerRequest $request)
     {
@@ -287,7 +294,7 @@ class UserController extends BaseController
         $vals = preg_split('/\/users\//', $request->getServerParams()['REQUEST_URI']);
         if (empty($vals[1])) {
 
-            return null;
+            return '';
         }
 
         return $vals[1];

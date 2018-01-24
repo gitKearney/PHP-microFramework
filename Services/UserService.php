@@ -42,65 +42,64 @@ class UserService extends BaseService
     /**
      * @desc pull the GUID from the URI
      * @param string $userId
-     * @return array
+     * @return \stdClass
      */
     public function findUserById($userId)
     {
+        $result = new \stdClass();
+
+        $result->success = false;
+        $result->message = '';
+        $result->results = [];
+
         # test the GUID to see if it's good
         if (! $this->uuid->isValidGuid($userId)) {
             # user sent in an invalid GUID, return no records found
-            return [
-                'result' => 'No user found',
-            ];
+           $result->message = 'No User Found';
+           return $result;
         }
 
-        try {
-            $result = $this->userModel->findUserById($userId);
-        } catch (\Exception $e) {
-            return [
-                'error' => $e->getMessage(),
-            ];
-        }
+        $result = $this->userModel->findUserById($userId);
+        unset($result->results['password']);
+        return $result;
+    }
 
-        if (!$result) {
-            return [
-                'result' => 'No user found',
-            ];
-        }
+    /**
+     * @return \stdClass
+     */
+    public function getAllUsers()
+    {
+        $result = $this->userModel->getAllUsers();
 
         return $result;
     }
 
     /**
-     * @desc returns all users from database
-     * @return array
-     */
-    public function getAllUsers()
-    {
-        $this->userModel->getAllUsers();
-
-        return $this->userModel->getResults();
-    }
-
-    /**
      * @param string $userId
-     * @return array
+     * @return \stdClass
      */
     public function deleteUserById($userId)
     {
+        $result = new \stdClass();
+
+        $result->success = false;
+        $result->message = "$userId";
+        $result->results = [];
+
         if (! $this->uuid->isValidGuid($userId)) {
             # user sent in an invalid GUID, return no records found
-            return [
-                'result' => 'No user found',
-            ];
+            $result->message = 'Invalid User Found';
+            return $result;
         }
 
-        return $this->userModel->deleteUserById($userId);
+        $result = $this->userModel->deleteUserById($userId);
+
+        return $result;
     }
 
     /**
      * @param array $requestBody
-     * @return array
+     * @return \stdClass
      */
     public function addNewUser(array $requestBody)
     {
@@ -110,7 +109,7 @@ class UserService extends BaseService
         # set data from the HTTP body to values their matching values on the model.
         # we are specifically avoiding just passing in the POST body.
         # This will make you read the BODY and only add the valid fields, 
-        # and not the kdfsdfd field some hacker added to the post
+        # and not the JUNK field some hacker added to the post
         $this->userModel->setUserInfo($requestBody);
 
         return $this->userModel->addNewUser();
@@ -118,41 +117,37 @@ class UserService extends BaseService
 
     /**
      * @param array $requestBody
-     * @return array
-     * @throws \Exception
+     * @return \stdClass
      */
     public function updateUser(array $requestBody)
     {
-
         if (! $this->uuid->isValidGuid($requestBody['id'])) {
             # user sent in an invalid GUID, return no records found
-            return [
-                'result' => 'No user found',
-            ];
+            $result = new \stdClass();
+
+            $result->success = false;
+            $result->message = 'No User Found';
+            $result->results = [];
         }
 
         # update the updated_at timestamp value
         $requestBody['updated_at'] = date('Y-m-d H:i:s');
 
-        try {
-            return $this->userModel->updateUser($requestBody);
-        } catch (\Exception $e) {
-            $error = new \stdClass();
-            $error->error_msg = $e->getMessage();
-            $error->error_code = $e->getCode();
-        }
+       return $this->userModel->updateUser($requestBody);
     }
 
     /**
      * This takes a ServerRequest and extracts all the relevant data from it
-     * It should primarly be used on PUT and PATCH requests
+     * It should primarily be used on PUT and PATCH requests
      * @param ServerRequest $request
      * @return array
      */
     public function parseServerRequest(ServerRequest $request)
     {
         # get the body from the HTTP request
-        $requestBody = json_decode($request->getBody()->__toString());
+        $requestBody = json_decode($request->getBody()->__toString(), true);
+
+        logVar($requestBody, 'requestBody: ');
 
         if (is_null($requestBody)) {
             # the body isn't a JSON string, it's a form URL encoded string

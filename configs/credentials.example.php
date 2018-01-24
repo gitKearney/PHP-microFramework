@@ -6,7 +6,7 @@
  *
  * This is much better than using a .env file because it requires no overhead
  * of opening a file, reading it line by line, putting the value into 3
- * seperate places (evn, $_ENV, and $_SERVER) then closing the file.
+ * separate places (evn, $_ENV, and $_SERVER) then closing the file.
  */
 
 # TODO: create a new file in this directory called "credentials.php"

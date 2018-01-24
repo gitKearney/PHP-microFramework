@@ -80,11 +80,13 @@ trait dbConnectionTrait
                 $dsnString = $this->getReadDatabaseDsn($config->$readId);
                 $user      = $config->$readId->user;
                 $pass      = $config->$readId->pass;
+
                 break;
             case 'write':
                 $dsnString = $this->getWriteDatabaseDsn($config->$writeId);
                 $user      = $config->$writeId->user;
                 $pass      = $config->$writeId->pass;
+
                 break;
             default:
                 throw new \Exception("invalid mode passed in: must be"

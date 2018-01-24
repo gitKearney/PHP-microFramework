@@ -18,7 +18,6 @@ class Users extends BaseModel
      */
     public function __construct()
     {
-        // TODO: change read_database & write_database to name of key with 
         // your database credentials in config/credentials.php
         // In this example, the app will run selects on a different server
         // than were writes occur. So, we set the values of the connection to 
@@ -28,103 +27,8 @@ class Users extends BaseModel
     }
 
     /**
-     * @param string $day
-     * @return $this
-     */
-    public function setBirthday($day)
-    {
-        $this->birthday = $day;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getBirthday()
-    {
-        return $this->birthday;
-    }
-
-    /**
-     * @param string $name
-     * @return $this
-     */
-    public function setFirstName($name)
-    {
-        $this->firstName = $name;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getFirstName()
-    {
-        return $this->firstName;
-    }
-
-    /**
-     * @param string $name
-     * @return $this
-     */
-    public function setLastName($name)
-    {
-        $this->lastName = $name;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getLastName()
-    {
-        return $this->lastName;
-    }
-
-    /**
-     * @param string $id
-     * @return $this
-     */
-    public function setUserId($id)
-    {
-        $this->id = $id;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getUserId()
-    {
-        return $this->id;
-    }
-
-    public function setEmail($email)
-    {
-        $this->email = $email;
-        return $this;
-    }
-
-    public function getEmail()
-    {
-        return $this->email;
-    }
-
-    public function setPassword($password)
-    {
-        $this->upassword = password_hash($password, PASSWORD_DEFAULT);
-        return $this;
-    }
-
-    public function getPassword()
-    {
-        return $this->upassword;
-    }
-
-    /**
      * @param string $userId
-     * @return boolean
-     * @throws \Exception
+     * @return \stdClass
      */
     public function findUserById($userId)
     {
@@ -133,60 +37,44 @@ class Users extends BaseModel
             .' FROM users WHERE user_id = :user_id LIMIT 1';
         $params = [':user_id' => $userId];
 
-        try {
-            $result = $this->select($query, $params);
+        $result = $this->select($query, $params);
 
-            return $result;
-        } catch(\Exception $e) {
-            throw $e;
-        }
+        return $result;
     }
 
     /**
      * Returns all users form the database
-     * @return array
+     * @return \stdClass
      */
     public function getAllUsers()
     {
-
         $query = 'SELECT user_id as id, first_name, last_name, birthday'
             .' email, created_at'
             .' FROM users';
         $params = [];
 
-        try {
-            $this->select($query, $params);
-        } catch(\Exception $e) {
-            return ['result' => 'error'];
-        }
+        $result = $this->select($query, $params);
 
-        return true;
+        return $result;
     }
 
     /**
      * @param string $userId
-     * @return bool
+     * @return \stdClass
      */
     public function deleteUserById($userId)
     {
         $query = 'DELETE FROM users WHERE user_id = :user_id';
         $params = [':user_id' => $userId];
 
-        try {
-            $this->delete($query, $params);
-        } catch(\Exception $e) {
-            $this->results = ['result' => 'error'];
-            return false;
-        }
+        $result = $this->delete($query, $params);
 
-        $this->results = ['result' => 'success'];
-        return true;
+        return $result;
     }
 
     /**
      * @param array $values
-     * @return array
-     * @throws \Exception
+     * @return \stdClass
      */
     public function updateUser(array $values)
     {
@@ -213,7 +101,7 @@ class Users extends BaseModel
             }
 
             if ($key == 'password') {
-                $updateValues[':upassword'] = password_hash($value, PASSWORD_ARGON2I);
+                $updateValues[':upassword'] = password_hash($value, PASSWORD_DEFAULT);
                 $set .= 'upassword = :upassword,';
             }
 
@@ -226,29 +114,31 @@ class Users extends BaseModel
 
         if (strlen($set) == 0) {
             # the user didn't pass anything in, send a success
-            return ['result' => 'no user found'];
+            $result = new \stdClass();
+            $result->success = false;
+            $result->message = 'Nothing to Update';
+            $result->results = [];
+
+            return $result;
         }
 
         $query = 'UPDATE users SET '.$set.' WHERE '.$where;
 
-        try {
-            $this->update($query, $updateValues);
-        } catch (\Exception $e) {
-            throw new \Exception('Error Updating User');
-        }
+        $results = $this->update($query, $updateValues);
 
-        $this->results = ['result' => 'success'];
-        return $this->results;
+        return $results;
     }
 
     /**
      * @desc inserts a user into the database
      * @return \stdClass
-     * @throws \Exception
      */
     public function addNewUser()
     {
-        $user = new \stdClass();
+        $result = new \stdClass();
+        $result->success = false;
+        $result->message = 'Nothing to Update';
+        $result->results = [];
 
         $query = 'INSERT INTO users (user_id, first_name, last_name, upassword, '
             .'email, birthday, created_at) '
@@ -266,49 +156,27 @@ class Users extends BaseModel
             ':created_at' => $createdDate,
         ];
 
-        try {
-            $res = $this->insert($query, $values);
-        } catch(\Exception $e) {
-            logVar($e->getMessage(), 'got an error:');
-            $user->error_code = 500;
-            $user->error_message = 'Error adding record';
-            return $user;
-        }
+        $result = $this->insert($query, $values);
 
         # if we got a success, return an object containing the
-        # user's info
+        # user's ID
+        $result->results['id'] = $this->id;
 
-        $user->id         = $this->id;
-        $user->first_name = $this->firstName;
-        $user->last_name  = $this->lastName;
-        $user->password   = $this->upassword;
-        $user->email      = $this->email;
-        $user->birthday   = $this->birthday;
-        $user->created_at = date('Y-m-d H:i:s');
-        return $user;
+        return $result;
     }
 
     /**
      * @param string $email
      * @return \stdClass
-     * @throws \Exception
      */
     public function findUserByEmail($email)
     {
         $query  = 'SELECT * FROM users WHERE email = :email';
         $params = [':email' => $email,];
 
-        try {
-            $result = $this->select($query, $params);
-        } catch(\Exception $e) {
-            throw $e;
-        }
+        $results = $this->select($query, $params);
 
-        if ($result === false) {
-            return new \stdClass();
-        }
-
-        return (object) $result[0];
+        return $results;
     }
 
     /**
@@ -321,14 +189,16 @@ class Users extends BaseModel
     public function setUserInfo($httpBody)
     {
         # TODO: validate that the info is good and in here
-        $this->setFirstName($httpBody['first_name']);
-        $this->setLastName($httpBody['last_name']);
-        $this->setEmail($httpBody['email']);
-        $this->setBirthday($httpBody['birthday']);
-        $this->setPassword($httpBody['password']);
-        $this->setUserId($httpBody['id']);
+        $this->firstName = $httpBody['first_name'] ?? null;
+        $this->lastName  = $httpBody['last_name'] ?? null;
+        $this->email     = $httpBody['email'] ?? null;
+        $this->birthday  = $httpBody['birthday'] ?? null;
+        $this->id        = $httpBody['id'] ?? null;
+
+        // pull the password from the body
+        $password        = $httpBody['password'] ?? null;
+        $this->upassword = $this->upassword = password_hash($password, PASSWORD_DEFAULT);
 
         return true;
     }
-
 }

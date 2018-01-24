@@ -5,7 +5,6 @@ require_once 'vendor/autoload.php';
 use Main\Routers\RegexRouter;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
-use Dotenv\Dotenv;
 use Pimple\Container;
 
 require_once('configs/credentials.php');
@@ -19,7 +18,7 @@ function logVar($var, $msg = '', $level='debug')
 {
     global $log;
 
-    $string = $msg;
+    $string = $msg . ' - ';
 
     if (is_null($var)) {
         $string .= 'null';
@@ -87,19 +86,25 @@ function getAppConfigSettings()
 }
 
 // create a log channel
-$log = new Logger('name');
-$log->pushHandler(new StreamHandler($config->app_settings->log_location, Logger::DEBUG));
-
-# read in our configuration file
-$dotenv = new Dotenv(__DIR__);
-$dotenv->load();
+try {
+    $log = new Logger('name');
+    $log->pushHandler(new StreamHandler($config->app_settings->log_location, Logger::DEBUG));
+} catch (\Exception $e) {
+    die('INVALID CONFIGURATION: '.$e->getCode().'-'.$e->getMessage()."\n");
+}
 
 $container = require_once __DIR__.'/Factories/Definitions.php';
 
 $router = new RegexRouter;
 
+// TODO: all responses must have a status & message key
+// TODO: only return stdClass
 $userRegex = '/users(\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?/';
 $router->route($userRegex, function(Container $container) {
+
+    /**
+     * @var \Main\Controllers\UserController
+     */
     $userController = $container['UserController'];
 
     /**
@@ -120,7 +125,7 @@ $router->route($userRegex, function(Container $container) {
 $router->route('/auth/', function(Container $container) {
 
     /**
-     * @var AuthController
+     * @var \Main\Controllers\AuthController
      */
     $authController = $container['AuthController'];
 
@@ -142,7 +147,7 @@ $router->route('/auth/', function(Container $container) {
 $router->route('/products/', function(Container $container) {
 
     /**
-     * @var AuthController
+     * @var \Main\Controllers\AuthController
      */
     $authController = $container['ProductController'];
 

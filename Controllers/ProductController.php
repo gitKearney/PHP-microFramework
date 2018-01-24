@@ -57,7 +57,7 @@ class ProductController extends BaseController
         # valid guid
         $res = json_encode($this->productService->deleteProductById($id));
 
-        $returnResponse = $this->response->withHeader('Content-Type', 'application/json');
+        $returnResponse = $response->withHeader('Content-Type', 'application/json');
         $returnResponse->getBody()->write($res);
         return $returnResponse;
     }
@@ -100,7 +100,11 @@ class ProductController extends BaseController
      */
     public function head(ServerRequest $request, Response $response)
     {
-        echo 'TODO: handle HEAD requests';
+        $jsonRes = json_encode(['TODO' => 'NEED TO IMPLEMENT']);
+        $returnResponse = $response->withHeader('Content-Type', 'application/json');
+        $returnResponse->getBody()->write($jsonRes);
+
+        return $returnResponse;
     }
 
     /**
@@ -113,7 +117,7 @@ class ProductController extends BaseController
     {
         $allowed = 'OPTIONS, GET, POST, PATCH, PUT, DELETE, HEAD';
 
-        # get the headers, if the request is a CORS preflight request OPTIONS method
+        # get the headers, if the request is a C.O.R.S. pre-flight request OPTIONS method
         $httpHeaders = $request->getHeaders();
 
         # the Content-Length header MUST BE "0" 
@@ -137,7 +141,7 @@ class ProductController extends BaseController
     }
 
     /**
-     * Method to process HTTP PATCH reqeusts
+     * Method to process HTTP PATCH requests
      * @param ServerRequest $request
      * @param Response $response
      * @return Response
@@ -149,7 +153,7 @@ class ProductController extends BaseController
         # extract the HTTP BODY into an array
         $requestBody = $this->productService->parseServerRequest($request);
 
-        $res = $this->userService->updateUser($requestBody);
+        $res = $this->productService->updateProduct($requestBody);
 
         $jsonRes = json_encode($res);
         $returnResponse = $response->withHeader('Content-Type', 'application/json');
@@ -213,9 +217,9 @@ class ProductController extends BaseController
         # extract the HTTP BODY into an array
         $requestBody = $this->productService->parseServerRequest($request);
 
-        $res = $this->userService->updateUser($requestBody);
+        $result = $this->productService->updateProduct($requestBody);
 
-        $jsonRes = json_encode($res);
+        $jsonRes = json_encode($result);
         $returnResponse = $response->withHeader('Content-Type', 'application/json');
         $returnResponse->getBody()->write($jsonRes);
 
@@ -225,6 +229,7 @@ class ProductController extends BaseController
     /**
      * Looks at the REQUEST_URI to see if it is /path/ or /path/{guid}
      * @param ServerRequest $request
+     * @return array
      */
     protected function getUrlPathElements(ServerRequest $request)
     {

@@ -45,11 +45,14 @@ class AuthService
         }
 
         # verify the user's information correct
-        $account = $this->users->findUserByEmail($requestBody['email']);
+        $result = $this->users->findUserByEmail($requestBody['email']);
 
-        if (! isset($account->user_id)) {
+        if ($result->success === false || count($result->results) === 0) {
             throw new \Exception('No user found', 404);
         }
+
+        $account = (object) $result->results;
+        logVar($account, 'ACCOUNT PULLED: ');
 
         # does the password from the body match the user's password?
         $match = password_verify($requestBody['password'], $account->upassword);

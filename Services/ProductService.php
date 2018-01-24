@@ -38,32 +38,32 @@ class ProductService extends BaseService
     }
 
     /**
-     * @desc pull the GUID from the URI
-     * @param string $userId
-     * @return array
+     * pull the GUID from the URI
+     * @param string $productId
+     * @return \stdClass
      */
     public function getProductInfo($productId)
     {
+        $response = new \stdClass();
+        $response->success = false;
+        $response->message = '';
+        $response->results = [];
+
         # test the GUID to see if it's good
         if (! $this->uuid->isValidGuid($productId)) {
             # user sent in an invalid GUID, return no records found
-            return [
-                'result' => 'No products found',
-            ];
+            # user sent in an invalid GUID, return no records found
+            logVar($productId, "Invalid GUID: ");
+
+            $response->message =  'No product found';
+            return $response;
         }
 
-        try {
-            $result = $this->product->findProductById($userId);
-        } catch (\Exception $e) {
-            return [
-                'error' => $e->getMessage(),
-            ];
-        }
+        $result = $this->products->findProductById($productId);
 
-        if (!$result) {
-            return [
-                'result' => 'No products found',
-            ];
+        if (!$result->success) {
+            $response->message =  'No product found';
+            return $response;
         }
 
         return $result;
@@ -71,26 +71,31 @@ class ProductService extends BaseService
 
     /**
      * @desc returns all users from database
-     * @return array
+     * @return \stdClass
      */
     public function getAllProducts()
     {
-        $this->products->getAllProducts();
-
-        return $this->products->getResults();
+        return $this->products->getAllProducts();
     }
 
     /**
      * @param string $productId
-     * @return array
+     * @return \stdClass
      */
     public function deleteProductById($productId)
     {
+        $response = new \stdClass();
+        $response->success = false;
+        $response->message = '';
+        $response->results = [];
+
         if (! $this->uuid->isValidGuid($productId)) {
             # user sent in an invalid GUID, return no records found
-            return [
-                'result' => 'No user found',
-            ];
+            # user sent in an invalid GUID, return no records found
+            logVar($productId, "Invalid GUID: ");
+
+            $response->message =  'No product found';
+            return $response;
         }
 
         return $this->products->deleteProductById($productId);
@@ -98,69 +103,71 @@ class ProductService extends BaseService
 
     /**
      * @param array $requestBody
-     * @return array
+     * @return \stdClass
      */
     public function addNewProduct(array $requestBody)
     {
-        # create a new GUID and add it to the body array
-        $requestBody['id'] = $this->uuid->generateUuid()->getUuid();
+        $response = new \stdClass();
+        $response->success = false;
+        $response->message = '';
+        $response->results = [];
 
         try{
-            # set data from the HTTP body to values their matching values on the model
-            # if any data fails the checks, throw an error and catch it here
-            $this->products->setProductInfo($requestBody);
+            # create a new GUID and add it to the body array
+            $requestBody['id'] = $this->uuid->generateUuid()->getUuid();
         } catch (\Exception $e) {
-            return ['error_code' => $e->getCode(), 'error_msg' => $e->getMessage()];
+            logVar($e->getCode(), 'EXCEPTION CREATING UUID: '.$e->getMessage(), 'emergency');
+
+            $response->message = 'Error Creating User';
+            return $response;
         }
 
-
-        try{
-            # set data from the HTTP body to values their matching values on the model
-            # if any data fails the checks, throw an error and catch it here
-            return $this->products->addNewProduct();
-        } catch (\Exception $e) {
-            return ['error_code' => $e->getCode(), 'error_msg' => $e->getMessage()];
+        $goodData = $this->products->setProductInfo($requestBody);
+        if (!$goodData) {
+            $response->message = 'Bad Data';
+            return $response;
         }
+
+        $response = $this->products->addNewProduct();
+        return $response;
     }
 
     /**
      * @param array $requestBody
-     * @return array
-     * @throws \Exception
+     * @return \stdClass
      */
     public function updateProduct(array $requestBody)
     {
+        $response = new \stdClass();
+        $response->success = false;
+        $response->message = '';
+        $response->results = [];
 
         if (! $this->uuid->isValidGuid($requestBody['id'])) {
             # user sent in an invalid GUID, return no records found
-            logVar("invalid GUID: " . $requestBody['id']);
+            logVar($requestBody['id'], "invalid GUID: ");
 
-            return [
-                'error_code' => 404, 'error_msg' => 'No product found',
-            ];
+            $response->message =  'No product found';
+            return $response;
         }
 
         # update the updated_at timestamp value
         $requestBody['updated_at'] = date('Y-m-d H:i:s');
 
-        try {
-            # TODO: verify that the info passed in is good
-            return $this->products->updateProduct($requestBody);
-        } catch (\Exception $e) {
-            return ['error' => $e->getMessage()];
-        }
+        $result = $this->products->updateProduct($requestBody);
+        return $result;
     }
 
     /**
      * This takes a ServerRequest and extracts all the relevant data from it
-     * It should primarly be used on PUT and PATCH requests
+     * It should primarily be used on PUT and PATCH requests
      * @param ServerRequest $request
      * @return array
      */
     public function parseServerRequest(ServerRequest $request)
     {
         # get the body from the HTTP request
-        $requestBody = json_decode($request->getBody()->__toString());
+        $requestBody = json_decode($request->getBody()->__toString(), true);
 
         if (is_null($requestBody)) {
             # the body isn't a JSON string, it's a form URL encoded string

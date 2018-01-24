@@ -57,7 +57,7 @@ class Products extends BaseModel
      */
     public function getTitle()
     {
-        return $this->firstName;
+        return $this->title;
     }
 
     /**
@@ -120,7 +120,7 @@ class Products extends BaseModel
 
     /**
      * @param string $productId
-     * @return boolean
+     * @return \stdClass
      */
     public function findProductById($productId)
     {
@@ -129,18 +129,14 @@ class Products extends BaseModel
             .' FROM products WHERE product_id = :product LIMIT 1';
         $params = [':product_id' => $productId];
 
-        try {
-            $result = $this->select($query, $params);
+        $result = $this->select($query, $params);
 
-            return $result;
-        } catch(\Exception $e) {
-            throw $e;
-        }
+        return $result;
     }
 
     /**
      * Returns all users form the database
-     * @return array
+     * @return \stdClass
      */
     public function getAllProducts()
     {
@@ -148,42 +144,32 @@ class Products extends BaseModel
         $query = 'SELECT product_id as id, title, price, quantity, created_at FROM products';
         $params = [];
 
-        try {
-            $this->select($query, $params);
-        } catch(\Exception $e) {
-            return ['result' => 'error'];
-        }
-
-        return true;
+        $result = $this->select($query, $params);
+        return $result;
     }
 
     /**
      * @param string $productId
-     * @return array
+     * @return \stdClass
      */
     public function deleteProductById($productId)
     {
         $query = 'DELETE FROM products WHERE product_id = :product_id';
-        $params = [':product_id' => $userId];
-
-        try {
-            $this->delete($query, $params);
-        } catch(\Exception $e) {
-            $this->results = ['result' => 'error'];
-            return false;
-        }
-
-        $this->results = ['result' => 'success'];
-        return true;
+        $params = [':product_id' => $productId];
+        return $result = $this->delete($query, $params);
     }
 
     /**
      * @param array $values
-     * @return array
-     * @throws \Exception
+     * @return \stdClass
      */
     public function updateProduct(array $values)
     {
+        $result = new \stdClass();
+        $result->success = false;
+        $result->message = 'Nothing to Update';
+        $result->results = [];
+
         $where = '';
         $set = '';
         $updateValues = [];
@@ -218,28 +204,20 @@ class Products extends BaseModel
 
         if (strlen($set) == 0) {
             # the user didn't pass anything in, send a success
-            return ['result' => 'no user found'];
+            $result->success =  false;
+            $result->message = 'No Products Found';
+
+            return $result;
         }
 
         $query = 'UPDATE products SET '.$set.' WHERE '.$where;
 
-        logVar($query, 'UPDATE QUERY: ');
-        logVar($updateValues, 'update values');
-
-        try {
-            $this->update($query, $updateValues);
-        } catch (\Exception $e) {
-            throw new \Exception('Error Updating Product');
-        }
-
-        $this->results = ['result' => 'success'];
-        return true;
+        return $this->update($query, $updateValues);
     }
 
     /**
      * @desc inserts a user into the database
-     * @return array
-     * @throws \Exception
+     * @return \stdClass
      */
     public function addNewProduct()
     {
@@ -248,38 +226,27 @@ class Products extends BaseModel
             .'VALUES (:product_id, :title, :price, :quantity, :created_at)';
 
         $values = [
-            ':product_id'    => $this->productId,
-            ':title' => $this->title,
-            ':quantity'  => $this->quantity,
-            ':price'  => $this->price,
+            ':product_id' => $this->productId,
+            ':title'      => $this->title,
+            ':quantity'   => $this->quantity,
+            ':price'      => $this->price,
             ':created_at' => date('Y-m-d H:i:s'),
         ];
 
-        logVar($query);
-        logVar($values);
-
-        try {
-            $res = $this->insert($query, $values);
-        } catch(\Exception $e) {
-            throw $e;
-        }
-
-        $this->results = ['result' => 'success'];
-        return true;
+        return $this->insert($query, $values);
     }
-    
+
+    /**
+     * @param $title
+     * @return \stdClass
+     * @throws \Exception
+     */
     public function findProductByTitle($title)
     {
         $query  = 'SELECT * FROM products WHERE title LIKE  "%:title%"';
         $params = [':title' => $title,];
-        
-        try {
-            $result = $this->select($query, $params);
-                
-            return $result;
-        } catch(\Exception $e) {
-            throw $e;
-        }
-    }
 
+        $result = $this->select($query, $params);
+        return $result;
+    }
 }

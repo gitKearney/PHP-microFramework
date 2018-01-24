@@ -4,6 +4,10 @@ namespace Main\Models;
 
 use Main\Models\dbConnectionTrait;
 
+/**
+ * Class BaseModel
+ * @package Main\Models
+ */
 abstract class BaseModel
 {
     use dbConnectionTrait;
@@ -27,11 +31,9 @@ abstract class BaseModel
      * This is a generic insert method that assumes the INSERT statement
      * has been built, and the the values match properly in the array
      *
-     * @param $query
+     * @param string $query
      * @param array $values
-     * @param string - name of the id column
-     * @return bool
-     * @throws \Exception
+     * @return \stdClass
      */
     public function insert($query, array $values = [])
     {
@@ -44,11 +46,14 @@ abstract class BaseModel
         # INSERT INTO table ('key') VALUES (:val)
 
         # The values array would be defined as: [':val' => 'val']
+        $result = $this->setResponse();
 
         try {
             $pdo = $this->getPdoConnection('write');
         } catch( \Exception $e) {
-            throw $e;
+            logVar($e->getMessage(), 'Failed to establish connection to database', 'emergency');
+            $result->message = 'Error Establishing Connection to Database';
+            return $result;
         }
 
         try {
@@ -56,39 +61,58 @@ abstract class BaseModel
             $resultSet = $ps->execute($values);
 
             if ($resultSet === false) {
-                throw new \Exception('error inserting');
+                logVar('INSERT FAILED', '', 'critical');
+                $result->message = 'failed to insert record';
+                return $result;
             }
 
         } catch (\Exception $e) {
-            throw $e;
+            logVar($e->getCode(), 'EXCEPTION INSERTING: '.$e->getMessage(), 'critical');
+
+            $result->message = 'Error Occurred Inserting Record';
+            return $result;
         }
 
-        return true;
-    }
+        $result->success = true;
+        $result->message = 'success';
 
+        return $result;
+    }
 
     /**
      * @param $query
      * @param array $params
-     * @return array|boolean
-     * @throws \Exception
+     * @return \stdClass
      */
     public function select($query, array $params)
     {
+        $result = $this->setResponse();
+
         try {
             $pdo = $this->getPdoConnection('read');
+        } catch( \Exception $e) {
+            logVar($e->getMessage(), 'Failed to establish connection to database', 'emergency');
 
+            $result->message = 'Error Establishing Connection to Database';
+            return $result;
+        }
+
+        try {
             $statement = $pdo->prepare($query);
 
             $resultSet = $statement->execute($params);
 
             if ($resultSet === false) {
-                logVar('query result is false');
-                return false;
-            }
+                logVar('SELECT FAILED', '', 'critical');
 
+                $result->message = 'Error Finding Records';
+                return $result;
+            }
         } catch( \Exception $e) {
-            throw $e;
+            logVar($e->getCode(), 'EXCEPTION SELECTING: '.$e->getMessage(), 'critical');
+
+            $result->message = 'Error Occurred While Finding Records';
+            return $result;
         }
 
         $this->results = [];
@@ -97,59 +121,104 @@ abstract class BaseModel
             $this->results[] = $row;
         }
 
-        if (count($this->results) == 0) {
-            return false;
+        if (count($this->results) === 0) {
+            $result->message = 'No Results';
+            return $result;
         }
 
-        return $this->results;
+        if (count($this->results) == 1) {
+            $result->results = $this->results[0];
+        } else {
+            $result->results = $this->results;
+        }
+
+        $result->success = true;
+        $result->message = 'success';
+
+        return $result;
     }
 
     /**
      * @param string $query
      * @param array $params
-     * @return bool
-     * @throws \Exception
+     * @return \stdClass
      */
     public function update($query, array $params)
     {
+        $result = $this->setResponse();
+
         try {
             $pdo = $this->getPdoConnection('write');
+        } catch( \Exception $e) {
+            logVar($e->getMessage(), 'Failed to establish connection to database', 'emergency');
+
+            $result->message = 'Error Establishing Connection to Database';
+            return $result;
+        }
+
+        try {
             $statement = $pdo->prepare($query);
             $resultSet = $statement->execute($params);
 
             if ($resultSet === false) {
-                logVar('failed to update');
-                throw new \Exception('failed to update');
+                logVar('UPDATE FAILED', '', 'critical');
+
+                $result->message = 'Failed to Update User';
+                return $result;
             }
         } catch (\Exception $e) {
-            throw new \Exception('error '.$e->getMessage());
+            logVar($e->getCode(), 'EXCEPTION UPDATING: '.$e->getMessage(), 'critical');
+
+            $result->message = 'Error Occurred Updating User';
+            return $result;
         }
 
-        return true;
+        $result->success = true;
+        $result->message = 'success';
+
+        return $result;
     }
 
     /**
      * @param string $query
      * @param array $params
-     * @return bool
-     * @throws \Exception
+     * @return \stdClass
      */
     public function delete($query, array $params)
     {
+        $result = $this->setResponse();
+
         try {
-            $pdo       = $this->getPdoConnection('write');
+            $pdo = $this->getPdoConnection('write');
+        } catch( \Exception $e) {
+            logVar($e->getMessage(), 'Failed to establish connection to database', 'emergency');
+
+            $result->message = 'Error Establishing Connection to Database';
+            return $result;
+        }
+
+        try {
             $statement = $pdo->prepare($query);
+
             $resultSet = $statement->execute($params);
 
             if ($resultSet === false) {
-                logVar('failed to delete');
-                throw new \Exception('failed to delete');
+                logVar('DELETE FAILED', '', 'critical');
+
+                $result->message = 'Failed to Remove User';
+                return $result;
             }
         } catch (\Exception $e) {
-            throw $e;
+            logVar($e->getCode(), 'EXCEPTION DELETING: '.$e->getMessage(), 'critical');
+
+            $result->message = 'Failed to Remove User';
+            return $result;
         }
 
-        return true;
+        $result->success = true;
+        $result->message = 'success';
+
+        return $result;
     }
 
     /**
@@ -164,34 +233,61 @@ abstract class BaseModel
     /**
      * allows for the array which stores results to be set to something
      * different, or pre-populated with some data
-     *
+     * @param array $values
      * @return $this
      */
     public function setResults(array $values)
     {
-        return $this->results = $values;
+        $this->results = $values;
         return $this;
     }
 
+    /**
+     * @param string $configName
+     * @return $this
+     */
     public function setReadConnectionId($configName)
     {
         $this->readConnectionId = $configName;
         return $this;
     }
 
+    /**
+     * @param string $configName
+     * @return $this
+     */
     public function setWriteConnectionId($configName)
     {
         $this->writeConnectionId = $configName;
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getReadConnectionId()
     {
         return $this->readConnectionId;
     }
 
+    /**
+     * @return string
+     */
     public function getWriteConnectionId()
     {
         return $this->writeConnectionId;
+    }
+
+    /**
+     * @return \stdClass
+     */
+    public function setResponse()
+    {
+        $response = new \stdClass();
+        $response->success = false;
+        $response->message = '';
+        $response->results = [];
+
+        return $response;
     }
 }

@@ -4,7 +4,6 @@ namespace Main\Controllers;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
 
-
 abstract class BaseController
 {
     use RequestTrait;
@@ -28,7 +27,7 @@ abstract class BaseController
     abstract public function delete(ServerRequest $request, Response $response);
 
     /**
-     * Method to process HTTP GET reqeusts
+     * Method to process HTTP GET requests
      * @param ServerRequest $request
      * @param Response $response
      * @return Response
@@ -52,7 +51,7 @@ abstract class BaseController
     abstract public function options(ServerRequest $request, Response $response);
 
     /**
-     * Method to process HTTP PATCH reqeusts
+     * Method to process HTTP PATCH requests
      * @param ServerRequest $request
      * @param Response $response
      * @return Response

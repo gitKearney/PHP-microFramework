@@ -16,8 +16,19 @@ class JwtService
 
     }
 
+    /**
+     * @param $userId
+     * @param $userEmail
+     * @return $this
+     * @throws \Exception
+     */
     public function createJwt($userId, $userEmail)
     {
+        $result = new \stdClass();
+        $result->success = false;
+        $result->message = '';
+        $result->results = [];
+
         # get the config
         $config    = getAppConfigSettings();
 
@@ -44,12 +55,26 @@ class JwtService
         // set the expiry time to x hour y minutes
         $ttl = "PT".$config->jwt->max_hours."H".$config->jwt->max_minutes."M";
 
-        $interval = new \DateInterval($ttl);
+        try
+        {
+            $interval = new \DateInterval($ttl);
+        }
+        catch (\Exception $e) {
+            // default to 1 hour
+            logVar($e->getMessage(), 'ERROR: '.$e->getCode());
+            $interval = new \DateInterval('PT1H');
+        }
+
         $currentTime->add($interval);
         $responseToken->exp = $currentTime->format('U');
 
         // set a unique JSON token ID
-        $responseToken->jti = base64_encode(random_bytes(32));
+        try {
+            $responseToken->jti = base64_encode(random_bytes(32));
+        } catch(\Exception $e) {
+            logVar($e->getMessage(), 'ERROR: '.$e->getCode());
+            throw $e;
+        }
 
         // set the user's info as our data
         $responseToken->data = $tokenUserData;
