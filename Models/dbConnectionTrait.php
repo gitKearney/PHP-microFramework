@@ -98,6 +98,8 @@ trait dbConnectionTrait
         }
 
         try {
+            logVar($dsnString, "DSN String: ");
+
             $pdo = new \PDO($dsnString, $user, $pass);
 
             # set the error level on our PDO object to not fail silently
