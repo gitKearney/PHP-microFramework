@@ -18,10 +18,15 @@ class Users extends BaseModel
      */
     public function __construct()
     {
-        // your database credentials in config/credentials.php
-        // In this example, the app will run selects on a different server
-        // than were writes occur. So, we set the values of the connection to 
-        // be different
+        // TODO: change product_database to name of key with your database
+        // credentials in config/credentials.php
+
+        # In this example, the app will run selects on a different server
+        # than were writes occur. So, we set the values of the connection to
+        # be different.
+
+        # You could also create a key/value pair called "user_database" and have
+        # the login credentials there
         $this->readConnectionId  = 'read_database';
         $this->writeConnectionId = 'write_database';
     }

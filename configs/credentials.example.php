@@ -16,7 +16,7 @@ $config = new stdClass();
 // You can add as many database connection details by creating a new stdClass
 // as a property to $config
 
-// This demonstrates how to use use 1 database for reading and a different 
+// This demonstrates how to use use 1 database for reading and a different
 // database for writing.
 $config->read_database = new stdClass();
 $config->read_database->type = 'mysql';
@@ -35,9 +35,9 @@ $config->write_database->user = 'write_user';
 $config->write_database->pass = 'secret';
 
 // The model has two properties: readConnectionId and writeConnectionId, which
-// tell the model what database to use for reading and writing. 
+// tell the model what database to use for reading and writing.
 
-// If you will be reading/writing to same database set readConnectionId & 
+// If you will be reading/writing to same database set readConnectionId &
 // writeConnectionId to the same value, and create a new config key, like so
 $config->product_database = new stdClass();
 $config->product_database->type = 'mysql';
@@ -68,3 +68,5 @@ $config->jwt->max_hours = '1';
 $config->jwt->max_minutes = '30';
 $config->jwt->key = 'ice cream!';
 
+# Debug settings
+$config->debug->authUsers =  false;

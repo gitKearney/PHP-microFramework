@@ -16,10 +16,15 @@ class Products extends BaseModel
      */
     public function __construct()
     {
-        // TODO: change product_database to name of key with your database 
+        // TODO: change product_database to name of key with your database
         // credentials in config/credentials.php
-        // In this example, the app will read from and write to the same server,
-        // so, we set the connection IDs to be the same
+
+
+        # In this example, the app will read from and write to the same server,
+        # so, we set the connection IDs to be the same.
+
+        # You can also use the read/write key values. But, here, we're simulating
+        # using a different database.
         $this->readConnectionId  = 'product_database';
         $this->writeConnectionId = 'product_database';
     }
@@ -192,7 +197,7 @@ class Products extends BaseModel
                 continue;
             }
 
-            # you can add extra protection here to make sure that the key is 
+            # you can add extra protection here to make sure that the key is
             # on the approved list. But, since, we're using prepared statements
             # any junk the user enters will just return an error
             $set .= $key.' = :'.$key.',';

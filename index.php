@@ -98,9 +98,10 @@ try {
 $container = require_once __DIR__.'/Factories/Definitions.php';
 $router = new RegexRouter;
 
+# put routes here, make sure the default route is last
 include_once __DIR__.'/Routes/AuthRoutes.php';
 include_once __DIR__.'/Routes/UserRoutes.php';
 include_once __DIR__.'/Routes/ProductRoutes.php';
-include_once __DIR__.'/Routes/DefaultRoute.php';
+include_once __DIR__.'/Routes/DefaultRoute.php'; # no more routes below here
 
 $router->execute($_SERVER['REQUEST_URI'], $container);
