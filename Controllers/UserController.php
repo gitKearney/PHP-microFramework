@@ -49,22 +49,24 @@ class UserController extends BaseController
     {
         $id = null;
 
-//        try {
-//            /**
-//             * @var \stdClass()
-//             */
-//            $user = $this->jwtService->decodeWebToken($request->getHeaders());
-//        } catch (\Exception $e) {
-//            $body = json_encode([
-//                'error_code' => $e->getCode(),
-//                'error_msg'  => $e->getMessage(),
-//            ]);
-//
-//            $returnResponse = $response->withHeader('Content-Type', 'application/json');
-//            $returnResponse->getBody()->write($body);
-//
-//            return $returnResponse;
-//        }
+       try {
+           /**
+            * @var \stdClass()
+            */
+           if ($config->debug->authUsers) {
+              $user = $this->jwtService->decodeWebToken($request->getHeaders());
+            }
+       } catch (\Exception $e) {
+           $body = json_encode([
+               'error_code' => $e->getCode(),
+               'error_msg'  => $e->getMessage(),
+           ]);
+
+           $returnResponse = $response->withHeader('Content-Type', 'application/json');
+           $returnResponse->getBody()->write($body);
+
+           return $returnResponse;
+       }
 
         # TODO: examine if user has permissions to this method
 
@@ -87,19 +89,22 @@ class UserController extends BaseController
      */
     public function get(ServerRequest $request, Response $response)
     {
-        // try {
-        //     $this->jwtService->decodeWebToken($request->getHeaders());
-        // } catch (\Exception $e) {
-        //     $body = json_encode([
-        //         'error_code' => $e->getCode(),
-        //         'error_msg'  => $e->getMessage(),
-        //     ]);
+        try {
+            // NOTE: config is a global variable defined in credentials.php
+            if ($config->debug->authUsers) {
+                $this->jwtService->decodeWebToken($request->getHeaders());
+            }
+        } catch (\Exception $e) {
+            $body = json_encode([
+                'error_code' => $e->getCode(),
+                'error_msg'  => $e->getMessage(),
+            ]);
 
-        //     $returnResponse = $response->withHeader('Content-Type', 'application/json');
-        //     $returnResponse->getBody()->write($body);
+            $returnResponse = $response->withHeader('Content-Type', 'application/json');
+            $returnResponse->getBody()->write($body);
 
-        //     return $returnResponse;
-        // }
+            return $returnResponse;
+        }
 
         # read the URI string and see if a GUID was passed in
         $id = $this->getUrlPathElements($request);
@@ -157,7 +162,6 @@ class UserController extends BaseController
                 ->withHeader('Content-Type', 'text/plain')
                 ->withHeader('Content-Length', "0");
         } else {
-
             $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
                 ->withHeader('Access-Control-Allow-Methods', $allowed)
                 ->withHeader('Access-Control-Allow-Headers',
@@ -180,21 +184,23 @@ class UserController extends BaseController
      */
     public function patch(ServerRequest $request, Response $response)
     {
-//        try {
-//            $this->jwtService->decodeWebToken($request->getHeaders());
-//        } catch (\Exception $e) {
-//            $body = json_encode([
-//                'error_code' => $e->getCode(),
-//                'error_msg'  => $e->getMessage(),
-//            ]);
-//
-//            $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
-//                ->withHeader('Content-Type', 'application/json');
-//
-//            $returnResponse->getBody()->write($body);
-//
-//            return $returnResponse;
-//        }
+       try {
+            if ($config->debug->authUsers) {
+                $this->jwtService->decodeWebToken($request->getHeaders());
+            }
+       } catch (\Exception $e) {
+           $body = json_encode([
+               'error_code' => $e->getCode(),
+               'error_msg'  => $e->getMessage(),
+           ]);
+
+           $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
+               ->withHeader('Content-Type', 'application/json');
+
+           $returnResponse->getBody()->write($body);
+
+           return $returnResponse;
+       }
 
         # get the POST body as a string: $request->getBody()->__toString()
 

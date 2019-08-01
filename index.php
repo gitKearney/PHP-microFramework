@@ -80,6 +80,8 @@ function logVar($var, $msg = '', $level='debug')
  */
 function getAppConfigSettings()
 {
+    // the config is defined in the config/credentials.php file. Because we use
+    // require, it's like "config" is defined in this file, even though it's not
     global $config;
 
     return $config;
@@ -94,84 +96,11 @@ try {
 }
 
 $container = require_once __DIR__.'/Factories/Definitions.php';
-
 $router = new RegexRouter;
 
-// TODO: all responses must have a status & message key
-// TODO: only return stdClass
-$userRegex = '/users(\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?/';
-$router->route($userRegex, function(Container $container) {
-
-    /**
-     * @var \Main\Controllers\UserController
-     */
-    $userController = $container['UserController'];
-
-    /**
-     * @var \Zend\Diactoros\Response
-     */
-    $response = $userController->handleRequest();
-
-    # you MUST output the header before any HTML
-    foreach($response->getHeaders() as $index => $value) {
-        header($index.': '.$value[0]);
-    }
-
-    ob_start();
-    echo $response->getBody()->__toString();
-    ob_end_flush();
-    });
-
-$router->route('/auth/', function(Container $container) {
-
-    /**
-     * @var \Main\Controllers\AuthController
-     */
-    $authController = $container['AuthController'];
-
-    /**
-     * @var \Zend\Diactoros\Response
-     */
-    $response = $authController->handleRequest();
-
-    # you MUST output the header before any HTML
-    foreach($response->getHeaders() as $index => $value) {
-        header($index.': '.$value[0]);
-    }
-
-    ob_start();
-    echo $response->getBody()->__toString();
-    ob_end_flush();
-});
-
-$router->route('/products/', function(Container $container) {
-
-    /**
-     * @var \Main\Controllers\AuthController
-     */
-    $authController = $container['ProductController'];
-
-    /**
-     * @var \Zend\Diactoros\Response
-     */
-    $response = $authController->handleRequest();
-
-    # you MUST output the header before any HTML
-    foreach($response->getHeaders() as $index => $value) {
-        header($index.': '.$value[0]);
-    }
-
-    header("Access-Control-Allow-Origin: *");
-    ob_start();
-    echo $response->getBody()->__toString();;
-    ob_end_flush();
-});
-
-$router->route('/\//', function() {
-    header("Access-Control-Allow-Origin: *");
-    ob_start();
-    echo '<pre>Index route</pre>';
-    ob_end_flush();
-});
+include_once __DIR__.'/Routes/AuthRoutes.php';
+include_once __DIR__.'/Routes/UserRoutes.php';
+include_once __DIR__.'/Routes/ProductRoutes.php';
+include_once __DIR__.'/Routes/DefaultRoute.php';
 
 $router->execute($_SERVER['REQUEST_URI'], $container);
