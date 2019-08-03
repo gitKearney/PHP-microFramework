@@ -18,7 +18,7 @@ class Users extends BaseModel
      */
     public function __construct()
     {
-        // TODO: change product_database to name of key with your database
+        // TODO: change user_database to name of key with your database
         // credentials in config/credentials.php
 
         # In this example, the app will run selects on a different server
@@ -202,7 +202,7 @@ class Users extends BaseModel
 
         // pull the password from the body
         $password        = $httpBody['password'] ?? null;
-        $this->upassword = $this->upassword = password_hash($password, PASSWORD_DEFAULT);
+        $this->upassword = $this->upassword = password_hash($password, PASSWORD_ARGON2ID);
 
         return true;
     }

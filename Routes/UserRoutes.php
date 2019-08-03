@@ -1,4 +1,6 @@
 <?php
+use Pimple\Container as Container;
+
 
 $userRegex = '/users(\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?/';
 $router->route($userRegex, function(Container $container) {

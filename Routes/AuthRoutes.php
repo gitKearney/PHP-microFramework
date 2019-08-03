@@ -1,4 +1,5 @@
 <?php
+use Pimple\Container as Container;
 
 $router->route('/auth/', function(Container $container) {
 

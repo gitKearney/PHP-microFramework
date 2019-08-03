@@ -69,4 +69,5 @@ $config->jwt->max_minutes = '30';
 $config->jwt->key = 'ice cream!';
 
 # Debug settings
+$config->debug = new \stdClass();
 $config->debug->authUsers =  false;

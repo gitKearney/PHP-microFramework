@@ -5,7 +5,7 @@ require_once 'vendor/autoload.php';
 use Main\Routers\RegexRouter;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
-use Pimple\Container;
+use Pimple\Container as Container;
 
 require_once('configs/credentials.php');
 

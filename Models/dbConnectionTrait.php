@@ -72,8 +72,14 @@ trait dbConnectionTrait
         $pdo       = null;
         $config    = getAppConfigSettings();
 
+        # the readConnectionId & writeConnectionId are defined in the model
+        # and correspond to the key from the "config.php" that should be used
+        # to connect to the database
         $readId  = $this->readConnectionId;
         $writeId = $this->writeConnectionId;
+
+        logVar($readId, "readConnectionId = ");
+        logVar($writeId, "writeConnectionId = ");
 
         switch ($mode) {
             case 'read':
@@ -99,6 +105,8 @@ trait dbConnectionTrait
 
         try {
             logVar($dsnString, "DSN String: ");
+            logVar($user, "connection user: ");
+            logVar($pass, "connection user password: ");
 
             $pdo = new \PDO($dsnString, $user, $pass);
 
