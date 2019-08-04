@@ -53,7 +53,7 @@ SET GLOBAL general_log = 'ON';
    # in the the [mysql] section change bind-address to your server's IP address
    # sudo /etc/init.d/mysqld restart
 
--- the password for all users is #!ABC123
+-- the password for all users is "#!ABC123"
 INSERT INTO users
 (
     user_id, first_name, last_name,

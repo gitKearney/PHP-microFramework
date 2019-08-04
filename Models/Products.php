@@ -30,78 +30,6 @@ class Products extends BaseModel
     }
 
     /**
-     * @param string $guid
-     * @return $this
-     */
-    public function setProductId($guid)
-    {
-        $this->productId = $guid;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getProductId()
-    {
-        return $this->productId;
-    }
-
-    /**
-     * @param string $title
-     * @return $this
-     */
-    public function setTitle($title)
-    {
-        $this->title = $title;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getTitle()
-    {
-        return $this->title;
-    }
-
-    /**
-     * @param float $price
-     * @return $this
-     */
-    public function setPrice($price)
-    {
-        $this->price = $price;
-        return $this;
-    }
-
-    /**
-     * @return float
-     */
-    public function getPrice()
-    {
-        return $this->price;
-    }
-
-    /**
-     * @param int $quantity
-     * @return $this
-     */
-    public function setQuantity($quantity)
-    {
-        $this->quantity = $quantity;
-        return $this;
-    }
-
-    /**
-     * @return int
-     */
-    public function getQuantity()
-    {
-        return $this->quantity;
-    }
-
-    /**
      * @desc pull info from the request body
      *
      * For this default database, the user table only contains 4 fields
@@ -115,12 +43,12 @@ class Products extends BaseModel
     public function setProductInfo($httpBody)
     {
         # TODO: validate that the info is good and in here
-        $this->setTitle($httpBody['title']);
-        $this->setPrice($httpBody['price']);
-        $this->setQuantity($httpBody['quantity']);
-        $this->setProductId($httpBody['id']);
-
-        return true;
+        return [
+            ':title'      => $httpBody['title'],
+            ':price'      => $httpBody['price'],
+            ':quantity'   => $httpBody['quantity'],
+            ':product_id' => $httpBody['id'],
+        ];
     }
 
     /**
@@ -224,21 +152,15 @@ class Products extends BaseModel
      * @desc inserts a user into the database
      * @return \stdClass
      */
-    public function addNewProduct()
+    public function addNewProduct($formData)
     {
         $query = 'INSERT INTO products (product_id, title, price, quantity, '
             .'created_at) '
             .'VALUES (:product_id, :title, :price, :quantity, :created_at)';
 
-        $values = [
-            ':product_id' => $this->productId,
-            ':title'      => $this->title,
-            ':quantity'   => $this->quantity,
-            ':price'      => $this->price,
-            ':created_at' => date('Y-m-d H:i:s'),
-        ];
+        $formData[':created_at'] = date('Y-m-d H:i:s');
 
-        return $this->insert($query, $values);
+        return $this->insert($query, $formData);
     }
 
     /**

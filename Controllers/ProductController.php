@@ -53,7 +53,25 @@ class ProductController extends BaseController
 
         $id = $this->getUrlPathElements($request);
 
-        # pass the id to the service method, where we'll validate if it's a 
+        $config = getAppConfigSettings();
+        try {
+            if ($config->debug->authUsers) {
+                $user = $this->jwtService->decodeWebToken($request->getHeaders());
+            }
+
+        } catch (Exception $e) {
+            $body = json_encode([
+               'error_code' => $e->getCode(),
+               'error_msg'  => $e->getMessage(),
+           ]);
+
+           $returnResponse = $response->withHeader('Content-Type', 'application/json');
+           $returnResponse->getBody()->write($body);
+
+           return $returnResponse;
+        }
+
+        # pass the id to the service method, where we'll validate if it's a
         # valid guid
         $res = json_encode($this->productService->deleteProductById($id));
 
@@ -77,7 +95,7 @@ class ProductController extends BaseController
         if ($id == null) {
             # no GUID was passed in, get all records
             $body = json_encode($this->productService->getAllProducts());
-            
+
             $returnResponse = $response->withHeader('Content-Type', 'application/json');
             $returnResponse->getBody()->write($body);
             return $returnResponse;
@@ -120,7 +138,7 @@ class ProductController extends BaseController
         # get the headers, if the request is a C.O.R.S. pre-flight request OPTIONS method
         $httpHeaders = $request->getHeaders();
 
-        # the Content-Length header MUST BE "0" 
+        # the Content-Length header MUST BE "0"
         if (! isset($httpHeaders['access-control-request-method'])) {
             $returnResponse = $response->withAddedHeader('Allow', $allowed)
                 ->withHeader('Content-Type', 'text/plain')
@@ -129,14 +147,14 @@ class ProductController extends BaseController
 
             $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
                 ->withHeader('Access-Control-Allow-Methods', $allowed)
-                ->withHeader('Access-Control-Allow-Headers', 
+                ->withHeader('Access-Control-Allow-Headers',
                     'application/x-www-form-urlencoded, X-Requested-With, content-type, Authorization')
                 ->withHeader('Content-Type', 'text/plain')
                 ->withHeader('Content-Length', "0");
         }
 
         $returnResponse->getBody()->write("");
-        
+
         return $returnResponse;
     }
 
@@ -148,6 +166,24 @@ class ProductController extends BaseController
      */
     public function patch(ServerRequest $request, Response $response)
     {
+        $config = getAppConfigSettings();
+        try {
+            if ($config->debug->authUsers) {
+                $user = $this->jwtService->decodeWebToken($request->getHeaders());
+            }
+
+        } catch (Exception $e) {
+            $body = json_encode([
+               'error_code' => $e->getCode(),
+               'error_msg'  => $e->getMessage(),
+           ]);
+
+           $returnResponse = $response->withHeader('Content-Type', 'application/json');
+           $returnResponse->getBody()->write($body);
+
+           return $returnResponse;
+        }
+
         # get the POST body as a string: $request->getBody()->__toString()
 
         # extract the HTTP BODY into an array
@@ -170,9 +206,27 @@ class ProductController extends BaseController
      */
     public function post(ServerRequest $request, Response $response)
     {
+        $config = getAppConfigSettings();
+        try {
+            if ($config->debug->authUsers) {
+                $user = $this->jwtService->decodeWebToken($request->getHeaders());
+            }
+
+        } catch (Exception $e) {
+            $body = json_encode([
+               'error_code' => $e->getCode(),
+               'error_msg'  => $e->getMessage(),
+           ]);
+
+           $returnResponse = $response->withHeader('Content-Type', 'application/json');
+           $returnResponse->getBody()->write($body);
+
+           return $returnResponse;
+        }
+
         # if the content type isn't set, default to empty string.
         $contentType = $request->getHeaders()['content-type'][0] ?? '';
-        
+
         $requestBody =[];
 
         # if the header is JSON (application/json), parse the data using JSON decode

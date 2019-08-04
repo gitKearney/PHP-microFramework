@@ -53,6 +53,7 @@ class UserController extends BaseController
            /**
             * @var \stdClass()
             */
+           $config = getAppConfigSettings();
            if ($config->debug->authUsers) {
               $user = $this->jwtService->decodeWebToken($request->getHeaders());
             }
@@ -91,6 +92,7 @@ class UserController extends BaseController
     {
         try {
             // NOTE: config is a global variable defined in credentials.php
+            $config = getAppConfigSettings();
             if ($config->debug->authUsers) {
                 $this->jwtService->decodeWebToken($request->getHeaders());
             }
@@ -126,7 +128,7 @@ class UserController extends BaseController
 
         $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
             ->withHeader('Content-Type', 'application/json');
-        
+
         $returnResponse->getBody()->write($res);
 
         return $returnResponse;
@@ -184,23 +186,25 @@ class UserController extends BaseController
      */
     public function patch(ServerRequest $request, Response $response)
     {
-       try {
+        try {
+            // NOTE: config is a global variable defined in credentials.php
+            $config = getAppConfigSettings();
             if ($config->debug->authUsers) {
                 $this->jwtService->decodeWebToken($request->getHeaders());
             }
-       } catch (\Exception $e) {
-           $body = json_encode([
+        } catch (\Exception $e) {
+            $body = json_encode([
                'error_code' => $e->getCode(),
                'error_msg'  => $e->getMessage(),
-           ]);
+            ]);
 
-           $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
-               ->withHeader('Content-Type', 'application/json');
+            $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Content-Type', 'application/json');
 
-           $returnResponse->getBody()->write($body);
+            $returnResponse->getBody()->write($body);
 
            return $returnResponse;
-       }
+        }
 
         # get the POST body as a string: $request->getBody()->__toString()
 
@@ -273,7 +277,11 @@ class UserController extends BaseController
         $requestBody = $this->userService->parseServerRequest($request);
 
         try {
-            $res = $this->userService->updateUser($requestBody);
+            // NOTE: config is a global variable defined in credentials.php
+            $config = getAppConfigSettings();
+            if ($config->debug->authUsers) {
+                $res = $this->userService->updateUser($requestBody);
+            }
         } catch (\Exception $e) {
             $res = new \stdClass();
             $res->error = $e->getCode();

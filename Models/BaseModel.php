@@ -48,6 +48,9 @@ abstract class BaseModel
         # The values array would be defined as: [':val' => 'val']
         $result = $this->setResponse();
 
+        logVar($query, 'QUERY = ');
+        logVar($values, 'PARAMS = ');
+
         try {
             $pdo = $this->getPdoConnection('write');
         } catch( \Exception $e) {
@@ -98,6 +101,9 @@ abstract class BaseModel
         }
 
         try {
+            logVar($query, 'query = ');
+            logVar($params, 'params = ');
+
             $statement = $pdo->prepare($query);
 
             $resultSet = $statement->execute($params);
@@ -122,6 +128,7 @@ abstract class BaseModel
         }
 
         if (count($this->results) === 0) {
+            $result->success = true;
             $result->message = 'No Results';
             return $result;
         }

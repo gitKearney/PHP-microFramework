@@ -128,7 +128,7 @@ class ProductService extends BaseService
             return $response;
         }
 
-        $response = $this->products->addNewProduct();
+        $response = $this->products->addNewProduct($goodData);
         return $response;
     }
 

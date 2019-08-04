@@ -12,14 +12,41 @@ NOTES
 
 This uses Pimple for depdency injection. I chose Pimple because the developer must explicitly define the depdencies which means loading is faster and no sort of caching is required.
 
-The service class is where all your logic lives. 
+The service class is where all your logic lives.
 
-Write all SQL queries in the model. The HTTP body should be parsed in the 
+Write all SQL queries in the model. The HTTP body should be parsed in the
 service class.
 
 Routes
 ===
-You MUST add your routes to the index file using regex
+You MUST add your routes to the index file using
+
+    include_once __DIR__.'/Routes/{some thing}Routes.php';
+
+Routes are located in their own file in the `Routes` directory
+
+The first line must be
+
+    use Pimple\Container as Container;
+
+To add a route
+ * create a regex
+ * add the regex and an anonymous method to the router
+
+ Example:
+
+    $router->route('[0-9]', function (Container $container) {
+        $someController = $container['SomeController'];
+        $response = $someController->handleRequest();
+
+        foreach($response->getHeaders() as $index => $value) {
+            header($index.': '.$value[0]);
+        }
+
+        ob_start();
+        echo $response->getBody()->__toString();
+        ob_end_flush();
+    });
 
 FLOW
 ====
@@ -27,7 +54,7 @@ The index is called first, which autoloads a Pimple container.
 
 The anonymous function of the route uses the Pimple container to instantiate an appropriate controller (based on the route).
 
-The `handleRequest()` method is called on the controller class. This method 
+The `handleRequest()` method is called on the controller class. This method
 calls the proper method that corresponds to the HTTP verb (POST, PUT, etc)
 the request came in on.
 
@@ -48,7 +75,7 @@ To log a variable, simply call the function like so
 
     logVar($variable);
 
-You can pass in any variable to the `logVar()` function. It automatically converts 
+You can pass in any variable to the `logVar()` function. It automatically converts
 objects, arrays, and booleans to strings for easy reading in a log file
 
 
