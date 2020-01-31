@@ -4,15 +4,6 @@ namespace Main\Models;
 
 class Users extends BaseModel
 {
-    protected $firstName;
-    protected $lastName;
-    protected $upassword;
-    protected $email;
-    protected $birthday;
-    protected $id;
-    protected $createdAt;
-    protected $updatedAt;
-
     /**
      * Users constructor.
      */
@@ -136,36 +127,44 @@ class Users extends BaseModel
 
     /**
      * @desc inserts a user into the database
+     * @array $values
      * @return \stdClass
      */
-    public function addNewUser()
+    public function addNewUser($values)
     {
         $result = new \stdClass();
         $result->success = false;
         $result->message = 'Nothing to Update';
         $result->results = [];
 
-        $query = 'INSERT INTO users (user_id, first_name, last_name, upassword, '
-            .'email, birthday, created_at) '
-            .'VALUES (:user_id, :first_name, :last_name, :upassword, :email, '
-            .':birthday, :created_at)';
+        $params = [];
+        $values['created_at'] = date('Y-m-d H:i:s');
+        $valueQuery  = '(';
+        $columnQuery = '(';
 
-        $createdDate = date('Y-m-d H:i:s');
-        $values = [
-            ':user_id'    => $this->id,
-            ':first_name' => $this->firstName,
-            ':last_name'  => $this->lastName,
-            ':upassword'  => $this->upassword,
-            ':email'      => $this->email,
-            ':birthday'   => $this->birthday,
-            ':created_at' => $createdDate,
-        ];
+        foreach ($values as $column => $colValue) {
+            # create PDO column name by prepending a colon
+            $pdoColumn = ':'.$column;
+
+            # add the key to an array and set its value
+            $params[$pdoColumn] = $colValue;
+
+            # build the query string
+            $valueQuery  .= $pdoColumn.',';
+            $columnQuery .= $column.',';
+        }
+
+        # remove the trailing comma from the set string
+        $valueQuery = trim($valueQuery, ',') . ')';
+        $columnQuery = trim($columnQuery, ','). ')';
+
+        $query = 'INSERT INTO users'.$columnQuery.' VALUES '.$valueQuery;
 
         $result = $this->insert($query, $values);
 
         # if we got a success, return an object containing the
         # user's ID
-        $result->results['id'] = $this->id;
+        $result->results['id'] = $values['user_id'];
 
         return $result;
     }
@@ -189,21 +188,26 @@ class Users extends BaseModel
      *
      * Pull the params from the HTTP body and assign them to the model's data
      * @param array
-     * @return bool
+     * @return array
+     * @throws \Exception
      */
     public function setUserInfo($httpBody)
     {
+        $postValues = [];
+
         # TODO: validate that the info is good and in here
-        $this->firstName = $httpBody['first_name'] ?? null;
-        $this->lastName  = $httpBody['last_name'] ?? null;
-        $this->email     = $httpBody['email'] ?? null;
-        $this->birthday  = $httpBody['birthday'] ?? null;
-        $this->id        = $httpBody['id'] ?? null;
+        $postValues['first_name'] = $httpBody['first_name'] ?? null;
+        $postValues['last_name']  = $httpBody['last_name'] ?? null;
+        $postValues['email']      = $httpBody['email'] ?? null;
+        $postValues['birthday']   = $httpBody['birthday'] ?? null;
+        $postValues['user_id']    = $httpBody['id'] ?? null;
+        $password                 = $httpBody['password'] ?? null;
 
-        // pull the password from the body
-        $password        = $httpBody['password'] ?? null;
-        $this->upassword = $this->upassword = password_hash($password, PASSWORD_ARGON2ID);
+        if (!$password) {
+            throw new \Exception('password not set', 400);
+        }
 
-        return true;
+        $postValues['upassword'] = password_hash($password, PASSWORD_ARGON2ID);
+        return $postValues;
     }
 }

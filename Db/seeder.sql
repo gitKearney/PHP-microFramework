@@ -46,13 +46,6 @@ SET GLOBAL log_output = "FILE";
 SET GLOBAL general_log_file = "/tmp/mysql.logfile.log";
 SET GLOBAL general_log = 'ON';
 
-### ALLOW REMOTE ACCESS ###
-###########################
-# On Ubuntu
-   # open the file: /etc/mysql/mysql.conf.d/mysqld.cnf
-   # in the the [mysql] section change bind-address to your server's IP address
-   # sudo /etc/init.d/mysqld restart
-
 -- the password for all users is "#!ABC123"
 INSERT INTO users
 (

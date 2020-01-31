@@ -51,6 +51,9 @@ class UserController extends BaseController
 
        try {
            /**
+            * config is a global variable defined in credentials.php, imported
+            * into the `index.php` file and then returned via the function call
+            *
             * @var \stdClass()
             */
            $config = getAppConfigSettings();
@@ -88,10 +91,17 @@ class UserController extends BaseController
      * @param Response $response
      * @return Response
      */
-    public function get(ServerRequest $request, Response $response)
+    public function get(ServerRequest $request, Response $response, $headRequest = false)
     {
+        logVar($request, 'ServerRequest = ');
+
         try {
-            // NOTE: config is a global variable defined in credentials.php
+            /**
+             * config is a global variable defined in credentials.php, imported
+             * into the `index.php` file and then returned via the function call
+             *
+             * @var \stdClass()
+             */
             $config = getAppConfigSettings();
             if ($config->debug->authUsers) {
                 $this->jwtService->decodeWebToken($request->getHeaders());
@@ -108,18 +118,24 @@ class UserController extends BaseController
             return $returnResponse;
         }
 
+        $res = '';
+
         # read the URI string and see if a GUID was passed in
         $id = $this->getUrlPathElements($request);
 
         # if the URI is just /users/, then our ID will be null, get all records
         if ($id == null) {
             # no GUID was passed in, get all records
-            $body = json_encode($this->userService->getAllUsers());
+            $res = json_encode($this->userService->getAllUsers());
 
             $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
-                ->withHeader('Content-Type', 'application/json');
+                ->withHeader('Content-Type', 'application/json')
+                ->withHeader('Content-Length', strval(strlen($res)));
 
-            $returnResponse->getBody()->write($body);
+            if (!$headRequest) {
+                $returnResponse->getBody()->write($res);
+            }
+
             return $returnResponse;
         }
 
@@ -127,9 +143,12 @@ class UserController extends BaseController
         $res = json_encode($this->userService->findUserById($id));
 
         $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
-            ->withHeader('Content-Type', 'application/json');
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Content-Length', strlen($res));
 
-        $returnResponse->getBody()->write($res);
+        if (!$headRequest) {
+            $returnResponse->getBody()->write($res);
+        }
 
         return $returnResponse;
     }
@@ -142,7 +161,9 @@ class UserController extends BaseController
      */
     public function head(ServerRequest $request, Response $response)
     {
-        echo 'TODO: handle HEAD requests';
+        # the HEAD request should return just the headers that a GET request
+        # would return
+        return $this->get($request, $response, true);
     }
 
     /**

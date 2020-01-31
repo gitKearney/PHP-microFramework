@@ -2,14 +2,9 @@ CREATE DATABASE demo;
 
 USE demo;
 
--- create a database user, so we're not using root all the time
-CREATE USER 'someuser'@'localhost' IDENTIFIED BY 'password';
-GRANT ALTER, INSERT, SELECT, CREATE, DELETE, UPDATE, DROP ON demo.* to 'someuser'@'localhost';
-FLUSH PRIVILEGES ;
-
 -- create a user table
-DROP TABLE IF EXISTS users;
-CREATE TABLE users
+DROP TABLE IF EXISTS demo.users;
+CREATE TABLE demo.users
 (
   user_id CHAR(36) PRIMARY KEY,
   first_name VARCHAR(40) NOT NULL,
@@ -22,8 +17,9 @@ CREATE TABLE users
   updated_at DATETIME NULL
 );
 
-DROP TABLE IF EXISTS products;
-CREATE TABLE products
+-- create a products table
+DROP TABLE IF EXISTS demo.products;
+CREATE TABLE demo.products
 (
     product_id CHAR(36) PRIMARY KEY,
     title VARCHAR(32) NOT NULL,
@@ -32,3 +28,5 @@ CREATE TABLE products
     created_at DATETIME NOT NULL DEFAULT NOW(),
     updated_at DATETIME NULL
 );
+
+-- create a transaction history table

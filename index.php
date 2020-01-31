@@ -16,6 +16,7 @@ require_once('configs/credentials.php');
  */
 function logVar($var, $msg = '', $level='debug')
 {
+    # $log is defined on line 93
     global $log;
 
     $string = $msg . ' - ';
@@ -80,14 +81,14 @@ function logVar($var, $msg = '', $level='debug')
  */
 function getAppConfigSettings()
 {
-    // the config is defined in the config/credentials.php file. Because we use
-    // require, it's like "config" is defined in this file, even though it's not
+    # the config is defined in the config/credentials.php file. Because we use
+    # require, it's like "config" is defined in this file, even though it's not
     global $config;
 
     return $config;
 }
 
-// create a log channel
+# create a log channel
 try {
     $log = new Logger('name');
     $log->pushHandler(new StreamHandler($config->app_settings->log_location, Logger::DEBUG));
@@ -102,6 +103,8 @@ $router = new RegexRouter;
 include_once __DIR__.'/Routes/AuthRoutes.php';
 include_once __DIR__.'/Routes/UserRoutes.php';
 include_once __DIR__.'/Routes/ProductRoutes.php';
-include_once __DIR__.'/Routes/DefaultRoute.php'; # no more routes below here
+
+# no more routes below here
+include_once __DIR__.'/Routes/DefaultRoute.php';
 
 $router->execute($_SERVER['REQUEST_URI'], $container);

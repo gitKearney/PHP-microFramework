@@ -61,6 +61,7 @@ class UserService extends BaseService
 
         $result = $this->userModel->findUserById($userId);
         unset($result->results['password']);
+
         return $result;
     }
 
@@ -105,14 +106,20 @@ class UserService extends BaseService
     {
         # create a new GUID and add it to the body array
         $requestBody['id'] = $this->uuid->generateUuid()->getUuid();
+        $result = new \stdClass;
 
-        # set data from the HTTP body to values their matching values on the model.
-        # we are specifically avoiding just passing in the POST body.
-        # This will make you read the BODY and only add the valid fields, 
-        # and not the JUNK field some hacker added to the post
-        $this->userModel->setUserInfo($requestBody);
+        try {
+            $values = $this->userModel->setUserInfo($requestBody);
+            $result = $this->userModel->addNewUser($values);
+        } catch(\Exception $e) {
+            $result->results = [];
+            $result->message = $e->getMessage();
+            $result->success = false;
 
-        return $this->userModel->addNewUser();
+            return $result;
+        }
+
+        return $result;
     }
 
     /**
