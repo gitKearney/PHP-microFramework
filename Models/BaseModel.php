@@ -229,6 +229,52 @@ abstract class BaseModel
     }
 
     /**
+     * @param array $values
+     * @param string $tableName
+     * @return \stdClass
+     * @throws \Exception
+     */
+    public function buildInsertQuery(array $values, $tableName)
+    {
+        $sqlQuery = new \stdClass;
+        $sqlQuery->sql = '';
+        $sqlQuery->params = [];
+
+        if (count($values) === 0) {
+            throw new \Exception('Empty Body');
+        }
+        # add a create_at field to to the insert, or,if it's there, just update it
+        $values['created_at'] = date('Y-m-d H:i:s');
+
+        # this will store the column names in the values list
+        $valueQuery = '';
+
+        # this will store the array key names that correspond to the column name
+        $columnQuery = '';
+
+        foreach ($values as $columnName => $value) {
+            # create PDO column name by prepending a colon
+            $pdoColumn = ':'.$columnName;
+
+            # add the key to an array and set its value
+            $params[$pdoColumn] = $value;
+
+            # build the query string
+            $valueQuery  .= $pdoColumn.',';
+            $columnQuery .= $columnName.',';
+        }
+
+        # remove the trailing comma from the set string
+        $valueQuery = '('.trim($valueQuery, ',') . ')';
+        $columnQuery = '('.trim($columnQuery, ','). ')';
+
+        $sqlQuery->sql = 'INSERT INTO '.$tableName.' '.$columnQuery.' VALUES '.$valueQuery;
+        $sqlQuery->params = $params;
+
+        return $sqlQuery;
+    }
+
+    /**
      * Returns the array which stores results from selects
      * @return array
      */

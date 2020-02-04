@@ -129,38 +129,16 @@ class Users extends BaseModel
      * @desc inserts a user into the database
      * @array $values
      * @return \stdClass
+     * @throws \Exception
      */
     public function addNewUser($values)
     {
-        $result = new \stdClass();
-        $result->success = false;
-        $result->message = 'Nothing to Update';
-        $result->results = [];
-
-        $params = [];
-        $values['created_at'] = date('Y-m-d H:i:s');
-        $valueQuery  = '(';
-        $columnQuery = '(';
-
-        foreach ($values as $column => $colValue) {
-            # create PDO column name by prepending a colon
-            $pdoColumn = ':'.$column;
-
-            # add the key to an array and set its value
-            $params[$pdoColumn] = $colValue;
-
-            # build the query string
-            $valueQuery  .= $pdoColumn.',';
-            $columnQuery .= $column.',';
+        try {
+            $query = $this->buildInsertQuery($values, 'users');
+            $result = $this->insert($query->sql, $query->params);
+        } catch (\Exception $e) {
+            throw $e;
         }
-
-        # remove the trailing comma from the set string
-        $valueQuery = trim($valueQuery, ',') . ')';
-        $columnQuery = trim($columnQuery, ','). ')';
-
-        $query = 'INSERT INTO users'.$columnQuery.' VALUES '.$valueQuery;
-
-        $result = $this->insert($query, $values);
 
         # if we got a success, return an object containing the
         # user's ID
