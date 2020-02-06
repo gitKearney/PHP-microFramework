@@ -29,7 +29,7 @@ class Users extends BaseModel
     public function findUserById($userId)
     {
         $query = 'SELECT user_id as id, first_name, last_name, birthday,'
-            .' email, upassword as password, created_at, updated_at'
+            .' roles, email, upassword as password, created_at, updated_at'
             .' FROM users WHERE user_id = :user_id LIMIT 1';
         $params = [':user_id' => $userId];
 
@@ -69,6 +69,7 @@ class Users extends BaseModel
     }
 
     /**
+     * This is an example where we update the user by user ID
      * @param array $values
      * @return \stdClass
      */
@@ -80,16 +81,14 @@ class Users extends BaseModel
         foreach ($values as $key => $value) {
             # we need to build the query string
 
-            # remove the spaces from the value, we don't ever want to allow spaces
+            # our users table has no nullable fields, so, if the value is an
+            # empty string just skip it
             $value = trim($value);
             if ( strlen($value) == 0) {
-                # catch someone who just puts in empty spaces for the user
-                # information, and ignore this field
                 continue;
             }
 
-            # if the key is the id, then, set the where clause, otherwise
-            # add the key to the where clause
+            # in this example, we are only updating by the user id
             if ($key == 'id') {
                 $updateValues[':user_id'] = $value;
                 $where .= 'user_id = :user_id';

@@ -326,7 +326,11 @@ class UserController extends BaseController
 
             # if auth user flag is set, verify that the JWT is good
             if ($config->debug->authUsers) {
-                $this->jwtService->decodeWebToken($request->getHeaders());
+                $decodedJwt = $this->jwtService->decodeWebToken($request->getHeaders());
+
+                # does the user have access to this method?
+                $userId = $decodedJwt->data->userId;
+                $this->userService->userAllowedAction($userId, );
             }
 
             $result = $this->userService->updateUser($requestBody);

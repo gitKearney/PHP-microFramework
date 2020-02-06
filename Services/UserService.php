@@ -179,4 +179,41 @@ class UserService extends BaseService
 
         return $requestBody;
     }
+
+    /**
+     * @param string $guid
+     * @param string $requiredRole
+     * @return bool
+     * @throws \Exception
+     */
+    public function userAllowedAction($guid, $requiredRole)
+    {
+        $user = $this->userModel->findUserById($guid);
+
+        $userRole = $user->results['roles'] ?? 'read';
+
+        if (strcasecmp($userRole, 'create') === 0) {
+            # this is the equivalent of "admin" so, grant it
+            return true;
+        }
+
+        $hasEditPermission   = strcasecmp($userRole, 'edit') <=> 0 ? false : true;
+        $hasReadPermission   = strcasecmp($userRole, 'read') <=> 0 ? false : true;
+
+        $needsEditPermission = strcasecmp($requiredRole, 'edit') <=> 0 ? false : true;
+        if ($needsEditPermission && $hasEditPermission) {
+            return true;
+        }
+
+        $needsReadPermission = strcasecmp($requiredRole, 'read') <=> 0 ? false : true;
+        if ($needsReadPermission && $hasEditPermission) {
+            return true;
+        }
+
+        if ($needsReadPermission && $hasReadPermission) {
+            return true;
+        }
+
+        return false;
+    }
 }
