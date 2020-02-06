@@ -58,7 +58,7 @@ class UserController extends BaseController
             */
            $config = getAppConfigSettings();
            if ($config->debug->authUsers) {
-              $user = $this->jwtService->decodeWebToken($request->getHeaders());
+              $this->jwtService->decodeWebToken($request->getHeaders());
             }
        } catch (\Exception $e) {
            $body = json_encode([
@@ -72,7 +72,7 @@ class UserController extends BaseController
            return $returnResponse;
        }
 
-        # TODO: examine if user has permissions to this method
+        // TODO: examine if user has permissions to this method
 
         $id = $this->getUrlPathElements($request);
 
@@ -90,10 +90,17 @@ class UserController extends BaseController
      * @param ServerRequest $request
      * @param Response $response
      * @return Response
+     * @throws \Exception
      */
     public function get(ServerRequest $request, Response $response, $headRequest = false)
     {
         logVar($request, 'ServerRequest = ');
+
+        $result = new \stdClass();
+
+        $result->success = false;
+        $result->message = '';
+        $result->results = [];
 
         try {
             /**
@@ -107,10 +114,10 @@ class UserController extends BaseController
                 $this->jwtService->decodeWebToken($request->getHeaders());
             }
         } catch (\Exception $e) {
-            $body = json_encode([
-                'error_code' => $e->getCode(),
-                'error_msg'  => $e->getMessage(),
-            ]);
+            $result->results['error_code'] = $e->getCode();
+            $result->message = $e->getMessage();
+
+            $body = json_encode($result);
 
             $returnResponse = $response->withHeader('Content-Type', 'application/json');
             $returnResponse->getBody()->write($body);
@@ -118,15 +125,13 @@ class UserController extends BaseController
             return $returnResponse;
         }
 
-        $res = '';
-
         # read the URI string and see if a GUID was passed in
         $id = $this->getUrlPathElements($request);
 
         # if the URI is just /users/, then our ID will be null, get all records
         if ($id == null) {
-            # no GUID was passed in, get all records
-            $res = json_encode($this->userService->getAllUsers());
+            $users = $this->userService->getAllUsers();
+            $res = json_encode($users);
 
             $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
                 ->withHeader('Content-Type', 'application/json')
@@ -142,9 +147,21 @@ class UserController extends BaseController
         # pass the id to the service method, where we'll validate it
         $res = json_encode($this->userService->findUserById($id));
 
-        $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
-            ->withHeader('Content-Type', 'application/json')
-            ->withHeader('Content-Length', strlen($res));
+        try {
+            $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Content-Type', 'application/json')
+                ->withHeader('Content-Length', strval(strlen($res)));
+        } catch(\Exception $e) {
+            $result->message = $e->getMessage();
+            $result->results['error_code'] = $e->getCode();
+
+            $body = json_encode($result);
+
+            $returnResponse = $response->withHeader('Content-Type', 'application/json');
+            $returnResponse->getBody()->write($body);
+
+            return $returnResponse;
+        }
 
         if (!$headRequest) {
             $returnResponse->getBody()->write($res);
@@ -294,22 +311,31 @@ class UserController extends BaseController
      */
     public function put(ServerRequest $request, Response $response)
     {
+        $result = new \stdClass();
+
+        $result->success = false;
+        $result->message = '';
+        $result->results = [];
+
         # extract the HTTP BODY into an array
         $requestBody = $this->userService->parseServerRequest($request);
 
         try {
             // NOTE: config is a global variable defined in credentials.php
             $config = getAppConfigSettings();
+
+            # if auth user flag is set, verify that the JWT is good
             if ($config->debug->authUsers) {
-                $res = $this->userService->updateUser($requestBody);
+                $this->jwtService->decodeWebToken($request->getHeaders());
             }
+
+            $result = $this->userService->updateUser($requestBody);
         } catch (\Exception $e) {
-            $res = new \stdClass();
-            $res->error = $e->getCode();
-            $res->message = $e->getMessage();
+            $result->message = $e->getMessage();
+            $result->results['error_id'] = $e->getCode();
         }
 
-        $jsonRes = json_encode($res);
+        $jsonRes = json_encode($result);
         $returnResponse = $response
             ->withHeader('Access-Control-Allow-Origin', '*')
             ->withHeader('Content-Type', 'application/json');

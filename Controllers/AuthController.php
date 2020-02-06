@@ -119,7 +119,7 @@ class AuthController extends BaseController
     }
 
     /**
-     * Method to process HTTP PATCH reqeusts
+     * Method to process HTTP PATCH requests
      * @param ServerRequest $request
      * @param Response $response
      * @return Response
@@ -165,7 +165,7 @@ class AuthController extends BaseController
             $error->success = false;
             $error->message  = 'Failed to create web token';
 
-            logVar($e->getCode(), 'EXCEPTION CREATING TOKEN: ', $e->getMessage(), 'critical');
+            logVar('EXCEPTION CREATING TOKEN: ', $e->getMessage(), 'critical');
             $jsonRes = json_encode($error);
 
             $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')

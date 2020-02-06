@@ -32,6 +32,7 @@ class UuidService
     /**
      * @desc create a new UUID
      * @return $this
+     * @throws \Exception
      */
     public function generateUuid()
     {
@@ -40,7 +41,7 @@ class UuidService
         } elseif (function_exists("openssl_random_pseudo_bytes")) {
             $bytes = openssl_random_pseudo_bytes(ceil(self::UUID_LENGTH / 2));
         } else {
-            throw new Exception("no cryptographically secure random function available");
+            throw new \Exception("no cryptographically secure random function available");
         }
 
         $uuid = substr(bin2hex($bytes), 0, self::UUID_LENGTH);

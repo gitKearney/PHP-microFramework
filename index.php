@@ -5,7 +5,6 @@ require_once 'vendor/autoload.php';
 use Main\Routers\RegexRouter;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
-use Pimple\Container as Container;
 
 require_once('configs/credentials.php');
 
@@ -96,8 +95,15 @@ try {
     die('INVALID CONFIGURATION: '.$e->getCode().'-'.$e->getMessage()."\n");
 }
 
+/**
+ * @var \Pimple\Container
+ */
 $container = require_once __DIR__.'/Factories/Definitions.php';
-$router = new RegexRouter;
+
+/**
+ * @var RegexRouter
+ */
+$router   = new RegexRouter;
 
 # put routes here, make sure the default route is last
 include_once __DIR__.'/Routes/AuthRoutes.php';

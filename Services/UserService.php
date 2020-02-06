@@ -84,12 +84,12 @@ class UserService extends BaseService
         $result = new \stdClass();
 
         $result->success = false;
-        $result->message = "$userId";
+        $result->message = "$userId removed";
         $result->results = [];
 
         if (! $this->uuid->isValidGuid($userId)) {
             # user sent in an invalid GUID, return no records found
-            $result->message = 'Invalid User Found';
+            $result->message = 'No User Found';
             return $result;
         }
 
@@ -125,16 +125,15 @@ class UserService extends BaseService
     /**
      * @param array $requestBody
      * @return \stdClass
+     * @throws \Exception
      */
     public function updateUser(array $requestBody)
     {
-        if (! $this->uuid->isValidGuid($requestBody['id'])) {
-            # user sent in an invalid GUID, return no records found
-            $result = new \stdClass();
+        $userId = isset($requestBody['id']) ? $requestBody['id'] : '';
 
-            $result->success = false;
-            $result->message = 'No User Found';
-            $result->results = [];
+        if (!$this->uuid->isValidGuid($userId)) {
+            # user sent in an invalid GUID, return no records found
+            throw new \Exception('No User Found', 400);
         }
 
         # update the updated_at timestamp value
@@ -165,7 +164,7 @@ class UserService extends BaseService
 
         # check to see if the body contains an id, if not, process this
         # as a PATCH request instead of a PUT request
-        if (! isset($requestBody['id'])) {
+        if (!isset($requestBody['id'])) {
             # pull the id from the URI by splitting the URI field on the route
             $uriParts = preg_split('/\/users\//', $request->getServerParams()['REQUEST_URI']);
 

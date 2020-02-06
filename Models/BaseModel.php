@@ -48,9 +48,6 @@ abstract class BaseModel
         # The values array would be defined as: [':val' => 'val']
         $result = $this->setResponse();
 
-        logVar($query, 'QUERY = ');
-        logVar($values, 'PARAMS = ');
-
         try {
             $pdo = $this->getPdoConnection('write');
         } catch( \Exception $e) {
@@ -243,7 +240,7 @@ abstract class BaseModel
         if (count($values) === 0) {
             throw new \Exception('Empty Body');
         }
-        # add a create_at field to to the insert, or,if it's there, just update it
+        # add a create_at field to to the insert, update the value if it exists
         $values['created_at'] = date('Y-m-d H:i:s');
 
         # this will store the column names in the values list
