@@ -38,6 +38,12 @@ ON demo.* to 'demo_superuser'@'%';
 -- After adding a new user, run this command
 FLUSH PRIVILEGES;
 
+-- Edit the /etc/mysql/mysql.conf.d/mysqld.cnf file
+-- change the line bind-address=127.0.0.1 to bind-address=0.0.0.0
+-- then restart MySQL server: sudo service mysql restart
+
+-- now you can log into the MySQL server using the following command
+-- mysql --user=demo_superuser --password=super_secret --database=demo --port=3306 --host=10.0.2.15
 
 /*** COOL MySQL DEBUGGING TRICKS ***/
 
@@ -48,7 +54,11 @@ SET GLOBAL log_output = "FILE";
 SET GLOBAL general_log_file = "/tmp/mysql.logfile.log";
 SET GLOBAL general_log = 'ON';
 
--- the password for all users is "#!ABC123"
+###########################
+## SAMPLE USERS          ##
+###########################
+
+-- the password for the following users is "#!ABC123"
 INSERT INTO users
 (
     user_id, first_name, last_name,
@@ -87,8 +97,8 @@ INSERT INTO users
 (
     user_id, first_name, last_name,
     upassword,
-    email, birthday,
-    created_at, updated_at
+    email, created_at,
+    birthday, updated_at
 )
 VALUES (
     '12345678-1234-1234-1234-123456789ac0', 'Franklin', 'Pierce',
@@ -96,18 +106,3 @@ VALUES (
     'frankie.p@example.com', '2001-04-08',
     '2015-12-31', NULL
 );
-
--- test to make sure read-user can't insert record
--- INSERT INTO users
--- (
---     user_id, first_name, last_name,
---     upassword,
---     email, birthday,
---     created_at, updated_at
--- )
--- VALUES (
---     '12345678-1234-1234-1234-123456789ac1', 'John', 'Adams',
---     '$2y$10$vSyWZeSd5ypiFxRPo4EvF.78aZgRlEsZUt8iYThvqnW.Zi103Pt2i',
---     'j.a@example.com', '2001-04-08',
---     '2015-12-31', NULL
--- );

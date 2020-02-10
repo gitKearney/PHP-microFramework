@@ -13,6 +13,7 @@ CREATE TABLE demo.users
   email VARCHAR(64) NOT NULL,
   birthday DATE NOT NULL,
   roles ENUM('read', 'edit', 'create') NOT NULL,
+  active ENUM('no', 'yes') NOT NULL,
   created_at DATETIME NOT NULL DEFAULT NOW(),
   updated_at DATETIME NULL
 );

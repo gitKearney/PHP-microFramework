@@ -58,7 +58,15 @@ class UserController extends BaseController
             */
            $config = getAppConfigSettings();
            if ($config->debug->authUsers) {
-              $this->jwtService->decodeWebToken($request->getHeaders());
+               $decodedJwt = $this->jwtService->decodeWebToken($request->getHeaders());
+
+               # does the user have access to this method?
+               $userId = $decodedJwt->data->userId;
+
+               $hasPermission = $this->userService->userAllowedAction($userId, 'create');
+               if (!$hasPermission) {
+                   throw new \Exception('Action Not Allowed', '100');
+               }
             }
        } catch (\Exception $e) {
            $body = json_encode([
@@ -71,8 +79,6 @@ class UserController extends BaseController
 
            return $returnResponse;
        }
-
-        // TODO: examine if user has permissions to this method
 
         $id = $this->getUrlPathElements($request);
 
@@ -216,7 +222,7 @@ class UserController extends BaseController
     }
 
     /**
-     * Method to process HTTP PATCH reqeusts
+     * Method to process HTTP PATCH requests
      * @param ServerRequest $request
      * @param Response $response
      * @return Response
@@ -228,7 +234,15 @@ class UserController extends BaseController
             // NOTE: config is a global variable defined in credentials.php
             $config = getAppConfigSettings();
             if ($config->debug->authUsers) {
-                $this->jwtService->decodeWebToken($request->getHeaders());
+                $decodedJwt = $this->jwtService->decodeWebToken($request->getHeaders());
+
+                # does the user have access to this method?
+                $userId = $decodedJwt->data->userId;
+
+                $hasPermission = $this->userService->userAllowedAction($userId, 'create');
+                if (!$hasPermission) {
+                    throw new \Exception('Action Not Allowed', '100');
+                }
             }
         } catch (\Exception $e) {
             $body = json_encode([
@@ -330,7 +344,12 @@ class UserController extends BaseController
 
                 # does the user have access to this method?
                 $userId = $decodedJwt->data->userId;
-                $this->userService->userAllowedAction($userId, );
+
+
+                $hasPermission = $this->userService->userAllowedAction($userId, 'edit');
+                if (!$hasPermission) {
+                    throw new \Exception('Action Not Allowed', '100');
+                }
             }
 
             $result = $this->userService->updateUser($requestBody);
@@ -356,12 +375,17 @@ class UserController extends BaseController
     protected function getUrlPathElements(ServerRequest $request)
     {
         # split the URI field on the route
-        $vals = preg_split('/\/users\//', $request->getServerParams()['REQUEST_URI']);
+        $requestUri = $request->getServerParams()['REQUEST_URI'];
+        $vals = preg_split('/\/users\//', $requestUri);
         if (empty($vals[1])) {
 
             return '';
         }
 
-        return $vals[1];
+        # now strip off anything after the guid
+        $queryParams = preg_split('/\?/', $vals[1]);
+        $userId = $queryParams[0];
+
+        return $userId;
     }
 }
