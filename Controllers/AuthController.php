@@ -143,18 +143,14 @@ class AuthController extends BaseController
      */
     public function post(ServerRequest $request, Response $response)
     {
-        # if the content type isn't set, default to empty string.
-        $contentType = $request->getHeaders()['content-type'][0] ?? '';
+        $requestBody = $this->parsePost($request, $response);
 
-        $requestBody =[];
-
-        # if the header is JSON (application/json), parse the data using JSON decode
-        if (strpos($contentType, 'application/json') !== false) {
-            $requestBody = json_decode($request->getBody()->__toString(), true);
-        } else if (strpos($contentType, 'application/x-www-form-urlencoded') !== false) {
-            # otherwise if the headers are application/x-www-form-urlencoded, everything
-            # should already be in an array
-            $requestBody = $request->getParsedBody();
+        if (count($requestBody) == 0) {
+            $res = ['error_code' => 400, 'error_msg' => 'No input data'];
+            $jsonRes = json_encode($res);
+            $returnResponse = $response->withHeader('Content-Type', 'application/json');
+            $returnResponse->getBody()->write($jsonRes);
+            return $returnResponse;
         }
 
         try {

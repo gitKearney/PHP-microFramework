@@ -2,9 +2,9 @@
 
 namespace Main\Services;
 
+use Exception;
 use Main\Models\Products;
-use Main\Services\UuidService;
-use Zend\Diactoros\Request;
+use stdClass;
 use Zend\Diactoros\ServerRequest;
 
 class ProductService extends BaseService
@@ -17,16 +17,15 @@ class ProductService extends BaseService
     /**
      * @var UuidService
      */
-    private $uuid;
+    private $uuidService;
 
     /**
-     * This contains all the business logic associated with our users.
-     * The Factory\UserFactory class creates all the necessary classes that
+     * This contains all the business logic associated with our products.
+     * The Factory class creates all the necessary classes that
      * this service class needs.
      *
      * Then, this class calls the appropriate service or model to update the
-     * user or do anything else: like, send a password reset email, or reset
-     * the password to a default value
+     * product or do anything else
      *
      * @param Products $productModel
      * @param UuidService $uuidService
@@ -34,20 +33,17 @@ class ProductService extends BaseService
     public function __construct(Products $productModel, UuidService $uuidService)
     {
         $this->products = $productModel;
-        $this->uuid = $uuidService;
+        $this->uuidService = $uuidService;
     }
 
     /**
      * pull the GUID from the URI
      * @param string $productId
-     * @return \stdClass
+     * @return stdClass
      */
     public function getProductInfo($productId)
     {
-        $response = new \stdClass();
-        $response->success = false;
-        $response->message = '';
-        $response->results = [];
+        $response = $this->createResponseObject();
 
         # test the GUID to see if it's good
         if (! $this->uuid->isValidGuid($productId)) {
@@ -71,7 +67,7 @@ class ProductService extends BaseService
 
     /**
      * @desc returns all users from database
-     * @return \stdClass
+     * @return stdClass
      */
     public function getAllProducts()
     {
@@ -80,20 +76,13 @@ class ProductService extends BaseService
 
     /**
      * @param string $productId
-     * @return \stdClass
+     * @return stdClass
      */
     public function deleteProductById($productId)
     {
-        $response = new \stdClass();
-        $response->success = false;
-        $response->message = '';
-        $response->results = [];
+        $response = $this->createResponseObject();
 
-        if (! $this->uuid->isValidGuid($productId)) {
-            # user sent in an invalid GUID, return no records found
-            # user sent in an invalid GUID, return no records found
-            logVar($productId, "Invalid GUID: ");
-
+        if (! $this->uuidService->isValidGuid($productId)) {
             $response->message =  'No product found';
             return $response;
         }
@@ -103,42 +92,32 @@ class ProductService extends BaseService
 
     /**
      * @param array $requestBody
-     * @return \stdClass
+     * @return stdClass
      */
     public function addNewProduct(array $requestBody)
     {
-        $response = new \stdClass();
-        $response->success = false;
-        $response->message = '';
-        $response->results = [];
+        $response = $this->createResponseObject();
 
         try{
             # create a new GUID and add it to the body array
-            $requestBody['id'] = $this->uuid->generateUuid()->getUuid();
-        } catch (\Exception $e) {
-            logVar($e->getCode(), 'EXCEPTION CREATING UUID: '.$e->getMessage(), 'emergency');
-
-            $response->message = 'Error Creating User';
+            $requestBody['id'] = $this->uuidService->generateUuid()->getUuid();
+        } catch (Exception $e) {
+            $response->message = 'Error Creating Product';
             return $response;
         }
 
-        $goodData = $this->products->setProductInfo($requestBody);
-        if (!$goodData) {
-            $response->message = 'Bad Data';
-            return $response;
-        }
-
-        $response = $this->products->addNewProduct($goodData);
+        $values = $this->products->setProductInfo($requestBody);
+        $response = $this->products->addNewProduct($values);
         return $response;
     }
 
     /**
      * @param array $requestBody
-     * @return \stdClass
+     * @return stdClass
      */
     public function updateProduct(array $requestBody)
     {
-        $response = new \stdClass();
+        $response = new stdClass();
         $response->success = false;
         $response->message = '';
         $response->results = [];

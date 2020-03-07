@@ -2,8 +2,10 @@
 
 namespace Main\Controllers;
 
+use Exception;
 use Main\Services\JwtService;
 use Main\Services\ProductService;
+use Main\Services\UserService;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
 
@@ -26,6 +28,11 @@ class ProductController extends BaseController
     private $productService;
 
     /**
+     * @var UserService
+     */
+    private $userService;
+
+    /**
      *
      * Handle HTTP request that goes to the "product" URI.
      *
@@ -34,11 +41,13 @@ class ProductController extends BaseController
      *
      * @param JwtService $jwtService
      * @param ProductService $productService
+     * @param UserService $userService
      */
-    public function __construct(JwtService $jwtService, ProductService $productService)
+    public function __construct(JwtService $jwtService, ProductService $productService, UserService $userService)
     {
         $this->jwtService  = $jwtService;
         $this->productService = $productService;
+        $this->userService = $userService;
     }
 
     /**
@@ -46,6 +55,7 @@ class ProductController extends BaseController
      * @param ServerRequest $request
      * @param Response $response
      * @return Response
+     * @throws Exception
      */
     public function delete(ServerRequest $request, Response $response)
     {
@@ -56,7 +66,19 @@ class ProductController extends BaseController
         $config = getAppConfigSettings();
         try {
             if ($config->debug->authUsers) {
-                $user = $this->jwtService->decodeWebToken($request->getHeaders());
+
+                /**
+                 * @var \stdClass
+                 */
+                $decodedJwt = $this->jwtService->decodeWebToken($request->getHeaders());
+
+                # does the user have access to this method?
+                $userId = $decodedJwt->data->userId;
+                $hasPermission = $this->userService->userAllowedAction($userId, 'create');
+
+                if (!$hasPermission) {
+                    throw new Exception('Action Not Allowed', '100');
+                }
             }
 
         } catch (Exception $e) {
@@ -88,6 +110,35 @@ class ProductController extends BaseController
      */
     public function get(ServerRequest $request, Response $response)
     {
+
+        try {
+            // NOTE: config is a global variable defined in credentials.php
+            $config = getAppConfigSettings();
+            if ($config->debug->authUsers) {
+                $decodedJwt = $this->jwtService->decodeWebToken($request->getHeaders());
+
+                # does the user have access to this method?
+                $userId = $decodedJwt->data->userId;
+
+                $hasPermission = $this->userService->userAllowedAction($userId, 'create');
+                if (!$hasPermission) {
+                    throw new Exception('Action Not Allowed', '100');
+                }
+            }
+        } catch (Exception $e) {
+            $body = json_encode([
+                'error_code' => $e->getCode(),
+                'error_msg'  => $e->getMessage(),
+            ]);
+
+            $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Content-Type', 'application/json');
+
+            $returnResponse->getBody()->write($body);
+
+            return $returnResponse;
+        }
+
         # read the URI string and see if a GUID was passed in
         $id = $this->getUrlPathElements($request);
 
@@ -133,29 +184,7 @@ class ProductController extends BaseController
      */
     public function options(ServerRequest $request, Response $response)
     {
-        $allowed = 'OPTIONS, GET, POST, PATCH, PUT, DELETE, HEAD';
-
-        # get the headers, if the request is a C.O.R.S. pre-flight request OPTIONS method
-        $httpHeaders = $request->getHeaders();
-
-        # the Content-Length header MUST BE "0"
-        if (! isset($httpHeaders['access-control-request-method'])) {
-            $returnResponse = $response->withAddedHeader('Allow', $allowed)
-                ->withHeader('Content-Type', 'text/plain')
-                ->withHeader('Content-Length', "0");
-        } else {
-
-            $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
-                ->withHeader('Access-Control-Allow-Methods', $allowed)
-                ->withHeader('Access-Control-Allow-Headers',
-                    'application/x-www-form-urlencoded, X-Requested-With, content-type, Authorization')
-                ->withHeader('Content-Type', 'text/plain')
-                ->withHeader('Content-Length', "0");
-        }
-
-        $returnResponse->getBody()->write("");
-
-        return $returnResponse;
+        return $this->defaultOptions($request, $response);
     }
 
     /**
@@ -209,9 +238,16 @@ class ProductController extends BaseController
         $config = getAppConfigSettings();
         try {
             if ($config->debug->authUsers) {
-                $user = $this->jwtService->decodeWebToken($request->getHeaders());
-            }
+                $decodedJwt = $this->jwtService->decodeWebToken($request->getHeaders());
 
+                # does the user have access to this method?
+                $userId = $decodedJwt->data->userId;
+
+                $hasPermission = $this->userService->userAllowedAction($userId, 'create');
+                if (!$hasPermission) {
+                    throw new Exception('Action Not Allowed', '100');
+                }
+            }
         } catch (Exception $e) {
             $body = json_encode([
                'error_code' => $e->getCode(),
@@ -224,24 +260,7 @@ class ProductController extends BaseController
            return $returnResponse;
         }
 
-        # if the content type isn't set, default to empty string.
-        $contentType = $request->getHeaders()['content-type'][0] ?? '';
-
-        $requestBody =[];
-
-        # if the header is JSON (application/json), parse the data using JSON decode
-        if (strpos($contentType, 'application/json') !== false) {
-            $requestBody = json_decode($request->getBody()->__toString(), true);
-
-            logVar($requestBody, 'JSON POST BODY ');
-
-        } else if (strpos($contentType, 'application/x-www-form-urlencoded') !== false) {
-            # otherwise if the headers are application/x-www-form-urlencoded, everything
-            # should already be in an array
-            $requestBody = $request->getParsedBody();
-
-            logVar($requestBody, 'URL FORM ENCODED POST BODY ');
-        }
+        $requestBody = $this->parsePost($request, $response);
 
         if (count($requestBody) == 0) {
             $res = ['error_code' => 400, 'error_msg' => 'No input data'];
@@ -283,17 +302,26 @@ class ProductController extends BaseController
     /**
      * Looks at the REQUEST_URI to see if it is /path/ or /path/{guid}
      * @param ServerRequest $request
-     * @return array
+     * @return string
      */
     protected function getUrlPathElements(ServerRequest $request)
     {
         # split the URI field on the route
-        $vals = preg_split('/\/products\//', $request->getServerParams()['REQUEST_URI']);
+        $requestUri = $request->getServerParams()['REQUEST_URI'];
+        $vals = preg_split('/\/products\//', $requestUri);
         if (empty($vals[1])) {
-
-            return null;
+            return '';
         }
 
-        return $vals[1];
+        $matches = [];
+
+        # search for only the GUID
+        preg_match('/^[a-f\d]{8}-([a-f\d]{4}-){3}[a-f\d]{12}$/i', $vals[1], $matches);
+
+        if (empty($matches[0])) {
+            return '';
+        }
+
+        return $matches[0];
     }
 }

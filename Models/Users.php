@@ -2,6 +2,9 @@
 
 namespace Main\Models;
 
+use Exception;
+use stdClass;
+
 class Users extends BaseModel
 {
     /**
@@ -24,7 +27,7 @@ class Users extends BaseModel
 
     /**
      * @param string $userId
-     * @return \stdClass
+     * @return stdClass
      */
     public function findUserById($userId)
     {
@@ -40,7 +43,7 @@ class Users extends BaseModel
 
     /**
      * Returns all users form the database
-     * @return \stdClass
+     * @return stdClass
      */
     public function getAllUsers()
     {
@@ -56,7 +59,7 @@ class Users extends BaseModel
 
     /**
      * @param string $userId
-     * @return \stdClass
+     * @return stdClass
      */
     public function deleteUserById($userId)
     {
@@ -71,7 +74,7 @@ class Users extends BaseModel
     /**
      * This is an example where we update the user by user ID
      * @param array $values
-     * @return \stdClass
+     * @return stdClass
      */
     public function updateUser(array $values)
     {
@@ -109,7 +112,7 @@ class Users extends BaseModel
 
         if (strlen($set) == 0) {
             # the user didn't pass anything in, send a success
-            $result = new \stdClass();
+            $result = new stdClass();
             $result->success = false;
             $result->message = 'Nothing to Update';
             $result->results = [];
@@ -127,15 +130,15 @@ class Users extends BaseModel
     /**
      * @desc inserts a user into the database
      * @array $values
-     * @return \stdClass
-     * @throws \Exception
+     * @return stdClass
+     * @throws Exception
      */
     public function addNewUser($values)
     {
         try {
             $query = $this->buildInsertQuery($values, 'users');
             $result = $this->insert($query->sql, $query->params);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw $e;
         }
 
@@ -148,7 +151,7 @@ class Users extends BaseModel
 
     /**
      * @param string $email
-     * @return \stdClass
+     * @return stdClass
      */
     public function findUserByEmail($email)
     {
@@ -166,7 +169,7 @@ class Users extends BaseModel
      * Pull the params from the HTTP body and assign them to the model's data
      * @param array
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function setUserInfo($httpBody)
     {
@@ -181,7 +184,7 @@ class Users extends BaseModel
         $password                 = $httpBody['password'] ?? null;
 
         if (!$password) {
-            throw new \Exception('password not set', 400);
+            throw new Exception('password not set', 400);
         }
 
         $postValues['upassword'] = password_hash($password, PASSWORD_ARGON2ID);

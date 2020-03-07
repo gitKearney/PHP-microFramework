@@ -135,4 +135,55 @@ abstract class BaseController
     }
 
     abstract protected function getUrlPathElements(ServerRequest $request);
+
+    /**
+     * @param ServerRequest $request
+     * @param Response $response
+     * @return Response
+     */
+    public function defaultOptions(ServerRequest $request, Response $response)
+    {
+        $allowed = 'OPTIONS, GET, POST, PATCH, PUT, DELETE, HEAD';
+
+        # get the headers, if the request is a C.O.R.S. pre-flight request OPTIONS method
+        $httpHeaders = $request->getHeaders();
+
+        # the Content-Length header MUST BE "0"
+        if (! isset($httpHeaders['access-control-request-method'])) {
+            $returnResponse = $response->withAddedHeader('Allow', $allowed)
+                ->withHeader('Content-Type', 'text/plain')
+                ->withHeader('Content-Length', "0");
+        } else {
+
+            $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Access-Control-Allow-Methods', $allowed)
+                ->withHeader('Access-Control-Allow-Headers',
+                    'application/x-www-form-urlencoded, X-Requested-With, content-type, Authorization')
+                ->withHeader('Content-Type', 'text/plain')
+                ->withHeader('Content-Length', "0");
+        }
+
+        $returnResponse->getBody()->write("");
+
+        return $returnResponse;
+    }
+
+    public function parsePost(ServerRequest $request, Response $response)
+    {
+        # if the content type isn't set, default to empty string.
+        $contentType = $request->getHeaders()['content-type'][0] ?? '';
+
+        $requestBody =[];
+
+        # if the header is JSON (application/json), parse the data using JSON decode
+        if (strpos($contentType, 'application/json') !== false) {
+            $requestBody = json_decode($request->getBody()->__toString(), true);
+        } else if (strpos($contentType, 'application/x-www-form-urlencoded') !== false) {
+            # otherwise if the headers are application/x-www-form-urlencoded, everything
+            # should already be in an array
+            $requestBody = $request->getParsedBody();
+        }
+
+        return $requestBody;
+    }
 }

@@ -92,7 +92,7 @@ $appContainer['Products'] = function(Container $container) {
  * @return ProductService
  */
 $appContainer['ProductService'] = function(Container $container) {
-    return new ProductService($container['Products'], $container['UuidService']);
+    return new ProductService($container['Products'], $container['UuidService'], $container['UserService']);
 };
 
 /**
@@ -100,7 +100,7 @@ $appContainer['ProductService'] = function(Container $container) {
  * @return ProductController
  */
 $appContainer['ProductController'] = function(Container $container) {
-    return new ProductController($container['JwtService'], $container['ProductService']);
+    return new ProductController($container['JwtService'], $container['ProductService'], $container['UserService']);
 };
 
 return $appContainer;

@@ -2,6 +2,9 @@
 
 namespace Main\Models;
 
+use Exception;
+use stdClass;
+
 class Products extends BaseModel
 {
     private $productId;
@@ -38,22 +41,23 @@ class Products extends BaseModel
      *
      * Pull the params from the HTTP body and assign them to the model's data
      * @param array
-     * @return bool
+     * @return array
      */
     public function setProductInfo($httpBody)
     {
-        # TODO: validate that the info is good and in here
-        return [
-            ':title'      => $httpBody['title'],
-            ':price'      => $httpBody['price'],
-            ':quantity'   => $httpBody['quantity'],
-            ':product_id' => $httpBody['id'],
-        ];
+        $postValues = [];
+
+        $postValues['product_id']  = $httpBody['id'] ?? null;
+        $postValues['title']       = $httpBody['title'] ?? null;
+        $postValues['price']       = $httpBody['price'] ?? null;
+        $postValues['quantity']    = $httpBody['quantity'] ?? null;
+
+        return $postValues;
     }
 
     /**
      * @param string $productId
-     * @return \stdClass
+     * @return stdClass
      */
     public function findProductById($productId)
     {
@@ -69,7 +73,7 @@ class Products extends BaseModel
 
     /**
      * Returns all users form the database
-     * @return \stdClass
+     * @return stdClass
      */
     public function getAllProducts()
     {
@@ -83,7 +87,7 @@ class Products extends BaseModel
 
     /**
      * @param string $productId
-     * @return \stdClass
+     * @return stdClass
      */
     public function deleteProductById($productId)
     {
@@ -94,11 +98,11 @@ class Products extends BaseModel
 
     /**
      * @param array $values
-     * @return \stdClass
+     * @return stdClass
      */
     public function updateProduct(array $values)
     {
-        $result = new \stdClass();
+        $result = new stdClass();
         $result->success = false;
         $result->message = 'Nothing to Update';
         $result->results = [];
@@ -150,23 +154,28 @@ class Products extends BaseModel
 
     /**
      * @desc inserts a user into the database
-     * @return \stdClass
+     * @return stdClass
      */
     public function addNewProduct($formData)
     {
-        $query = 'INSERT INTO products (product_id, title, price, quantity, '
-            .'created_at) '
-            .'VALUES (:product_id, :title, :price, :quantity, :created_at)';
+        try {
+            $query = $this->buildInsertQuery($formData, 'products');
+            $result = $this->insert($query->sql, $query->params);
+        } catch (Exception $e) {
+            throw $e;
+        }
 
-        $formData[':created_at'] = date('Y-m-d H:i:s');
+        # if we got a success, return an object containing the
+        # product's GUID
+        $result->results['id'] = $formData['product_id'];
 
-        return $this->insert($query, $formData);
+        return $result;
     }
 
     /**
      * @param $title
-     * @return \stdClass
-     * @throws \Exception
+     * @return stdClass
+     * @throws Exception
      */
     public function findProductByTitle($title)
     {

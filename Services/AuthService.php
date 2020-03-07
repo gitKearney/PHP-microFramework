@@ -3,10 +3,6 @@
 namespace Main\Services;
 
 use Main\Models\Users;
-use Main\Services\UuidService;
-use Main\Services\JwtService;
-use Zend\Diactoros\Request;
-use Zend\Diactoros\ServerRequest;
 
 class AuthService
 {
@@ -19,11 +15,6 @@ class AuthService
      * @var JwtService
      */
     protected $jwtService;
-
-    /**
-     * @var UuidService
-     */
-    protected $uuidService;
 
     public function __construct(Users $users, JwtService $jwtService)
     {

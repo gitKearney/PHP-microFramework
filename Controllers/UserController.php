@@ -6,6 +6,10 @@ use Main\Services\UserService;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
 
+use Exception;
+use stdClass;
+
+
 /**
  * Class UserController
  * @package Main\Controllers
@@ -54,7 +58,7 @@ class UserController extends BaseController
             * config is a global variable defined in credentials.php, imported
             * into the `index.php` file and then returned via the function call
             *
-            * @var \stdClass()
+            * @var stdClass()
             */
            $config = getAppConfigSettings();
            if ($config->debug->authUsers) {
@@ -65,10 +69,10 @@ class UserController extends BaseController
 
                $hasPermission = $this->userService->userAllowedAction($userId, 'create');
                if (!$hasPermission) {
-                   throw new \Exception('Action Not Allowed', '100');
+                   throw new Exception('Action Not Allowed', '100');
                }
             }
-       } catch (\Exception $e) {
+       } catch (Exception $e) {
            $body = json_encode([
                'error_code' => $e->getCode(),
                'error_msg'  => $e->getMessage(),
@@ -95,14 +99,14 @@ class UserController extends BaseController
      * Method to process HTTP GET requests
      * @param ServerRequest $request
      * @param Response $response
+     * @param bool $headRequest
      * @return Response
-     * @throws \Exception
      */
     public function get(ServerRequest $request, Response $response, $headRequest = false)
     {
         logVar($request, 'ServerRequest = ');
 
-        $result = new \stdClass();
+        $result = new stdClass();
 
         $result->success = false;
         $result->message = '';
@@ -113,13 +117,13 @@ class UserController extends BaseController
              * config is a global variable defined in credentials.php, imported
              * into the `index.php` file and then returned via the function call
              *
-             * @var \stdClass()
+             * @var stdClass()
              */
             $config = getAppConfigSettings();
             if ($config->debug->authUsers) {
                 $this->jwtService->decodeWebToken($request->getHeaders());
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $result->results['error_code'] = $e->getCode();
             $result->message = $e->getMessage();
 
@@ -157,7 +161,7 @@ class UserController extends BaseController
             $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
                 ->withHeader('Content-Type', 'application/json')
                 ->withHeader('Content-Length', strval(strlen($res)));
-        } catch(\Exception $e) {
+        } catch(Exception $e) {
             $result->message = $e->getMessage();
             $result->results['error_code'] = $e->getCode();
 
@@ -197,28 +201,7 @@ class UserController extends BaseController
      */
     public function options(ServerRequest $request, Response $response)
     {
-        $allowed = 'OPTIONS, GET, POST, PATCH, PUT, DELETE, HEAD';
-
-        # get the headers, if the request is a CORS preflight request OPTIONS method
-        $httpHeaders = $request->getHeaders();
-
-        # the Content-Length header MUST BE "0"
-        if (! isset($httpHeaders['access-control-request-method'])) {
-            $returnResponse = $response->withAddedHeader('Allow', $allowed)
-                ->withHeader('Content-Type', 'text/plain')
-                ->withHeader('Content-Length', "0");
-        } else {
-            $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
-                ->withHeader('Access-Control-Allow-Methods', $allowed)
-                ->withHeader('Access-Control-Allow-Headers',
-                    'application/x-www-form-urlencoded, X-Requested-With, content-type, Authorization')
-                ->withHeader('Content-Type', 'text/plain')
-                ->withHeader('Content-Length', "0");
-        }
-
-        $returnResponse->getBody()->write("");
-
-        return $returnResponse;
+        return $this->defaultOptions($request, $response);
     }
 
     /**
@@ -226,7 +209,7 @@ class UserController extends BaseController
      * @param ServerRequest $request
      * @param Response $response
      * @return Response
-     * @throws \Exception
+     * @throws Exception
      */
     public function patch(ServerRequest $request, Response $response)
     {
@@ -241,10 +224,10 @@ class UserController extends BaseController
 
                 $hasPermission = $this->userService->userAllowedAction($userId, 'create');
                 if (!$hasPermission) {
-                    throw new \Exception('Action Not Allowed', '100');
+                    throw new Exception('Action Not Allowed', '100');
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $body = json_encode([
                'error_code' => $e->getCode(),
                'error_msg'  => $e->getMessage(),
@@ -282,19 +265,7 @@ class UserController extends BaseController
      */
     public function post(ServerRequest $request, Response $response)
     {
-        # if the content type isn't set, default to empty string.
-        $contentType = $request->getHeaders()['content-type'][0] ?? '';
-
-        $requestBody =[];
-
-        # if the header is JSON (application/json), parse the data using JSON decode
-        if (strpos($contentType, 'application/json') !== false) {
-            $requestBody = json_decode($request->getBody()->__toString(), true);
-        } else if (strpos($contentType, 'application/x-www-form-urlencoded') !== false) {
-            # otherwise if the headers are application/x-www-form-urlencoded, everything
-            # should already be in an array
-            $requestBody = $request->getParsedBody();
-        }
+        $requestBody = $this->parsePost($request, $response);
 
         if (count($requestBody) == 0) {
             $res = ['error_code' => 400, 'error_msg' => 'No input data'];
@@ -303,7 +274,6 @@ class UserController extends BaseController
             $returnResponse->getBody()->write($jsonRes);
             return $returnResponse;
         }
-
 
         $res = $this->userService->addNewUser($requestBody);
 
@@ -325,7 +295,7 @@ class UserController extends BaseController
      */
     public function put(ServerRequest $request, Response $response)
     {
-        $result = new \stdClass();
+        $result = new stdClass();
 
         $result->success = false;
         $result->message = '';
@@ -345,15 +315,14 @@ class UserController extends BaseController
                 # does the user have access to this method?
                 $userId = $decodedJwt->data->userId;
 
-
                 $hasPermission = $this->userService->userAllowedAction($userId, 'edit');
                 if (!$hasPermission) {
-                    throw new \Exception('Action Not Allowed', '100');
+                    throw new Exception('Action Not Allowed', '100');
                 }
             }
 
             $result = $this->userService->updateUser($requestBody);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $result->message = $e->getMessage();
             $result->results['error_id'] = $e->getCode();
         }
@@ -374,18 +343,24 @@ class UserController extends BaseController
      */
     protected function getUrlPathElements(ServerRequest $request)
     {
+        $config = getAppConfigSettings();
+
         # split the URI field on the route
         $requestUri = $request->getServerParams()['REQUEST_URI'];
         $vals = preg_split('/\/users\//', $requestUri);
         if (empty($vals[1])) {
-
             return '';
         }
 
-        # now strip off anything after the guid
-        $queryParams = preg_split('/\?/', $vals[1]);
-        $userId = $queryParams[0];
+        $matches = [];
 
-        return $userId;
+        # search for only the GUID
+        preg_match($config->regex->guid, $vals[1], $matches);
+
+        if (empty($matches[0])) {
+            return '';
+        }
+
+        return $matches[0];
     }
 }

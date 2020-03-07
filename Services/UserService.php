@@ -3,8 +3,6 @@
 namespace Main\Services;
 
 use Main\Models\Users;
-use Main\Services\UuidService;
-use Zend\Diactoros\Request;
 use Zend\Diactoros\ServerRequest;
 
 class UserService extends BaseService
