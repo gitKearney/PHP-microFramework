@@ -46,8 +46,7 @@ class ProductService extends BaseService
         $response = $this->createResponseObject();
 
         # test the GUID to see if it's good
-        if (! $this->uuid->isValidGuid($productId)) {
-            # user sent in an invalid GUID, return no records found
+        if (! $this->uuidService->isValidGuid($productId)) {
             # user sent in an invalid GUID, return no records found
             logVar($productId, "Invalid GUID: ");
 
@@ -122,7 +121,7 @@ class ProductService extends BaseService
         $response->message = '';
         $response->results = [];
 
-        if (! $this->uuid->isValidGuid($requestBody['id'])) {
+        if (! $this->uuidService->isValidGuid($requestBody['id'])) {
             # user sent in an invalid GUID, return no records found
             logVar($requestBody['id'], "invalid GUID: ");
 

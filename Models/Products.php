@@ -63,7 +63,7 @@ class Products extends BaseModel
     {
         $query = 'SELECT product_id as id, title, price, quantity,'
             .' created_at, updated_at'
-            .' FROM products WHERE product_id = :product LIMIT 1';
+            .' FROM products WHERE product_id = :product_id LIMIT 1';
         $params = [':product_id' => $productId];
 
         $result = $this->select($query, $params);
@@ -114,12 +114,13 @@ class Products extends BaseModel
             # we need to build the query string
 
             # remove the spaces from the value, we don't ever want to allow spaces
-            $value = trim($value);
-            if ( strlen($value) == 0) {
-                # catch someone who just puts in empty spaces for the user
-                # information, and ignore this field
-                continue;
-            }
+            # TODO: we probably should allow them to "clear" out info
+            #$value = trim($value);
+            #if ( strlen($value) == 0) {
+            #    # catch someone who just puts in empty spaces for the user
+            #    # information, and ignore this field
+            #    continue;
+            #}
 
             # if the key is the id, then, set the where clause, otherwise
             # add the key to the where clause
