@@ -73,6 +73,21 @@ class ProductService extends BaseService
         return $this->products->getAllProducts();
     }
 
+    public function getProductsByQueryString(array $queryParams)
+    {
+        $response = $this->createResponseObject();
+
+        try {
+            $query = $this->products->getProductByParams($queryParams);
+            $response = $this->products->select($query->sql, $query->params);
+        } catch (Exception $e) {
+            $response->message = $e->getMessage();
+            return $response;
+        }
+
+        return $response;
+    }
+
     /**
      * @param string $productId
      * @return stdClass

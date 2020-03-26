@@ -72,6 +72,16 @@ class Products extends BaseModel
     }
 
     /**
+     * @param $params
+     * @return stdClass
+     * @throws Exception
+     */
+    public function getProductByParams($params)
+    {
+        return $this->buildSearchString($params);
+    }
+
+    /**
      * Returns all users form the database
      * @return stdClass
      */
@@ -163,7 +173,10 @@ class Products extends BaseModel
             $query = $this->buildInsertQuery($formData, 'products');
             $result = $this->insert($query->sql, $query->params);
         } catch (Exception $e) {
-            throw $e;
+            $response = $this->setResponse();
+            $response->message = $e->getMessage();
+
+            return $response;
         }
 
         # if we got a success, return an object containing the
@@ -183,7 +196,6 @@ class Products extends BaseModel
         $query  = 'SELECT * FROM products WHERE title LIKE  "%:title%"';
         $params = [':title' => $title,];
 
-        $result = $this->select($query, $params);
-        return $result;
+        return $this->select($query, $params);
     }
 }

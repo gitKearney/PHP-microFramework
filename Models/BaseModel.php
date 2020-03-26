@@ -2,7 +2,10 @@
 
 namespace Main\Models;
 
+use Exception;
 use Main\Models\dbConnectionTrait;
+use PDO;
+use stdClass;
 
 /**
  * Class BaseModel
@@ -33,7 +36,7 @@ abstract class BaseModel
      *
      * @param string $query
      * @param array $values
-     * @return \stdClass
+     * @return stdClass
      */
     public function insert($query, array $values = [])
     {
@@ -50,7 +53,7 @@ abstract class BaseModel
 
         try {
             $pdo = $this->getPdoConnection('write');
-        } catch( \Exception $e) {
+        } catch( Exception $e) {
             logVar($e->getMessage(), 'Failed to establish connection to database', 'emergency');
             $result->message = 'Error Establishing Connection to Database';
             return $result;
@@ -66,7 +69,7 @@ abstract class BaseModel
                 return $result;
             }
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             logVar($e->getCode(), 'EXCEPTION INSERTING: '.$e->getMessage(), 'critical');
 
             $result->message = 'Error Occurred Inserting Record';
@@ -82,7 +85,7 @@ abstract class BaseModel
     /**
      * @param $query
      * @param array $params
-     * @return \stdClass
+     * @return stdClass
      */
     public function select($query, array $params)
     {
@@ -90,7 +93,7 @@ abstract class BaseModel
 
         try {
             $pdo = $this->getPdoConnection('read');
-        } catch( \Exception $e) {
+        } catch( Exception $e) {
             logVar($e->getMessage(), 'Failed to establish connection to database', 'emergency');
 
             $result->message = 'Error Establishing Connection to Database';
@@ -111,7 +114,7 @@ abstract class BaseModel
                 $result->message = 'Error Finding Records';
                 return $result;
             }
-        } catch( \Exception $e) {
+        } catch( Exception $e) {
             logVar($e->getCode(), 'EXCEPTION SELECTING: '.$e->getMessage(), 'critical');
 
             $result->message = 'Error Occurred While Finding Records';
@@ -120,7 +123,7 @@ abstract class BaseModel
 
         $this->results = [];
 
-        while($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
+        while($row = $statement->fetch(PDO::FETCH_ASSOC)) {
             $this->results[] = $row;
         }
 
@@ -145,7 +148,7 @@ abstract class BaseModel
     /**
      * @param string $query
      * @param array $params
-     * @return \stdClass
+     * @return stdClass
      */
     public function update($query, array $params)
     {
@@ -153,7 +156,7 @@ abstract class BaseModel
 
         try {
             $pdo = $this->getPdoConnection('write');
-        } catch( \Exception $e) {
+        } catch( Exception $e) {
             logVar($e->getMessage(), 'Failed to establish connection to database', 'emergency');
 
             $result->message = 'Error Establishing Connection to Database';
@@ -170,7 +173,7 @@ abstract class BaseModel
                 $result->message = 'Failed to Update User';
                 return $result;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             logVar($e->getCode(), 'EXCEPTION UPDATING: '.$e->getMessage(), 'critical');
 
             $result->message = 'Error Occurred Updating User';
@@ -186,7 +189,7 @@ abstract class BaseModel
     /**
      * @param string $query
      * @param array $params
-     * @return \stdClass
+     * @return stdClass
      */
     public function delete($query, array $params)
     {
@@ -194,7 +197,7 @@ abstract class BaseModel
 
         try {
             $pdo = $this->getPdoConnection('write');
-        } catch( \Exception $e) {
+        } catch( Exception $e) {
             logVar($e->getMessage(), 'Failed to establish connection to database', 'emergency');
 
             $result->message = 'Error Establishing Connection to Database';
@@ -212,7 +215,7 @@ abstract class BaseModel
                 $result->message = 'Failed to Remove User';
                 return $result;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             logVar($e->getCode(), 'EXCEPTION DELETING: '.$e->getMessage(), 'critical');
 
             $result->message = 'Failed to Remove User';
@@ -228,17 +231,19 @@ abstract class BaseModel
     /**
      * @param array $values
      * @param string $tableName
-     * @return \stdClass
-     * @throws \Exception
+     * @return stdClass
+     * @throws Exception
      */
     public function buildInsertQuery(array $values, $tableName)
     {
-        $sqlQuery = new \stdClass;
+        $response = $this->setResponse();
+
+        $sqlQuery = new stdClass;
         $sqlQuery->sql = '';
         $sqlQuery->params = [];
 
         if (count($values) === 0) {
-            throw new \Exception('Empty Body');
+            throw new Exception('Empty Body');
         }
         # add a create_at field to to the insert, update the value if it exists
         $values['created_at'] = date('Y-m-d H:i:s');
@@ -254,7 +259,7 @@ abstract class BaseModel
             $pdoColumn = ':'.$columnName;
 
             # add the key to an array and set its value
-            $params[$pdoColumn] = $value;
+            $sqlQuery->params[$pdoColumn] = $value;
 
             # build the query string
             $valueQuery  .= $pdoColumn.',';
@@ -266,7 +271,38 @@ abstract class BaseModel
         $columnQuery = '('.trim($columnQuery, ','). ')';
 
         $sqlQuery->sql = 'INSERT INTO '.$tableName.' '.$columnQuery.' VALUES '.$valueQuery;
-        $sqlQuery->params = $params;
+
+        return $sqlQuery;
+    }
+
+    /**
+     * @param array $params
+     * @return stdClass
+     * @throws Exception
+     */
+    public function buildSearchString(array $params)
+    {
+        $sqlQuery = new stdClass;
+        $sqlQuery->sql = '';
+        $sqlQuery->params = [];
+
+        if (empty($params)) {
+            throw new Exception('Empty Search Params');
+        }
+
+        $where = '';
+
+        foreach ($params as $columnName => $columnValue) {
+            $pdoColumn = ':'.$columnName;
+            $sqlQuery->params[$pdoColumn] = $columnValue;
+
+            $where .= $columnName.' = '.$pdoColumn.' AND ';
+        }
+
+        # strip the trailing ANDs from the where clause
+        $where = trim($where, 'AND ');
+
+        $sqlQuery->sql = 'SELECT * FROM products WHERE '.$where;
 
         return $sqlQuery;
     }
@@ -329,11 +365,11 @@ abstract class BaseModel
     }
 
     /**
-     * @return \stdClass
+     * @return stdClass
      */
     public function setResponse()
     {
-        $response = new \stdClass();
+        $response = new stdClass();
         $response->success = false;
         $response->message = '';
         $response->results = [];

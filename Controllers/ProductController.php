@@ -152,11 +152,18 @@ class ProductController extends BaseController
             return $returnResponse;
         }
 
-        # pass the id to the service method, where we'll validate it
-        $res = json_encode($this->productService->getProductInfo($id));
+        # is the ID a GUID or a query string?
+        if (is_array($id)) {
+            $res = $this->productService->getProductsByQueryString($id);
+        } else {
+            # pass the id to the service method, where we'll validate it
+            $res = $this->productService->getProductInfo($id);
+        }
+
+        $jsonRes = json_encode($res);
 
         $returnResponse = $response->withHeader('Content-Type', 'application/json');
-        $returnResponse->getBody()->write($res);
+        $returnResponse->getBody()->write($jsonRes);
 
         return $returnResponse;
     }
@@ -302,14 +309,16 @@ class ProductController extends BaseController
     /**
      * Looks at the REQUEST_URI to see if it is /path/ or /path/{guid}
      * @param ServerRequest $request
-     * @return string
+     * @return string | array
      */
     protected function getUrlPathElements(ServerRequest $request)
     {
         # split the URI field on the route
         $requestUri = $request->getServerParams()['REQUEST_URI'];
-        $vals = preg_split('/\/products\//', $requestUri);
+        $vals = preg_split('/\/products\/?\??/', $requestUri);
         if (empty($vals[1])) {
+            # this means that there is no "second" element found so the user just passed in /products
+            # to the URI - so return all products
             return '';
         }
 
@@ -318,10 +327,15 @@ class ProductController extends BaseController
         # search for only the GUID
         preg_match('/^[a-f\d]{8}-([a-f\d]{4}-){3}[a-f\d]{12}$/i', $vals[1], $matches);
 
-        if (empty($matches[0])) {
-            return '';
+        if (!empty($matches[0])) {
+            # if we found a GUID return that GUID and search for the product with that ID
+            $matches[0];
         }
 
-        return $matches[0];
+        # we don't have a guid, expand on the question mark and split the
+        $queryParams = [];
+        parse_str($vals[1], $queryParams);
+
+        return $queryParams;
     }
 }

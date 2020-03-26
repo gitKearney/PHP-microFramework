@@ -40,18 +40,16 @@ $appContainer['AuthService'] = function(Container $container) {
 };
 
 /**
- * @param Container $container
  * @return JwtService
  */
-$appContainer['JwtService'] = function(Container $container) {
+$appContainer['JwtService'] = function() {
     return new JwtService;
 };
 
 /**
- * @param Container $container
  * @return Users
  */
-$appContainer['Users'] = function (Container $container) {
+$appContainer['Users'] = function () {
     return new Users;
 };
 
@@ -64,10 +62,9 @@ $appContainer['UserController'] = function(Container $container) {
 };
 
 /**
- * @param Container $container
  * @return UuidService
  */
-$appContainer['UuidService'] = function(Container $container) {
+$appContainer['UuidService'] = function() {
     return new UuidService;
 };
 
@@ -80,10 +77,9 @@ $appContainer['UserService'] = function(Container $container) {
 };
 
 /**
- * @param Container $container
  * @return Products
  */
-$appContainer['Products'] = function(Container $container) {
+$appContainer['Products'] = function() {
     return new Products;
 };
 
@@ -92,7 +88,7 @@ $appContainer['Products'] = function(Container $container) {
  * @return ProductService
  */
 $appContainer['ProductService'] = function(Container $container) {
-    return new ProductService($container['Products'], $container['UuidService'], $container['UserService']);
+    return new ProductService($container['Products'], $container['UuidService']);
 };
 
 /**
