@@ -329,13 +329,11 @@ class ProductController extends BaseController
 
         if (!empty($matches[0])) {
             # if we found a GUID return that GUID and search for the product with that ID
-            $matches[0];
+            return $matches[0];
         }
 
-        # we don't have a guid, expand on the question mark and split the
-        $queryParams = [];
-        parse_str($vals[1], $queryParams);
-
+        # we don't have a guid, expand on the question mark and get the query params
+        $queryParams = $request->getQueryParams();
         return $queryParams;
     }
 }
