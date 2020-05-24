@@ -77,6 +77,7 @@ function logVar($var, $msg = '', $level='debug')
  * only, it returns all the settings and you have to know what you're looking
  *
  * Hey! This is faster than reading environment variables
+ * @return stdClass
  */
 function getAppConfigSettings()
 {

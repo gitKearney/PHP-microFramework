@@ -313,6 +313,8 @@ class ProductController extends BaseController
      */
     protected function getUrlPathElements(ServerRequest $request)
     {
+        $config = getAppConfigSettings();
+
         # split the URI field on the route
         $requestUri = $request->getServerParams()['REQUEST_URI'];
         $vals = preg_split('/\/products\/?\??/', $requestUri);
@@ -325,11 +327,13 @@ class ProductController extends BaseController
         $matches = [];
 
         # search for only the GUID
-        preg_match('/^[a-f\d]{8}-([a-f\d]{4}-){3}[a-f\d]{12}$/i', $vals[1], $matches);
+        preg_match($config->regex->uri_guid, $vals[1], $matches);
 
         if (!empty($matches[0])) {
             # if we found a GUID return that GUID and search for the product with that ID
-            return $matches[0];
+            # strip any ? though since our regex is inclusive
+            $guid = trim($matches[0], '?');
+            return $guid;
         }
 
         # we don't have a guid, expand on the question mark and get the query params

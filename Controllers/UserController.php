@@ -339,10 +339,13 @@ class UserController extends BaseController
     /**
      * Looks at the REQUEST_URI to see if it is /users/ or /users/{guid}
      * @param ServerRequest $request
-     * @return string
+     * @return string | array
      */
     protected function getUrlPathElements(ServerRequest $request)
     {
+        /**
+         * @var stdClass
+         */
         $config = getAppConfigSettings();
 
         # split the URI field on the route
@@ -355,12 +358,12 @@ class UserController extends BaseController
         $matches = [];
 
         # search for only the GUID
-        preg_match($config->regex->guid, $vals[1], $matches);
+        preg_match($config->regex->uri_guid, $vals[1], $matches);
 
-        if (empty($matches[0])) {
-            return '';
+        if (!empty($matches[0])) {
+            trim($matches[0], '?');;
         }
 
-        return $matches[0];
+        return $request->getQueryParams();
     }
 }
