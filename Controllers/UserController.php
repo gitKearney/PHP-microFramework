@@ -155,7 +155,13 @@ class UserController extends BaseController
         }
 
         # pass the id to the service method, where we'll validate it
-        $res = json_encode($this->userService->findUserById($id));
+        if (is_array($id)) {
+            $res = $this->userService->findUserByQueryString($id);
+        } else {
+            $res = $this->userService->findUserById($id);
+        }
+
+        $res = json_encode($res);
 
         try {
             $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
@@ -350,7 +356,7 @@ class UserController extends BaseController
 
         # split the URI field on the route
         $requestUri = $request->getServerParams()['REQUEST_URI'];
-        $vals = preg_split('/\/users\//', $requestUri);
+        $vals = preg_split('/\/users[\/?]/', $requestUri);
         if (empty($vals[1])) {
             return '';
         }
@@ -361,7 +367,7 @@ class UserController extends BaseController
         preg_match($config->regex->uri_guid, $vals[1], $matches);
 
         if (!empty($matches[0])) {
-            trim($matches[0], '?');;
+            return trim($matches[0], '?');;
         }
 
         return $request->getQueryParams();

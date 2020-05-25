@@ -78,7 +78,7 @@ class Products extends BaseModel
      */
     public function getProductByParams($params)
     {
-        return $this->buildSearchString($params);
+        return $this->buildSearchString($params, 'products');
     }
 
     /**

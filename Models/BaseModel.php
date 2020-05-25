@@ -277,10 +277,11 @@ abstract class BaseModel
 
     /**
      * @param array $params
+     * @param string $tableName
      * @return stdClass
      * @throws Exception
      */
-    public function buildSearchString(array $params)
+    public function buildSearchString(array $params, $tableName)
     {
         $sqlQuery = new stdClass;
         $sqlQuery->sql = '';
@@ -302,7 +303,7 @@ abstract class BaseModel
         # strip the trailing ANDs from the where clause
         $where = trim($where, 'AND ');
 
-        $sqlQuery->sql = 'SELECT * FROM products WHERE '.$where;
+        $sqlQuery->sql = 'SELECT * FROM '.$tableName.' WHERE '.$where;
 
         return $sqlQuery;
     }

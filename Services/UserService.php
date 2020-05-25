@@ -4,6 +4,8 @@ namespace Main\Services;
 
 use Main\Models\Users;
 use Zend\Diactoros\ServerRequest;
+use stdClass;
+use Exception;
 
 class UserService extends BaseService
 {
@@ -61,6 +63,25 @@ class UserService extends BaseService
         unset($result->results['password']);
 
         return $result;
+    }
+
+    /**
+     * @param array $queryParams
+     * @return stdClass
+     */
+    public function findUserByQueryString(array $queryParams)
+    {
+        $response = $this->createResponseObject();
+
+        try {
+            $sql = $this->userModel->getUserByParams($queryParams, 'users');
+            $response = $this->userModel->select($sql->sql, $sql->params);
+        } catch (Exception $e) {
+            $response->message = $e->getMessage();
+            return $response;
+        }
+
+        return $response;
     }
 
     /**

@@ -164,6 +164,16 @@ class Users extends BaseModel
     }
 
     /**
+     * @param $params
+     * @return stdClass
+     * @throws Exception
+     */
+    public function getUserByParams($params)
+    {
+        return $this->buildSearchString($params, 'users');
+    }
+
+    /**
      * @desc pull info from the request body
      *
      * Pull the params from the HTTP body and assign them to the model's data
