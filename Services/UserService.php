@@ -42,15 +42,11 @@ class UserService extends BaseService
     /**
      * @desc pull the GUID from the URI
      * @param string $userId
-     * @return \stdClass
+     * @return stdClass
      */
     public function findUserById($userId)
     {
-        $result = new \stdClass();
-
-        $result->success = false;
-        $result->message = '';
-        $result->results = [];
+        $result = $this->createResponseObject();
 
         # test the GUID to see if it's good
         if (! $this->uuid->isValidGuid($userId)) {
@@ -74,7 +70,7 @@ class UserService extends BaseService
         $response = $this->createResponseObject();
 
         try {
-            $sql = $this->userModel->getUserByParams($queryParams, 'users');
+            $sql = $this->userModel->getUserByParams($queryParams);
             $response = $this->userModel->select($sql->sql, $sql->params);
         } catch (Exception $e) {
             $response->message = $e->getMessage();
@@ -85,22 +81,20 @@ class UserService extends BaseService
     }
 
     /**
-     * @return \stdClass
+     * @return stdClass
      */
     public function getAllUsers()
     {
-        $result = $this->userModel->getAllUsers();
-
-        return $result;
+        return $this->userModel->getAllUsers();
     }
 
     /**
      * @param string $userId
-     * @return \stdClass
+     * @return stdClass
      */
     public function deleteUserById($userId)
     {
-        $result = new \stdClass();
+        $result = new stdClass();
 
         $result->success = false;
         $result->message = "$userId removed";
@@ -119,18 +113,19 @@ class UserService extends BaseService
 
     /**
      * @param array $requestBody
-     * @return \stdClass
+     * @throws Exception
+     * @return stdClass
      */
     public function addNewUser(array $requestBody)
     {
         # create a new GUID and add it to the body array
         $requestBody['id'] = $this->uuid->generateUuid()->getUuid();
-        $result = new \stdClass;
+        $result = new stdClass;
 
         try {
             $values = $this->userModel->setUserInfo($requestBody);
             $result = $this->userModel->addNewUser($values);
-        } catch(\Exception $e) {
+        } catch(Exception $e) {
             $result->results = [];
             $result->message = $e->getMessage();
             $result->success = false;
@@ -143,8 +138,8 @@ class UserService extends BaseService
 
     /**
      * @param array $requestBody
-     * @return \stdClass
-     * @throws \Exception
+     * @return stdClass
+     * @throws Exception
      */
     public function updateUser(array $requestBody)
     {
@@ -152,7 +147,7 @@ class UserService extends BaseService
 
         if (!$this->uuid->isValidGuid($userId)) {
             # user sent in an invalid GUID, return no records found
-            throw new \Exception('No User Found', 400);
+            throw new Exception('No User Found', 400);
         }
 
         # update the updated_at timestamp value
@@ -203,7 +198,7 @@ class UserService extends BaseService
      * @param string $guid
      * @param string $requiredRole
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function userAllowedAction($guid, $requiredRole)
     {
