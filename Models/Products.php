@@ -7,13 +7,6 @@ use stdClass;
 
 class Products extends BaseModel
 {
-    private $productId;
-    private $title;
-    private $price;
-    private $quantity;
-    private $createdAt;
-    private $updatedAt;
-
     /**
      * Users constructor.
      */
@@ -165,6 +158,7 @@ class Products extends BaseModel
 
     /**
      * @desc inserts a user into the database
+     * @param $formData
      * @return stdClass
      */
     public function addNewProduct($formData)
