@@ -63,32 +63,32 @@ INSERT INTO users
 (
     user_id, first_name, last_name,
     upassword,
-    email, birthday, roles,
+    email, birthday, roles, active,
     created_at, updated_at
 )
 VALUES
 (
-    '12345678-1234-1234-1234-123456789abc', 'Alex', 'Hamilton',
+    '12345678-1234-1234-1234-123456789abc', 'Johnny', 'Adams',
     '$argon2id$v=19$m=1024,t=2,p=2$QTk3aDVpb1VHVVZYQU11WA$ccZGZdUdHKue5ovOdiOkn9TYEJ3i3lghGEx4kSz3Syk',
-    'alex.hamilton@example.com', '2001-01-11', 'create',
+    'alex.hamilton@example.com', '2001-01-11', 'create', 'yes',
     '2017-12-31', NULL
 ),
 (
     '12345678-1234-1234-1234-123456789abd', 'Tommy', 'Jefferson',
     '$argon2id$v=19$m=1024,t=2,p=2$QTk3aDVpb1VHVVZYQU11WA$ccZGZdUdHKue5ovOdiOkn9TYEJ3i3lghGEx4kSz3Syk',
-    'tom.jefferson@example.com', '2001-04-13', 'edit',
+    'tom.jefferson@example.com', '2001-04-13', 'edit', 'yes',
     '2015-12-31', NULL
 ),
 (
-    '12345678-1234-1234-1234-123456789abe', 'George', 'Washington',
+    '12345678-1234-1234-1234-123456789abe', 'G Dog', 'Washington',
     '$argon2id$v=19$m=1024,t=2,p=2$QTk3aDVpb1VHVVZYQU11WA$ccZGZdUdHKue5ovOdiOkn9TYEJ3i3lghGEx4kSz3Syk',
-    'g.w@example.com', '2001-12-14', 'read',
+    'g.w@example.com', '2001-12-14', 'read', 'yes',
     '2016-12-31', NULL
 ),
 (
     '12345678-1234-1234-1234-123456789abf', 'Aaron', 'Burr',
     '$argon2id$v=19$m=1024,t=2,p=2$QTk3aDVpb1VHVVZYQU11WA$ccZGZdUdHKue5ovOdiOkn9TYEJ3i3lghGEx4kSz3Syk',
-    'aaron.burr@example.com', '2001-02-06', 'edit',
+    'aaron.burr@example.com', '2001-02-06', 'edit', 'yes',
     '2015-12-31', NULL
 );
 
@@ -97,12 +97,12 @@ INSERT INTO users
 (
     user_id, first_name, last_name,
     upassword,
-    email, created_at,
+    email, created_at, active,
     birthday, updated_at
 )
 VALUES (
-    '12345678-1234-1234-1234-123456789ac0', 'Franklin', 'Pierce',
+    '12345678-1234-1234-1234-123456789ac0', 'Frank', 'Pierce',
     '$argon2id$v=19$m=1024,t=2,p=2$QTk3aDVpb1VHVVZYQU11WA$ccZGZdUdHKue5ovOdiOkn9TYEJ3i3lghGEx4kSz3Syk',
-    'frankie.p@example.com', '2001-04-08',
+    'frankie.p@example.com', '2001-04-08', 'yes',
     '2015-12-31', NULL
 );

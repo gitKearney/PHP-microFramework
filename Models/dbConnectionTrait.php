@@ -1,11 +1,15 @@
 <?php
 namespace Main\Models;
 
+use Exception;
+use PDO;
+use stdClass;
+
 trait dbConnectionTrait
 {
     /**
      * returns a dns string to connect to a database for reading only
-     * @param \stdClass $readConfigs
+     * @param stdClass $readConfigs
      * @return string
      */
     function getReadDatabaseDsn($readConfigs)
@@ -29,7 +33,7 @@ trait dbConnectionTrait
 
     /**
      * returns a dns string to connect to a database for writing only
-     * @param \stdClass $writeConfigs
+     * @param stdClass $writeConfigs
      * @return string
      */
     function getWriteDatabaseDsn($writeConfigs)
@@ -45,14 +49,14 @@ trait dbConnectionTrait
             case 'postgres':
                 return 'pgsql:dbname=example;host=localhost';
             case 'sqlite':
-                return '';
+                return 'sql-info-string-goes-here';
             default:
                 return '';
         }
     }
 
     /**
-     * @param \stdClass $config
+     * @param stdClass $config
      * @return string
      */
     function getMongoDsnString($config)
@@ -64,8 +68,8 @@ trait dbConnectionTrait
 
     /**
      * @param string $mode - 'read' or 'write'
-     * @return \PDO | string
-     * @throws \Exception
+     * @return PDO | string
+     * @throws Exception
      */
     function getPdoConnection($mode)
     {
@@ -95,12 +99,12 @@ trait dbConnectionTrait
 
                 break;
             default:
-                throw new \Exception("invalid mode passed in: must be"
+                throw new Exception("invalid mode passed in: must be"
                     ." 'read', or 'write'");
         }
 
         if (strlen($dsnString) == 0 ) {
-            throw new \Exception('invalid database connection');
+            throw new Exception('invalid database connection');
         }
 
         try {
@@ -108,11 +112,11 @@ trait dbConnectionTrait
             logVar($user, "connection user: ");
             logVar($pass, "connection user password: ");
 
-            $pdo = new \PDO($dsnString, $user, $pass);
+            $pdo = new PDO($dsnString, $user, $pass);
 
             # set the error level on our PDO object to not fail silently
-            $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-        } catch (\Exception $e) {
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        } catch (Exception $e) {
             logVar('FAILED TO GET CONNECTION. ');
             logVar($e->getMessage());
         }

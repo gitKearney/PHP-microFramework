@@ -8,6 +8,7 @@ use Main\Services\ProductService;
 use Main\Services\UserService;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
+use stdClass;
 
 /**
  * The controller MUST extend BaseController
@@ -68,7 +69,7 @@ class ProductController extends BaseController
             if ($config->debug->authUsers) {
 
                 /**
-                 * @var \stdClass
+                 * @var stdClass
                  */
                 $decodedJwt = $this->jwtService->decodeWebToken($request->getHeaders());
 
@@ -110,7 +111,6 @@ class ProductController extends BaseController
      */
     public function get(ServerRequest $request, Response $response)
     {
-
         try {
             // NOTE: config is a global variable defined in credentials.php
             $config = getAppConfigSettings();
@@ -205,6 +205,7 @@ class ProductController extends BaseController
         $config = getAppConfigSettings();
         try {
             if ($config->debug->authUsers) {
+                # TODO: does user have access?
                 $user = $this->jwtService->decodeWebToken($request->getHeaders());
             }
 
@@ -332,8 +333,7 @@ class ProductController extends BaseController
         if (!empty($matches[0])) {
             # if we found a GUID return that GUID and search for the product with that ID
             # strip any ? though since our regex is inclusive
-            $guid = trim($matches[0], '?');
-            return $guid;
+            return trim($matches[0], '?');
         }
 
         # we don't have a guid, expand on the question mark and get the query params

@@ -236,8 +236,6 @@ abstract class BaseModel
      */
     public function buildInsertQuery(array $values, $tableName)
     {
-        $response = $this->setResponse();
-
         $sqlQuery = new stdClass;
         $sqlQuery->sql = '';
         $sqlQuery->params = [];

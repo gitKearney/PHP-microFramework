@@ -7,6 +7,7 @@ use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
 
 use Exception;
+use InvalidArgumentException;
 use stdClass;
 
 
@@ -216,6 +217,7 @@ class UserController extends BaseController
      * @param Response $response
      * @return Response
      * @throws Exception
+     * @throws InvalidArgumentException
      */
     public function patch(ServerRequest $request, Response $response)
     {
@@ -268,6 +270,7 @@ class UserController extends BaseController
      * @param ServerRequest $request
      * @param Response $response
      * @return Response
+     * @throws Exception
      */
     public function post(ServerRequest $request, Response $response)
     {
@@ -367,7 +370,7 @@ class UserController extends BaseController
         preg_match($config->regex->uri_guid, $vals[1], $matches);
 
         if (!empty($matches[0])) {
-            return trim($matches[0], '?');;
+            return trim($matches[0], '?');
         }
 
         return $request->getQueryParams();
