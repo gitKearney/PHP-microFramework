@@ -2,6 +2,7 @@
 namespace Main\Services;
 
 use stdClass;
+use Main\Models\BaseModel;
 
 class BaseService
 {
@@ -16,5 +17,21 @@ class BaseService
         $response->results = [];
 
         return $response;
+    }
+
+    /**
+     * Fixes the data from the query and sets normal responses to the API
+     *
+     */
+    public function normalizeResponse(BaseModel $model, $response)
+    {
+        $response->success = true;
+        $results = $model->getResults();
+
+        if (count($results) === 0) {
+            $response->message = 'No Results';
+        }
+
+        return $response->results = $results;
     }
 }

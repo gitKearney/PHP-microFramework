@@ -15,7 +15,10 @@ require_once('configs/credentials.php');
  */
 function logVar($var, $msg = '', $level='debug')
 {
-    # $log is defined on line 93
+    /**
+     * @desc defined on line 93
+     * @var Monolog\Logger
+     */
     global $log;
 
     $string = $msg . ' - ';
@@ -88,11 +91,13 @@ function getAppConfigSettings()
     return $config;
 }
 
+$config = getConfigs();
+
 # create a log channel
 try {
     $log = new Logger('name');
     $log->pushHandler(new StreamHandler($config->app_settings->log_location, Logger::DEBUG));
-} catch (\Exception $e) {
+} catch (Exception $e) {
     die('INVALID CONFIGURATION: '.$e->getCode().'-'.$e->getMessage()."\n");
 }
 

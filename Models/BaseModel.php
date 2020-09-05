@@ -3,7 +3,6 @@
 namespace Main\Models;
 
 use Exception;
-use Main\Models\dbConnectionTrait;
 use PDO;
 use stdClass;
 
@@ -36,7 +35,8 @@ abstract class BaseModel
      *
      * @param string $query
      * @param array $values
-     * @return stdClass
+     * @return void
+     * @throws Exception
      */
     public function insert($query, array $values = [])
     {
@@ -49,76 +49,54 @@ abstract class BaseModel
         # INSERT INTO table ('key') VALUES (:val)
 
         # The values array would be defined as: [':val' => 'val']
-        $result = $this->setResponse();
 
         try {
             $pdo = $this->getPdoConnection('write');
         } catch( Exception $e) {
             logVar($e->getMessage(), 'Failed to establish connection to database', 'emergency');
-            $result->message = 'Error Establishing Connection to Database';
-            return $result;
+            throw new Exception('Error Establishing Connection to Database');
         }
 
         try {
             $ps = $pdo->prepare($query);
             $resultSet = $ps->execute($values);
-
-            if ($resultSet === false) {
-                logVar('INSERT FAILED', '', 'critical');
-                $result->message = 'failed to insert record';
-                return $result;
-            }
-
         } catch (Exception $e) {
             logVar($e->getCode(), 'EXCEPTION INSERTING: '.$e->getMessage(), 'critical');
-
-            $result->message = 'Error Occurred Inserting Record';
-            return $result;
+            throw new Exception('Error Occurred Inserting Record');
         }
 
-        $result->success = true;
-        $result->message = 'success';
-
-        return $result;
+        if ($resultSet === false) {
+            logVar('INSERT FAILED', '', 'critical');
+            throw new Exception('Failed to Insert Record');
+        }
     }
 
     /**
      * @param $query
      * @param array $params
-     * @return stdClass
+     * @return array
+     * @throws Exception
      */
     public function select($query, array $params)
     {
-        $result = $this->setResponse();
-
         try {
             $pdo = $this->getPdoConnection('read');
         } catch( Exception $e) {
             logVar($e->getMessage(), 'Failed to establish connection to database', 'emergency');
-
-            $result->message = 'Error Establishing Connection to Database';
-            return $result;
+           throw new Exception('Error Establishing Connection to Database');
         }
 
         try {
-            logVar($query, 'query = ');
-            logVar($params, 'params = ');
-
             $statement = $pdo->prepare($query);
-
             $resultSet = $statement->execute($params);
-
-            if ($resultSet === false) {
-                logVar('SELECT FAILED', '', 'critical');
-
-                $result->message = 'Error Finding Records';
-                return $result;
-            }
         } catch( Exception $e) {
             logVar($e->getCode(), 'EXCEPTION SELECTING: '.$e->getMessage(), 'critical');
+            throw new Exception('Error Occurred While Finding Records');
+        }
 
-            $result->message = 'Error Occurred While Finding Records';
-            return $result;
+        if ($resultSet === false) {
+            logVar('SELECT FAILED', '', 'critical');
+            throw new Exception('Error Finding Records');
         }
 
         $this->results = [];
@@ -127,105 +105,69 @@ abstract class BaseModel
             $this->results[] = $row;
         }
 
-        if (count($this->results) === 0) {
-            $result->success = true;
-            $result->message = 'No Results';
-            return $result;
-        }
-
         if (count($this->results) == 1) {
-            $result->results = $this->results[0];
-        } else {
-            $result->results = $this->results;
+            $this->results = $this->results[0];
         }
 
-        $result->success = true;
-        $result->message = 'success';
-
-        return $result;
+        return $this->results;
     }
 
     /**
      * @param string $query
      * @param array $params
-     * @return stdClass
+     * @return void
      */
     public function update($query, array $params)
     {
-        $result = $this->setResponse();
-
         try {
             $pdo = $this->getPdoConnection('write');
         } catch( Exception $e) {
             logVar($e->getMessage(), 'Failed to establish connection to database', 'emergency');
-
-            $result->message = 'Error Establishing Connection to Database';
-            return $result;
+            throw new Exception('Error Establishing Connection to Database');
         }
 
         try {
             $statement = $pdo->prepare($query);
             $resultSet = $statement->execute($params);
-
-            if ($resultSet === false) {
-                logVar('UPDATE FAILED', '', 'critical');
-
-                $result->message = 'Failed to Update User';
-                return $result;
-            }
         } catch (Exception $e) {
             logVar($e->getCode(), 'EXCEPTION UPDATING: '.$e->getMessage(), 'critical');
-
-            $result->message = 'Error Occurred Updating User';
-            return $result;
+            throw new Exception('Error Occurred Updating User');
         }
 
-        $result->success = true;
-        $result->message = 'success';
+        if ($resultSet === false) {
+            logVar('UPDATE FAILED', '', 'critical');
+            throw new Exception('Failed to Update User');
+        }
 
-        return $result;
+        $this->results = $resultSet;
     }
 
     /**
      * @param string $query
      * @param array $params
-     * @return stdClass
+     * @return void
      */
     public function delete($query, array $params)
     {
-        $result = $this->setResponse();
-
         try {
             $pdo = $this->getPdoConnection('write');
         } catch( Exception $e) {
             logVar($e->getMessage(), 'Failed to establish connection to database', 'emergency');
-
-            $result->message = 'Error Establishing Connection to Database';
-            return $result;
+            throw new Exception('Error Establishing Connection to Database');
         }
 
         try {
             $statement = $pdo->prepare($query);
-
             $resultSet = $statement->execute($params);
-
-            if ($resultSet === false) {
-                logVar('DELETE FAILED', '', 'critical');
-
-                $result->message = 'Failed to Remove User';
-                return $result;
-            }
         } catch (Exception $e) {
             logVar($e->getCode(), 'EXCEPTION DELETING: '.$e->getMessage(), 'critical');
-
-            $result->message = 'Failed to Remove User';
-            return $result;
+            throw new Exception('Error removing record');
         }
 
-        $result->success = true;
-        $result->message = 'success';
-
-        return $result;
+        if ($resultSet === false) {
+            logVar('DELETE FAILED', '', 'critical');
+            throw new Exception('Failed to Remove');
+        }
     }
 
     /**
@@ -347,6 +289,7 @@ abstract class BaseModel
         return $this;
     }
 
+
     /**
      * @return string
      */
@@ -361,18 +304,5 @@ abstract class BaseModel
     public function getWriteConnectionId()
     {
         return $this->writeConnectionId;
-    }
-
-    /**
-     * @return stdClass
-     */
-    public function setResponse()
-    {
-        $response = new stdClass();
-        $response->success = false;
-        $response->message = '';
-        $response->results = [];
-
-        return $response;
     }
 }

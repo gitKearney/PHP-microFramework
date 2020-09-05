@@ -12,17 +12,13 @@ class Products extends BaseModel
      */
     public function __construct()
     {
-        // TODO: change product_database to name of key with your database
-        // credentials in config/credentials.php
-
-
         # In this example, the app will read from and write to the same server,
         # so, we set the connection IDs to be the same.
 
         # You can also use the read/write key values. But, here, we're simulating
         # using a different database.
-        $this->readConnectionId  = 'product_database';
-        $this->writeConnectionId = 'product_database';
+        $this->setReadConnectionId('product_database');
+        $this->setWriteConnectionId('product_database');
     }
 
     /**
@@ -50,7 +46,8 @@ class Products extends BaseModel
 
     /**
      * @param string $productId
-     * @return stdClass
+     * @return array
+     * @throws Exception
      */
     public function findProductById($productId)
     {
@@ -76,11 +73,10 @@ class Products extends BaseModel
 
     /**
      * Returns all users form the database
-     * @return stdClass
+     * @return array
      */
     public function getAllProducts()
     {
-
         $query = 'SELECT product_id as id, title, price, quantity, created_at FROM products';
         $params = [];
 
@@ -96,20 +92,15 @@ class Products extends BaseModel
     {
         $query = 'DELETE FROM products WHERE product_id = :product_id';
         $params = [':product_id' => $productId];
-        return $result = $this->delete($query, $params);
+        $this->delete($query, $params);
     }
 
     /**
      * @param array $values
-     * @return stdClass
+     * @return void
      */
     public function updateProduct(array $values)
     {
-        $result = new stdClass();
-        $result->success = false;
-        $result->message = 'Nothing to Update';
-        $result->results = [];
-
         $where = '';
         $set = '';
         $updateValues = [];
@@ -145,44 +136,30 @@ class Products extends BaseModel
 
         if (strlen($set) == 0) {
             # the user didn't pass anything in, send a success
-            $result->success =  false;
-            $result->message = 'No Products Found';
-
-            return $result;
+            logVar('', 'No User Passed In Values');
+            return;
         }
 
         $query = 'UPDATE products SET '.$set.' WHERE '.$where;
 
-        return $this->update($query, $updateValues);
+        $this->update($query, $updateValues);
     }
 
     /**
      * @desc inserts a user into the database
      * @param $formData
-     * @return stdClass
+     * @return void
+     * @throws Exception
      */
     public function addNewProduct($formData)
     {
-        try {
-            $query = $this->buildInsertQuery($formData, 'products');
-            $result = $this->insert($query->sql, $query->params);
-        } catch (Exception $e) {
-            $response = $this->setResponse();
-            $response->message = $e->getMessage();
-
-            return $response;
-        }
-
-        # if we got a success, return an object containing the
-        # product's GUID
-        $result->results['id'] = $formData['product_id'];
-
-        return $result;
+        $query = $this->buildInsertQuery($formData, 'products');
+        $this->insert($query->sql, $query->params);
     }
 
     /**
      * @param $title
-     * @return stdClass
+     * @return array
      * @throws Exception
      */
     public function findProductByTitle($title)
@@ -190,6 +167,7 @@ class Products extends BaseModel
         $query  = 'SELECT * FROM products WHERE title LIKE  "%:title%"';
         $params = [':title' => $title,];
 
-        return $this->select($query, $params);
+        $products = $this->select($query, $params);
+        return $products;
     }
 }

@@ -56,12 +56,12 @@ class ProductService extends BaseService
 
         $result = $this->products->findProductById($productId);
 
-        if (!$result->success) {
+        if (count($result) === 0) {
             $response->message =  'No product found';
             return $response;
         }
 
-        return $result;
+        return $response;
     }
 
     /**
@@ -70,7 +70,15 @@ class ProductService extends BaseService
      */
     public function getAllProducts()
     {
-        return $this->products->getAllProducts();
+        $response = $this->createResponseObject();
+        $result = $this->products->getAllProducts();
+
+        if (count($result) === 0) {
+            $response->message =  'No product found';
+            return $response;
+        }
+
+        return $response;
     }
 
     public function getProductsByQueryString(array $queryParams)

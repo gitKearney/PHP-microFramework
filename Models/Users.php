@@ -12,22 +12,20 @@ class Users extends BaseModel
      */
     public function __construct()
     {
-        // TODO: change user_database to name of key with your database
-        // credentials in config/credentials.php
-
         # In this example, the app will run selects on a different server
         # than were writes occur. So, we set the values of the connection to
         # be different.
 
         # You could also create a key/value pair called "user_database" and have
         # the login credentials there
-        $this->readConnectionId  = 'read_database';
-        $this->writeConnectionId = 'write_database';
+        $this->setReadConnectionId('read_database');
+        $this->setWriteConnectionId('write_database');
     }
 
     /**
      * @param string $userId
-     * @return stdClass
+     * @return array
+     * @throws Exception
      */
     public function findUserById($userId)
     {
@@ -36,14 +34,13 @@ class Users extends BaseModel
             .' FROM users WHERE user_id = :user_id LIMIT 1';
         $params = [':user_id' => $userId];
 
-        $result = $this->select($query, $params);
-
-        return $result;
+        $users = $this->select($query, $params);
+        return $users;
     }
 
     /**
      * Returns all users form the database
-     * @return stdClass
+     * @return array
      */
     public function getAllUsers()
     {
@@ -52,29 +49,27 @@ class Users extends BaseModel
             .' FROM users';
         $params = [];
 
-        $result = $this->select($query, $params);
-
-        return $result;
+        $users = $this->select($query, $params);
+        return $users;
     }
 
     /**
      * @param string $userId
      * @return stdClass
+     * @throws Exception
      */
     public function deleteUserById($userId)
     {
         $query = 'DELETE FROM users WHERE user_id = :user_id';
         $params = [':user_id' => $userId];
 
-        $result = $this->delete($query, $params);
-
-        return $result;
+        $this->delete($query, $params);
     }
 
     /**
      * This is an example where we update the user by user ID
      * @param array $values
-     * @return stdClass
+     * @return void
      */
     public function updateUser(array $values)
     {
@@ -111,66 +106,38 @@ class Users extends BaseModel
         $set = trim($set, ',');
 
         if (strlen($set) == 0) {
-            # the user didn't pass anything in, send a success
-            $result = new stdClass();
-            $result->success = false;
-            $result->message = 'Nothing to Update';
-            $result->results = [];
-
-            return $result;
+            logVar('', 'No User Passed In Values');
+            return;
         }
 
         $query = 'UPDATE users SET '.$set.' WHERE '.$where;
 
-        $results = $this->update($query, $updateValues);
-
-        return $results;
+       $this->update($query, $updateValues);
     }
 
     /**
      * @desc inserts a user into the database
      * @array $values
-     * @return stdClass
+     * @return void
      * @throws Exception
      */
     public function addNewUser($values)
     {
-        try {
-            $query = $this->buildInsertQuery($values, 'users');
-            $result = $this->insert($query->sql, $query->params);
-        } catch (Exception $e) {
-            throw $e;
-        }
-
-        # if we got a success, return an object containing the
-        # user's ID
-        $result->results['id'] = $values['user_id'];
-
-        return $result;
+        $query = $this->buildInsertQuery($values, 'users');
+        $this->insert($query->sql, $query->params);
     }
 
     /**
      * @param string $email
-     * @return stdClass
+     * @return array
      */
     public function findUserByEmail($email)
     {
         $query  = 'SELECT * FROM users WHERE email = :email';
         $params = [':email' => $email,];
 
-        $results = $this->select($query, $params);
-
-        return $results;
-    }
-
-    /**
-     * @param $params
-     * @return stdClass
-     * @throws Exception
-     */
-    public function getUserByParams($params)
-    {
-        return $this->buildSearchString($params, 'users');
+        $users = $this->select($query, $params);
+        return $users;
     }
 
     /**
@@ -181,7 +148,7 @@ class Users extends BaseModel
      * @return array
      * @throws Exception
      */
-    public function setUserInfo($httpBody)
+    public function getNewUserInfo($httpBody)
     {
         $postValues = [];
 

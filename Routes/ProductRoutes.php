@@ -1,6 +1,9 @@
 <?php
 use Pimple\Container as Container;
 
+/**
+ * @var Main\Routers\RegexRouter $router
+ */
 $router->route('/products/', function(Container $container) {
 
     /**
