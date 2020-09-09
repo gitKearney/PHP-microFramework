@@ -61,6 +61,10 @@ class ProductService extends BaseService
             return $response;
         }
 
+        $response->success = true;
+        $response->message = 'success';
+        $response->results = $result;
+
         return $response;
     }
 
@@ -70,13 +74,24 @@ class ProductService extends BaseService
      */
     public function getAllProducts()
     {
+        /**
+         * @var stdClass
+         */
         $response = $this->createResponseObject();
+
+        /**
+         * @var array
+         */
         $result = $this->products->getAllProducts();
 
         if (count($result) === 0) {
             $response->message =  'No product found';
             return $response;
         }
+
+        $response->success = true;
+        $response->message = 'success';
+        $response->results = $result;
 
         return $response;
     }
@@ -87,11 +102,15 @@ class ProductService extends BaseService
 
         try {
             $query = $this->products->getProductByParams($queryParams);
-            $response = $this->products->select($query->sql, $query->params);
+            $results = $this->products->select($query->sql, $query->params);
         } catch (Exception $e) {
             $response->message = $e->getMessage();
             return $response;
         }
+
+        $response->success = true;
+        $response->message = 'success';
+        $response->results = $results;
 
         return $response;
     }
@@ -109,7 +128,17 @@ class ProductService extends BaseService
             return $response;
         }
 
-        return $this->products->deleteProductById($productId);
+        try {
+            $this->products->deleteProductById($productId);
+        } catch (Exception $e) {
+            $response->message = $e->getMessage();
+            return $response;
+        }
+
+        $response->success = true;
+        $response->message = 'success';
+
+        return $response;
     }
 
     /**
@@ -118,6 +147,9 @@ class ProductService extends BaseService
      */
     public function addNewProduct(array $requestBody)
     {
+        /**
+         * @var stdClass
+         */
         $response = $this->createResponseObject();
 
         try{
@@ -128,8 +160,18 @@ class ProductService extends BaseService
             return $response;
         }
 
-        $values = $this->products->setProductInfo($requestBody);
-        $response = $this->products->addNewProduct($values);
+
+        try {
+            $values = $this->products->setProductInfo($requestBody);
+            $this->products->addNewProduct($values);
+        } catch (Exception $e) {
+            $response->message = 'Error Adding Product';
+            return $response;
+        }
+
+        $response->success = true;
+        $response->message = 'success';
+        $response->results = ['id' => $requestBody['id'], ];
         return $response;
     }
 

@@ -141,6 +141,7 @@ class UserService extends BaseService
             $values = $this->userModel->getNewUserInfo($requestBody);
             $this->userModel->addNewUser($values);
             $result->results['id'] = $requestBody['id'];
+            $result->success = true;
         } catch(Exception $e) {
             $result->message = $e->getMessage();
         }

@@ -114,12 +114,7 @@ class UserController extends BaseController
         $result->results = [];
 
         try {
-            /**
-             * config is a global variable defined in credentials.php, imported
-             * into the `index.php` file and then returned via the function call
-             *
-             * @var stdClass()
-             */
+            /** @var stdClass() */
             $config = getAppConfigSettings();
             if ($config->debug->authUsers) {
                 $this->jwtService->decodeWebToken($request->getHeaders());

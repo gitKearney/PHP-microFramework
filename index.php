@@ -6,7 +6,7 @@ use Main\Routers\RegexRouter;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 
-require_once('configs/credentials.php');
+include_once 'configs/credentials.php';
 
 /**
  * @param mixed $var
@@ -84,14 +84,12 @@ function logVar($var, $msg = '', $level='debug')
  */
 function getAppConfigSettings()
 {
-    # the config is defined in the config/credentials.php file. Because we use
-    # require, it's like "config" is defined in this file, even though it's not
     global $config;
 
     return $config;
 }
 
-$config = getConfigs();
+$config = credentials();
 
 # create a log channel
 try {

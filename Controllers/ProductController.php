@@ -112,7 +112,6 @@ class ProductController extends BaseController
     public function get(ServerRequest $request, Response $response)
     {
         try {
-            // NOTE: config is a global variable defined in credentials.php
             $config = getAppConfigSettings();
             if ($config->debug->authUsers) {
                 $decodedJwt = $this->jwtService->decodeWebToken($request->getHeaders());

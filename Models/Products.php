@@ -87,11 +87,14 @@ class Products extends BaseModel
     /**
      * @param string $productId
      * @return stdClass
+     * @throws Exception
      */
     public function deleteProductById($productId)
     {
         $query = 'DELETE FROM products WHERE product_id = :product_id';
         $params = [':product_id' => $productId];
+
+
         $this->delete($query, $params);
     }
 
