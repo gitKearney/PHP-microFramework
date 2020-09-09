@@ -181,10 +181,7 @@ class ProductService extends BaseService
      */
     public function updateProduct(array $requestBody)
     {
-        $response = new stdClass();
-        $response->success = false;
-        $response->message = '';
-        $response->results = [];
+        $response = $this->createResponseObject();
 
         if (! $this->uuidService->isValidGuid($requestBody['id'])) {
             # user sent in an invalid GUID, return no records found
@@ -197,8 +194,11 @@ class ProductService extends BaseService
         # update the updated_at timestamp value
         $requestBody['updated_at'] = date('Y-m-d H:i:s');
 
-        $result = $this->products->updateProduct($requestBody);
-        return $result;
+        $this->products->updateProduct($requestBody);
+
+        $response->success = true;
+        $response->message = 'success';
+        return $response;
     }
 
     /**
