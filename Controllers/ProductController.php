@@ -317,26 +317,24 @@ class ProductController extends BaseController
 
         # split the URI field on the route
         $requestUri = $request->getServerParams()['REQUEST_URI'];
-        $vals = preg_split('/\/products\/?\??/', $requestUri);
-        if (empty($vals[1])) {
-            # this means that there is no "second" element found so the user just passed in /products
-            # to the URI - so return all products
+        $pathValues = preg_split('/\/products\/?\??/', $requestUri);
+        if (empty($pathValues[1])) {
+            # no second element found, path is /products
             return '';
         }
 
         $matches = [];
 
         # search for only the GUID
-        preg_match($config->regex->uri_guid, $vals[1], $matches);
+        preg_match($config->regex->uri_guid, $pathValues[1], $matches);
 
         if (!empty($matches[0])) {
-            # if we found a GUID return that GUID and search for the product with that ID
+            # we found a GUID
             # strip any ? though since our regex is inclusive
             return trim($matches[0], '?');
         }
 
-        # we don't have a guid, expand on the question mark and get the query params
-        $queryParams = $request->getQueryParams();
-        return $queryParams;
+        # no GUID, expand on the question mark and get the query params
+        return $request->getQueryParams();
     }
 }

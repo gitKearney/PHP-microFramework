@@ -40,6 +40,34 @@ class UserService extends BaseService
     }
 
     /**
+     * @desc pull info from the request body
+     *
+     * Pull the params from the HTTP body and assign them to the model's data
+     * @param array
+     * @return array
+     * @throws Exception
+     */
+    public function getNewUserInfo($httpBody)
+    {
+        $postValues = [];
+
+        # TODO: validate that the info is good and in here
+        $postValues['first_name'] = $httpBody['first_name'] ?? null;
+        $postValues['last_name']  = $httpBody['last_name'] ?? null;
+        $postValues['email']      = $httpBody['email'] ?? null;
+        $postValues['birthday']   = $httpBody['birthday'] ?? null;
+        $postValues['user_id']    = $httpBody['id'] ?? null;
+        $password                 = $httpBody['password'] ?? null;
+
+        if (!$password) {
+            throw new Exception('password not set', 400);
+        }
+
+        $postValues['upassword'] = password_hash($password, PASSWORD_ARGON2ID);
+        return $postValues;
+    }
+
+    /**
      * @desc pull the GUID from the URI
      * @param string $userId
      * @return stdClass
@@ -138,7 +166,7 @@ class UserService extends BaseService
         $result = $this->createResponseObject();
 
         try {
-            $values = $this->userModel->getNewUserInfo($requestBody);
+            $values = $this->getNewUserInfo($requestBody);
             $this->userModel->addNewUser($values);
             $result->results['id'] = $requestBody['id'];
             $result->success = true;
@@ -151,22 +179,26 @@ class UserService extends BaseService
 
     /**
      * @param array $requestBody
-     * @return void
-     * @throws Exception
+     * @return stdClass
      */
     public function updateUser(array $requestBody)
     {
+        $response = $this->createResponseObject();
+
         $userId = isset($requestBody['id']) ? $requestBody['id'] : '';
 
         if (!$this->uuid->isValidGuid($userId)) {
             # user sent in an invalid GUID, return no records found
-            throw new Exception('No User Found', 400);
+            $response->message = 'no user found';
         }
 
         # update the updated_at timestamp value
         $requestBody['updated_at'] = date('Y-m-d H:i:s');
 
        $this->userModel->updateUser($requestBody);
+
+       $response->success = true;
+       return $response;
     }
 
     /**

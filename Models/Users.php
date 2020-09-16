@@ -139,32 +139,4 @@ class Users extends BaseModel
         $users = $this->select($query, $params);
         return $users;
     }
-
-    /**
-     * @desc pull info from the request body
-     *
-     * Pull the params from the HTTP body and assign them to the model's data
-     * @param array
-     * @return array
-     * @throws Exception
-     */
-    public function getNewUserInfo($httpBody)
-    {
-        $postValues = [];
-
-        # TODO: validate that the info is good and in here
-        $postValues['first_name'] = $httpBody['first_name'] ?? null;
-        $postValues['last_name']  = $httpBody['last_name'] ?? null;
-        $postValues['email']      = $httpBody['email'] ?? null;
-        $postValues['birthday']   = $httpBody['birthday'] ?? null;
-        $postValues['user_id']    = $httpBody['id'] ?? null;
-        $password                 = $httpBody['password'] ?? null;
-
-        if (!$password) {
-            throw new Exception('password not set', 400);
-        }
-
-        $postValues['upassword'] = password_hash($password, PASSWORD_ARGON2ID);
-        return $postValues;
-    }
 }

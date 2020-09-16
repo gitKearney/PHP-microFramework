@@ -55,12 +55,6 @@ class UserController extends BaseController
         $id = null;
 
        try {
-           /**
-            * config is a global variable defined in credentials.php, imported
-            * into the `index.php` file and then returned via the function call
-            *
-            * @var stdClass()
-            */
            $config = getAppConfigSettings();
            if ($config->debug->authUsers) {
                $decodedJwt = $this->jwtService->decodeWebToken($request->getHeaders());
@@ -75,8 +69,8 @@ class UserController extends BaseController
             }
        } catch (Exception $e) {
            $body = json_encode([
-               'error_code' => $e->getCode(),
-               'error_msg'  => $e->getMessage(),
+               'success' => false,
+               'message'  => $e->getMessage(),
            ]);
 
            $returnResponse = $response->withHeader('Content-Type', 'application/json');
@@ -105,14 +99,6 @@ class UserController extends BaseController
      */
     public function get(ServerRequest $request, Response $response, $headRequest = false)
     {
-        logVar($request, 'ServerRequest = ');
-
-        $result = new stdClass();
-
-        $result->success = false;
-        $result->message = '';
-        $result->results = [];
-
         try {
             /** @var stdClass() */
             $config = getAppConfigSettings();
@@ -120,10 +106,10 @@ class UserController extends BaseController
                 $this->jwtService->decodeWebToken($request->getHeaders());
             }
         } catch (Exception $e) {
-            $result->results['error_code'] = $e->getCode();
-            $result->message = $e->getMessage();
-
-            $body = json_encode($result);
+            $body = json_encode([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ]);
 
             $returnResponse = $response->withHeader('Content-Type', 'application/json');
             $returnResponse->getBody()->write($body);
@@ -217,7 +203,6 @@ class UserController extends BaseController
     public function patch(ServerRequest $request, Response $response)
     {
         try {
-            // NOTE: config is a global variable defined in credentials.php
             $config = getAppConfigSettings();
             if ($config->debug->authUsers) {
                 $decodedJwt = $this->jwtService->decodeWebToken($request->getHeaders());
@@ -232,8 +217,8 @@ class UserController extends BaseController
             }
         } catch (Exception $e) {
             $body = json_encode([
-               'error_code' => $e->getCode(),
-               'error_msg'  => $e->getMessage(),
+               'success' => false,
+               'message'  => $e->getMessage(),
             ]);
 
             $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
@@ -272,8 +257,11 @@ class UserController extends BaseController
         $requestBody = $this->parsePost($request, $response);
 
         if (count($requestBody) == 0) {
-            $res = ['error_code' => 400, 'error_msg' => 'No input data'];
-            $jsonRes = json_encode($res);
+            $jsonRes = json_encode([
+                'success' => false,
+                'message' => 'No input data',
+            ]);
+
             $returnResponse = $response->withHeader('Content-Type', 'application/json');
             $returnResponse->getBody()->write($jsonRes);
             return $returnResponse;
@@ -299,17 +287,10 @@ class UserController extends BaseController
      */
     public function put(ServerRequest $request, Response $response)
     {
-        $result = new stdClass();
-
-        $result->success = false;
-        $result->message = '';
-        $result->results = [];
-
         # extract the HTTP BODY into an array
         $requestBody = $this->userService->parseServerRequest($request);
 
         try {
-            // NOTE: config is a global variable defined in credentials.php
             $config = getAppConfigSettings();
 
             # if auth user flag is set, verify that the JWT is good
@@ -324,13 +305,21 @@ class UserController extends BaseController
                     throw new Exception('Action Not Allowed', '100');
                 }
             }
-
-            $result = $this->userService->updateUser($requestBody);
         } catch (Exception $e) {
-            $result->message = $e->getMessage();
-            $result->results['error_id'] = $e->getCode();
+            $body = json_encode([
+                'success' => false,
+                'message'  => $e->getMessage(),
+            ]);
+
+            $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Content-Type', 'application/json');
+
+            $returnResponse->getBody()->write($body);
+
+            return $returnResponse;
         }
 
+        $result = $this->userService->updateUser($requestBody);
         $jsonRes = json_encode($result);
         $returnResponse = $response
             ->withHeader('Access-Control-Allow-Origin', '*')
@@ -347,24 +336,23 @@ class UserController extends BaseController
      */
     protected function getUrlPathElements(ServerRequest $request)
     {
-        /**
-         * @var stdClass
-         */
+        /** @var stdClass */
         $config = getAppConfigSettings();
 
         # split the URI field on the route
         $requestUri = $request->getServerParams()['REQUEST_URI'];
-        $vals = preg_split('/\/users[\/?]/', $requestUri);
-        if (empty($vals[1])) {
+        $params = preg_split('/\/users[\/?]/', $requestUri);
+        if (empty($params[1])) {
             return '';
         }
 
         $matches = [];
 
         # search for only the GUID
-        preg_match($config->regex->uri_guid, $vals[1], $matches);
+        preg_match($config->regex->uri_guid, $params[1], $matches);
 
         if (!empty($matches[0])) {
+            # strip any ? though since our regex is inclusive
             return trim($matches[0], '?');
         }
 
