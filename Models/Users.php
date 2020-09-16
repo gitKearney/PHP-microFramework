@@ -119,7 +119,6 @@ class Users extends BaseModel
      * @desc inserts a user into the database
      * @array $values
      * @return void
-     * @throws Exception
      */
     public function addNewUser($values)
     {

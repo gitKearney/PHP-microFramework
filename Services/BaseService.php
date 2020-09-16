@@ -20,8 +20,9 @@ class BaseService
     }
 
     /**
-     * Fixes the data from the query and sets normal responses to the API
-     *
+     * @desc Fixes the data from the query and sets normal responses to the API
+     * @param BaseModel $model
+     * @param stdClass $response
      */
     public function normalizeResponse(BaseModel $model, $response)
     {

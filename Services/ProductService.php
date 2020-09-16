@@ -54,16 +54,14 @@ class ProductService extends BaseService
             return $response;
         }
 
-        $result = $this->products->findProductById($productId);
-
-        if (count($result) === 0) {
-            $response->message =  'No product found';
+        try {
+            $this->products->findProductById($productId);
+        } catch (Exception $e) {
+            $response->message = $e->getMessage();
             return $response;
         }
 
-        $response->success = true;
-        $response->message = 'success';
-        $response->results = $result;
+        $this->normalizeResponse($this->products, $response);
 
         return $response;
     }
@@ -74,44 +72,34 @@ class ProductService extends BaseService
      */
     public function getAllProducts()
     {
-        /**
-         * @var stdClass
-         */
-        $response = $this->createResponseObject();
-
-        /**
-         * @var array
-         */
-        $result = $this->products->getAllProducts();
-
-        if (count($result) === 0) {
-            $response->message =  'No product found';
-            return $response;
-        }
-
-        $response->success = true;
-        $response->message = 'success';
-        $response->results = $result;
-
-        return $response;
-    }
-
-    public function getProductsByQueryString(array $queryParams)
-    {
+        /** @var stdClass $response*/
         $response = $this->createResponseObject();
 
         try {
-            $query = $this->products->getProductByParams($queryParams);
-            $results = $this->products->select($query->sql, $query->params);
+            $this->products->getAllProducts();
         } catch (Exception $e) {
             $response->message = $e->getMessage();
             return $response;
         }
 
-        $response->success = true;
-        $response->message = 'success';
-        $response->results = $results;
+        $this->normalizeResponse($this->products, $response);
+        return $response;
+    }
 
+    public function getProductsByQueryString(array $queryParams)
+    {
+        /** @var stdClass $response */
+        $response = $this->createResponseObject();
+
+        try {
+            $query = $this->products->getProductByParams($queryParams);
+            $this->products->select($query->sql, $query->params);
+        } catch (Exception $e) {
+            $response->message = $e->getMessage();
+            return $response;
+        }
+
+        $this->normalizeResponse($this->products, $response);
         return $response;
     }
 
@@ -121,6 +109,7 @@ class ProductService extends BaseService
      */
     public function deleteProductById($productId)
     {
+        /** @var stdClass $response */
         $response = $this->createResponseObject();
 
         if (! $this->uuidService->isValidGuid($productId)) {
@@ -136,7 +125,7 @@ class ProductService extends BaseService
         }
 
         $response->success = true;
-        $response->message = 'success';
+        $response->message = "$productId removed";
 
         return $response;
     }
@@ -147,9 +136,7 @@ class ProductService extends BaseService
      */
     public function addNewProduct(array $requestBody)
     {
-        /**
-         * @var stdClass
-         */
+        /** @var stdClass $response */
         $response = $this->createResponseObject();
 
         try{
@@ -171,7 +158,7 @@ class ProductService extends BaseService
 
         $response->success = true;
         $response->message = 'success';
-        $response->results = ['id' => $requestBody['id'], ];
+        $response->results['id'] = $requestBody['id'];
         return $response;
     }
 
@@ -181,6 +168,7 @@ class ProductService extends BaseService
      */
     public function updateProduct(array $requestBody)
     {
+        /** @var stdClass $response */
         $response = $this->createResponseObject();
 
         if (! $this->uuidService->isValidGuid($requestBody['id'])) {
@@ -194,7 +182,12 @@ class ProductService extends BaseService
         # update the updated_at timestamp value
         $requestBody['updated_at'] = date('Y-m-d H:i:s');
 
-        $this->products->updateProduct($requestBody);
+        try {
+            $this->products->updateProduct($requestBody);
+        } catch(Exception $e) {
+            $response->message = $e->getMessage();
+            return $response;
+        }
 
         $response->success = true;
         $response->message = 'success';

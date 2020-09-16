@@ -80,13 +80,14 @@ class UserService extends BaseService
         if (! $this->uuid->isValidGuid($userId)) {
             # user sent in an invalid GUID, return no records found
             $response->message = 'No User Found';
-           return $response;
+            return $response;
         }
 
         try {
             $this->userModel->findUserById($userId);
-        } catch (Exception $e) {
+        } catch(Exception $e) {
             $response->message = $e->getMessage();
+            return $response;
         }
 
         $this->normalizeResponse($this->userModel, $response);
@@ -120,11 +121,14 @@ class UserService extends BaseService
      */
     public function getAllUsers()
     {
+        /** @var stdClass $response */
         $response = $this->createResponseObject();
+
         try {
             $this->userModel->getAllUsers();
-        } catch (Exception $e) {
+        } catch(Exception $e) {
             $response->message = $e->getMessage();
+            return $response;
         }
 
         $this->normalizeResponse($this->userModel, $response);
@@ -137,21 +141,25 @@ class UserService extends BaseService
      */
     public function deleteUserById($userId)
     {
-        $result = new stdClass();
-
-        $result->success = false;
-        $result->message = "$userId removed";
-        $result->results = [];
+        $response = $this->createResponseObject();
 
         if (! $this->uuid->isValidGuid($userId)) {
             # user sent in an invalid GUID, return no records found
-            $result->message = 'No User Found';
-            return $result;
+            $response->message = 'No User Found';
+            return $response;
         }
 
-        $result = $this->userModel->deleteUserById($userId);
+        try {
+            $this->userModel->deleteUserById($userId);
+        } catch(Exception $e) {
+            $response->message = $e->getMessage();
+            return $response;
+        }
 
-        return $result;
+        $response->success = true;
+        $response->message = "$userId removed";
+
+        return $response;
     }
 
     /**
@@ -163,18 +171,20 @@ class UserService extends BaseService
     {
         # create a new GUID and add it to the body array
         $requestBody['id'] = $this->uuid->generateUuid()->getUuid();
-        $result = $this->createResponseObject();
+        $response = $this->createResponseObject();
 
         try {
             $values = $this->getNewUserInfo($requestBody);
             $this->userModel->addNewUser($values);
-            $result->results['id'] = $requestBody['id'];
-            $result->success = true;
         } catch(Exception $e) {
-            $result->message = $e->getMessage();
+            $response->message = $e->getMessage();
+            return $response;
         }
 
-        return $result;
+        $response->success = true;
+        $response->message = 'success';
+        $response->results['id'] = $requestBody['id'];
+        return $response;
     }
 
     /**
@@ -183,6 +193,7 @@ class UserService extends BaseService
      */
     public function updateUser(array $requestBody)
     {
+        /** @var stdClass $response */
         $response = $this->createResponseObject();
 
         $userId = isset($requestBody['id']) ? $requestBody['id'] : '';
@@ -190,15 +201,22 @@ class UserService extends BaseService
         if (!$this->uuid->isValidGuid($userId)) {
             # user sent in an invalid GUID, return no records found
             $response->message = 'no user found';
+            return $response;
         }
 
         # update the updated_at timestamp value
         $requestBody['updated_at'] = date('Y-m-d H:i:s');
 
-       $this->userModel->updateUser($requestBody);
+        try {
+            $this->userModel->updateUser($requestBody);
+        } catch(Exception $e) {
+            $response->message = $e->getMessage();
+            return $response;
+        }
 
-       $response->success = true;
-       return $response;
+        $response->success = true;
+        $response->message = 'success';
+        return $response;
     }
 
     /**

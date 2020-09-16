@@ -59,20 +59,19 @@ abstract class BaseModel
 
         try {
             $ps = $pdo->prepare($query);
-            $resultSet = $ps->execute($values);
+            $success = $ps->execute($values);
         } catch (Exception $e) {
             logVar($e->getCode(), 'EXCEPTION INSERTING: '.$e->getMessage(), 'critical');
             throw new Exception('Error Occurred Inserting Record');
         }
 
-        if ($resultSet === false) {
+        if ($success === false) {
             logVar('INSERT FAILED', '', 'critical');
-            throw new Exception('Failed to Insert Record');
         }
     }
 
     /**
-     * @param $query
+     * @param string $query
      * @param array $params
      * @return array
      * @throws Exception
@@ -123,23 +122,21 @@ abstract class BaseModel
             $pdo = $this->getPdoConnection('write');
         } catch( Exception $e) {
             logVar($e->getMessage(), 'Failed to establish connection to database', 'emergency');
-            throw new Exception('Error Establishing Connection to Database');
+            return;
         }
 
         try {
             $statement = $pdo->prepare($query);
-            $resultSet = $statement->execute($params);
+            $success = $statement->execute($params);
         } catch (Exception $e) {
             logVar($e->getCode(), 'EXCEPTION UPDATING: '.$e->getMessage(), 'critical');
-            throw new Exception('Error Occurred Updating User');
+            return;
         }
 
-        if ($resultSet === false) {
+        if ($success === false) {
             logVar('UPDATE FAILED', '', 'critical');
-            throw new Exception('Failed to Update User');
+            return;
         }
-
-        $this->results = $resultSet;
     }
 
     /**
@@ -166,7 +163,6 @@ abstract class BaseModel
 
         if ($resultSet === false) {
             logVar('DELETE FAILED', '', 'critical');
-            throw new Exception('Failed to Remove');
         }
     }
 
