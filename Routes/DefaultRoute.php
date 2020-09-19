@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @var Main\Routers\RegexRouter $router
+ * @var \Main\Routers\RegexRouter $router
  */
 $router->route('/\//', function() {
     header("Access-Control-Allow-Origin: *");

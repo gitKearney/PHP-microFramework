@@ -1,10 +1,14 @@
 <?php
-use Pimple\Container as Container;
 
 /**
  * @var Main\Routers\RegexRouter $router
  */
-$router->route('/auth/', function(Container $container) {
+$router->route('/auth/', function() {
+
+    /**
+     * @var \Pimple\Container
+     */
+    global $container;
 
     /**
      * @var \Main\Controllers\AuthController
