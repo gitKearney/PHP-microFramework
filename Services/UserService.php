@@ -76,22 +76,15 @@ class UserService extends BaseService
     {
         $response = $this->createResponseObject();
 
-        # test the GUID to see if it's good
-        if (! $this->uuid->isValidGuid($userId)) {
-            # user sent in an invalid GUID, return no records found
-            $response->message = 'No User Found';
-            return $response;
-        }
-
         try {
-            $this->userModel->findUserById($userId);
+            $users = $this->userModel->findUserById($userId);
         } catch(Exception $e) {
             $response->message = $e->getMessage();
+            $response->code = $e->getCode();
             return $response;
         }
 
-        $this->normalizeResponse($this->userModel, $response);
-        unset($response->results['password']);
+        $response = $this->normalizeResponse($users);
 
         return $response;
     }
@@ -106,13 +99,15 @@ class UserService extends BaseService
 
         try {
             $sql = $this->userModel->buildSearchString($queryParams, 'users');
-            $this->userModel->select($sql->sql, $sql->params);
+            $users = $this->userModel->select($sql->sql, $sql->params);
         } catch (Exception $e) {
             $response->message = $e->getMessage();
+            $response->code = $e->getCode();
+
             return $response;
         }
 
-        $this->normalizeResponse($this->userModel, $response);
+        $response = $this->normalizeResponse($users);
         return $response;
     }
 
@@ -125,13 +120,14 @@ class UserService extends BaseService
         $response = $this->createResponseObject();
 
         try {
-            $this->userModel->getAllUsers();
+            $users = $this->userModel->getAllUsers();
         } catch(Exception $e) {
             $response->message = $e->getMessage();
+            $response->code = $e->getCode();
             return $response;
         }
 
-        $this->normalizeResponse($this->userModel, $response);
+        $response = $this->normalizeResponse($users);
         return $response;
     }
 
@@ -143,16 +139,12 @@ class UserService extends BaseService
     {
         $response = $this->createResponseObject();
 
-        if (! $this->uuid->isValidGuid($userId)) {
-            # user sent in an invalid GUID, return no records found
-            $response->message = 'No User Found';
-            return $response;
-        }
-
         try {
             $this->userModel->deleteUserById($userId);
         } catch(Exception $e) {
             $response->message = $e->getMessage();
+            $response->code = $e->getCode();
+
             return $response;
         }
 
@@ -178,6 +170,8 @@ class UserService extends BaseService
             $this->userModel->addNewUser($values);
         } catch(Exception $e) {
             $response->message = $e->getMessage();
+            $response->code = $e->getCode();
+
             return $response;
         }
 
@@ -211,6 +205,8 @@ class UserService extends BaseService
             $this->userModel->updateUser($requestBody);
         } catch(Exception $e) {
             $response->message = $e->getMessage();
+            $response->code = $e->getCode();
+
             return $response;
         }
 

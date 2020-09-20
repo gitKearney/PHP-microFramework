@@ -61,7 +61,10 @@ class UserController extends BaseController
 
                 $response = $response
                     ->withStatus(401, $user->message)
-                    ->withHeader('Content-Type', 'application/json');
+                    ->withHeader('Access-Control-Allow-Origin', '*')
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withHeader('Content-Length', strval(strlen($body)));
+
                 $response->getBody()->write($body);
 
                 return $response;
@@ -80,13 +83,20 @@ class UserController extends BaseController
             }
         }
 
-        $id = $this->getUrlPathElements($request);
+        $qp = $this->getUrlPathElements($request);
+        if ($qp === null) {
+            $response = $response->withStatus(100, 'Not Allowed')
+                ->withHeader('Content-Type', 'application/json');
+            return $response;
+        }
 
         # pass the id to the service method, where we'll validate if it's a
         # valid guid
-        $res = json_encode($this->userService->deleteUserById($id));
+        $result = $this->userService->deleteUserById($qp['guid']);
+        $res = json_encode($result);
 
-        $response = $response->withHeader('Content-Type', 'application/json');
+        $response = $response->withStatus($result->code, $result->message)
+            ->withHeader('Content-Type', 'application/json');
         $response->getBody()->write($res);
         return $response;
     }
@@ -117,39 +127,28 @@ class UserController extends BaseController
         }
 
         # read the URI string and see if a GUID was passed in
-        $id = $this->getUrlPathElements($request);
+        $params = $this->getUrlPathElements($request);
 
         # if the URI is just /users/, then our ID will be null, get all records
-        if ($id === null) {
+        if ($params === null) {
             $users = $this->userService->getAllUsers();
-            $res = json_encode($users);
-
-            $response = $response->withHeader('Access-Control-Allow-Origin', '*')
-                ->withHeader('Content-Type', 'application/json')
-                ->withHeader('Content-Length', strval(strlen($res)));
-
-            if (!$headRequest) {
-                $response->getBody()->write($res);
-            }
-
-            return $response;
-        }
-
-        # pass the id to the service method, where we'll validate it
-        if (is_array($id)) {
-            $res = $this->userService->findUserByQueryString($id);
+        } else if (empty($params['guid'])) {
+            unset($params['guid']);
+            $users = $this->userService->findUserByQueryString($params);
         } else {
-            $res = $this->userService->findUserById($id);
+            $users = $this->userService->findUserById($params['guid']);
         }
 
-        $res = json_encode($res);
+        unset($users->code);
+        $body = json_encode($users);
 
-        $response = $response->withHeader('Access-Control-Allow-Origin', '*')
+        $response = $response->withStatus(200, 'OK')
+            ->withHeader('Access-Control-Allow-Origin', '*')
             ->withHeader('Content-Type', 'application/json')
-            ->withHeader('Content-Length', strval(strlen($res)));
+            ->withHeader('Content-Length', strval(strlen($body)));
 
         if (!$headRequest) {
-            $response->getBody()->write($res);
+            $response->getBody()->write($body);
         }
 
         return $response;
@@ -319,19 +318,18 @@ class UserController extends BaseController
         $requestUri = $request->getServerParams()['REQUEST_URI'];
         $params = preg_split('/\/users[\/?]/', $requestUri);
         if (empty($params[1])) {
-            return '';
+            return null;
         }
+
+        $queryParams = $request->getQueryParams();
 
         $matches = [];
 
         # search for only the GUID
-        preg_match($config->regex->uri_guid, $params[1], $matches);
+        preg_match($config->regex->guid, $params[1], $matches);
 
-        if (!empty($matches[0])) {
-            # strip any ? though since our regex is inclusive
-            return trim($matches[0], '?');
-        }
+        $queryParams['guid'] = !empty($matches[0]) ? $matches[0] : '';
 
-        return $request->getQueryParams();
+        return $queryParams;
     }
 }

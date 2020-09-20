@@ -16,11 +16,11 @@ function credentials()
 {
     $config = new stdClass();
 
-// You can add as many database connection details by creating a new stdClass
-// as a property to $config
+# You can add as many database connection details by creating a new stdClass
+# as a property to $config
 
-// This demonstrates how to use use 1 database for reading and a different
-// database for writing.
+# This demonstrates how to use use 1 database for reading and a different
+# database for writing.
     $config->read_database = new stdClass();
     $config->read_database->type = 'mysql';
     $config->read_database->name = 'demo';
@@ -37,11 +37,11 @@ function credentials()
     $config->write_database->user = 'write_user';
     $config->write_database->pass = 'secret';
 
-// The model has two properties: readConnectionId and writeConnectionId, which
-// tell the model what database to use for reading and writing.
+# The model has two properties: readConnectionId and writeConnectionId, which
+# tell the model what database to use for reading and writing.
 
-// If you will be reading/writing to same database set readConnectionId &
-// writeConnectionId to the same value, and create a new config key, like so
+# If you will be reading/writing to same database set readConnectionId &
+# writeConnectionId to the same value, and create a new config key, like so
     $config->product_database = new stdClass();
     $config->product_database->type = 'mysql';
     $config->product_database->name = 'products';
@@ -63,7 +63,7 @@ function credentials()
     $config->app_settings->log_location = '/tmp/debug.log';
     $config->app_settings->log_rotate   = true;
 
-// JWT settings
+# JWT settings
     $config->jwt = new stdClass();
     $config->jwt->issuer   = 'http://example.com';
     $config->jwt->audience = 'http://example.com';
@@ -72,8 +72,13 @@ function credentials()
     $config->jwt->key = 'ice cream!';
 
 # Debug settings
-    $config->debug = new \stdClass();
+    $config->debug = new stdClass();
     $config->debug->authUsers =  false;
+
+# REGEX Patterns
+    $config->regex            = new stdClass();
+    $config->regex->guid      = '/^[a-f\d]{8}-([a-f\d]{4}-){3}[a-f\d]{12}/i';
+    $config->regex->uri_guid  = '/^[a-f\d]{8}-([a-f\d]{4}-){3}[a-f\d]{12}[?]?$/i';
 
     return $config;
 }

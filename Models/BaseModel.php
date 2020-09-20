@@ -82,7 +82,7 @@ abstract class BaseModel
             $pdo = $this->getPdoConnection('read');
         } catch( Exception $e) {
             logVar($e->getMessage(), 'Failed to establish connection to database', 'emergency');
-            throw new Exception('Error Establishing Connection to Database');
+            throw new Exception('Error Establishing Connection to Database', 500);
         }
 
         try {
@@ -90,12 +90,12 @@ abstract class BaseModel
             $resultSet = $statement->execute($params);
         } catch( Exception $e) {
             logVar($e->getCode(), 'EXCEPTION SELECTING: '.$e->getMessage(), 'critical');
-            throw new Exception('Error Occurred While Finding Records');
+            throw new Exception('Error Occurred While Finding Records', 500);
         }
 
         if ($resultSet === false) {
             logVar('SELECT FAILED', '', 'critical');
-            throw new Exception('Error Finding Records');
+            throw new Exception('Error Finding Records', 500);
         }
 
         $this->results = [];

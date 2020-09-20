@@ -30,7 +30,7 @@ class Users extends BaseModel
     public function findUserById($userId)
     {
         $query = 'SELECT user_id as id, first_name, last_name, birthday,'
-            .' roles, email, upassword as password, created_at, updated_at'
+            .' roles, email'
             .' FROM users WHERE user_id = :user_id LIMIT 1';
         $params = [':user_id' => $userId];
 

@@ -326,7 +326,7 @@ class ProductController extends BaseController
         $matches = [];
 
         # search for only the GUID
-        preg_match($config->regex->uri_guid, $pathValues[1], $matches);
+        preg_match($config->regex->guid, $pathValues[1], $matches);
 
         if (!empty($matches[0])) {
             # we found a GUID

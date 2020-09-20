@@ -15,24 +15,28 @@ class BaseService
         $response->success = false;
         $response->message = '';
         $response->results = [];
+        $response->code = 200;
 
         return $response;
     }
 
     /**
      * @desc Fixes the data from the query and sets normal responses to the API
-     * @param BaseModel $model
-     * @param stdClass $response
+     * @param array $results
+     * @return stdClass
      */
-    public function normalizeResponse(BaseModel $model, $response)
+    public function normalizeResponse($results)
     {
+        $response = $this->createResponseObject();
         $response->success = true;
-        $results = $model->getResults();
+        $response->results =$results;
 
         if (count($results) === 0) {
             $response->message = 'No Results';
+        } else {
+            $response->message = 'success';
         }
 
-        return $response->results = $results;
+        return $response;
     }
 }
