@@ -243,24 +243,26 @@ class UserController extends BaseController
         $requestBody = $this->parsePost($request, $response);
 
         if (count($requestBody) == 0) {
-            $jsonRes = json_encode([
+            $body = json_encode([
                 'success' => false,
                 'message' => 'No input data',
             ]);
 
-            $returnResponse = $response->withHeader('Content-Type', 'application/json');
-            $returnResponse->getBody()->write($jsonRes);
-            return $returnResponse;
+            $response = $response
+                ->withHeader('Content-Length', strval(strlen($body)))
+                ->withHeader('Content-Type', 'application/json');
+            $response->getBody()->write($body);
+            return $response;
         }
 
         $res = $this->userService->addNewUser($requestBody);
-
-        $jsonRes = json_encode($res);
+        $body = json_encode($res);
         $returnResponse = $response
             ->withHeader('Access-Control-Allow-Origin', '*')
-            ->withHeader('Content-Type', 'application/json');
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Content-Length', strval(strlen($body)));
 
-        $returnResponse->getBody()->write($jsonRes);
+        $returnResponse->getBody()->write($body);
 
         return $returnResponse;
     }
