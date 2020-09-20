@@ -25,6 +25,14 @@ $router->route($userRegex, function() {
     $response = $userController->handleRequest();
 
     # you MUST output the header before any HTML
+    $status = sprintf("HTTP/%s %s %s",
+        $response->getProtocolVersion(),
+        $response->getStatusCode(),
+        $response->getReasonPhrase()
+    );
+
+    header($status);
+
     foreach($response->getHeaders() as $index => $value) {
         header($index.': '.$value[0]);
     }

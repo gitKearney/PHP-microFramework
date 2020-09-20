@@ -3,8 +3,10 @@
 namespace Main\Services;
 
 use \Firebase\JWT\JWT;
+use stdClass;
+use Exception;
 
-class JwtService
+class JwtService extends BaseService
 {
     /**
      * @var string
@@ -88,16 +90,18 @@ class JwtService
     /**
      * decodes a JWT
      * @param array $httpHeaders
-     * @return \stdClass
-     * @throws \Exception
+     * @return stdClass
      */
     public function decodeWebToken($httpHeaders)
     {
         $config = getAppConfigSettings();
+        $response = $this->createResponseObject();
 
         # is there an authorization header?
         if (! isset($httpHeaders['authorization'])) {
-            throw new \Exception('Access Denied', 401);
+            $response->message = 'Access Denied';
+            $response->code = 401;
+            return $response;
         }
 
         $authHeaders = $httpHeaders['authorization'];
@@ -113,17 +117,22 @@ class JwtService
         }
 
         if (strlen($bearerToken) == 0) {
-            throw new \Exception('Access Denied', 401);
+            $response->message = 'Access Denied';
+            $response->code = 401;
+            return $response;
         }
 
         # make sure the JWT is good
         try {
             $decoded = JWT::decode($bearerToken, $config->jwt->key, array('HS256'));
-        } catch (\Exception $e) {
-            throw $e;
+        } catch (Exception $e) {
+            $response->message = $e->getMessage();
+            return $response;
         }
 
-        return $decoded;
+        $response->success = true;
+        $response->results = $decoded;
+        return $response;
     }
 
     /**

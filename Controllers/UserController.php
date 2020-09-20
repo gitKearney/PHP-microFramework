@@ -10,6 +10,7 @@ use Exception;
 use InvalidArgumentException;
 use stdClass;
 
+use function Main\Utils\checkUserRole as userCheck;
 
 /**
  * Class UserController
@@ -52,32 +53,32 @@ class UserController extends BaseController
      */
     public function delete(ServerRequest $request, Response $response)
     {
-        $id = null;
+        $config = getAppConfigSettings();
+        if ($config->debug->authUsers) {
+            $user = $this->jwtService->decodeWebToken($request->getHeaders());
+            if (!$user->success) {
+                $body = json_encode($user);
 
-       try {
-           $config = getAppConfigSettings();
-           if ($config->debug->authUsers) {
-               $decodedJwt = $this->jwtService->decodeWebToken($request->getHeaders());
+                $response = $response
+                    ->withStatus(401, $user->message)
+                    ->withHeader('Content-Type', 'application/json');
+                $response->getBody()->write($body);
 
-               # does the user have access to this method?
-               $userId = $decodedJwt->data->userId;
-
-               $hasPermission = $this->userService->userAllowedAction($userId, 'create');
-               if (!$hasPermission) {
-                   throw new Exception('Action Not Allowed', '100');
-               }
+                return $response;
             }
-       } catch (Exception $e) {
-           $body = json_encode([
-               'success' => false,
-               'message'  => $e->getMessage(),
-           ]);
 
-           $returnResponse = $response->withHeader('Content-Type', 'application/json');
-           $returnResponse->getBody()->write($body);
+            # does the user have access to this method?
+            $userId = $user->results->data->userId;
 
-           return $returnResponse;
-       }
+            $hasPermission = $this->userService->userAllowedAction($userId, 'create');
+            if (!$hasPermission) {
+                $response = $response
+                    ->withStatus(100, 'Action Not Allowed')
+                    ->withHeader('Content-Type', 'application/json');
+
+                return $response;
+            }
+        }
 
         $id = $this->getUrlPathElements($request);
 
@@ -85,9 +86,9 @@ class UserController extends BaseController
         # valid guid
         $res = json_encode($this->userService->deleteUserById($id));
 
-        $returnResponse = $response->withHeader('Content-Type', 'application/json');
-        $returnResponse->getBody()->write($res);
-        return $returnResponse;
+        $response = $response->withHeader('Content-Type', 'application/json');
+        $response->getBody()->write($res);
+        return $response;
     }
 
     /**
@@ -99,22 +100,20 @@ class UserController extends BaseController
      */
     public function get(ServerRequest $request, Response $response, $headRequest = false)
     {
-        try {
-            /** @var stdClass() */
-            $config = getAppConfigSettings();
-            if ($config->debug->authUsers) {
-                $this->jwtService->decodeWebToken($request->getHeaders());
+        $config = getAppConfigSettings();
+
+        if ($config->debug->authUsers) {
+            $user = $this->jwtService->decodeWebToken($request->getHeaders());
+            if (!$user->success) {
+                $body = json_encode($user);
+
+                $response = $response
+                    ->withStatus($user->code, $user->message)
+                    ->withHeader('Content-Type', 'application/json');
+                $response->getBody()->write($body);
+
+                return $response;
             }
-        } catch (Exception $e) {
-            $body = json_encode([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ]);
-
-            $returnResponse = $response->withHeader('Content-Type', 'application/json');
-            $returnResponse->getBody()->write($body);
-
-            return $returnResponse;
         }
 
         # read the URI string and see if a GUID was passed in
@@ -125,15 +124,15 @@ class UserController extends BaseController
             $users = $this->userService->getAllUsers();
             $res = json_encode($users);
 
-            $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
+            $response = $response->withHeader('Access-Control-Allow-Origin', '*')
                 ->withHeader('Content-Type', 'application/json')
                 ->withHeader('Content-Length', strval(strlen($res)));
 
             if (!$headRequest) {
-                $returnResponse->getBody()->write($res);
+                $response->getBody()->write($res);
             }
 
-            return $returnResponse;
+            return $response;
         }
 
         # pass the id to the service method, where we'll validate it
@@ -145,27 +144,15 @@ class UserController extends BaseController
 
         $res = json_encode($res);
 
-        try {
-            $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
-                ->withHeader('Content-Type', 'application/json')
-                ->withHeader('Content-Length', strval(strlen($res)));
-        } catch(Exception $e) {
-            $result->message = $e->getMessage();
-            $result->results['error_code'] = $e->getCode();
-
-            $body = json_encode($result);
-
-            $returnResponse = $response->withHeader('Content-Type', 'application/json');
-            $returnResponse->getBody()->write($body);
-
-            return $returnResponse;
-        }
+        $response = $response->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Content-Length', strval(strlen($res)));
 
         if (!$headRequest) {
-            $returnResponse->getBody()->write($res);
+            $response->getBody()->write($res);
         }
 
-        return $returnResponse;
+        return $response;
     }
 
     /**
@@ -202,31 +189,31 @@ class UserController extends BaseController
      */
     public function patch(ServerRequest $request, Response $response)
     {
-        try {
-            $config = getAppConfigSettings();
-            if ($config->debug->authUsers) {
-                $decodedJwt = $this->jwtService->decodeWebToken($request->getHeaders());
+        $config = getAppConfigSettings();
+        if ($config->debug->authUsers) {
+            $user = $this->jwtService->decodeWebToken($request->getHeaders());
+            if (!$user->success) {
+                $body = json_encode($user);
 
-                # does the user have access to this method?
-                $userId = $decodedJwt->data->userId;
+                $response = $response
+                    ->withStatus($user->code, $user->message)
+                    ->withHeader('Content-Type', 'application/json');
+                $response->getBody()->write($body);
 
-                $hasPermission = $this->userService->userAllowedAction($userId, 'create');
-                if (!$hasPermission) {
-                    throw new Exception('Action Not Allowed', '100');
-                }
+                return $response;
             }
-        } catch (Exception $e) {
-            $body = json_encode([
-               'success' => false,
-               'message'  => $e->getMessage(),
-            ]);
 
-            $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
-                ->withHeader('Content-Type', 'application/json');
+            # does the user have access to this method?
+            $userId = $user->results->data->userId;
 
-            $returnResponse->getBody()->write($body);
+            $hasPermission = $this->userService->userAllowedAction($userId, 'edit');
+            if (!$hasPermission) {
+                $response = $response
+                    ->withStatus(100, 'Action Not Allowed')
+                    ->withHeader('Content-Type', 'application/json');
 
-           return $returnResponse;
+                return $response;
+            }
         }
 
         # get the POST body as a string: $request->getBody()->__toString()
@@ -287,38 +274,27 @@ class UserController extends BaseController
      */
     public function put(ServerRequest $request, Response $response)
     {
-        # extract the HTTP BODY into an array
-        $requestBody = $this->userService->parseServerRequest($request);
+        $config = getAppConfigSettings();
+//       ($request->getHeaders(),$config->debug->authUsers,
+//            'edit', $this->jwtService, $this->userService);
+        $user = userCheck($request->getHeaders(),$config->debug->authUsers,
+            'edit', $this->jwtService, $this->userService);
 
-        try {
-            $config = getAppConfigSettings();
-
-            # if auth user flag is set, verify that the JWT is good
-            if ($config->debug->authUsers) {
-                $decodedJwt = $this->jwtService->decodeWebToken($request->getHeaders());
-
-                # does the user have access to this method?
-                $userId = $decodedJwt->data->userId;
-
-                $hasPermission = $this->userService->userAllowedAction($userId, 'edit');
-                if (!$hasPermission) {
-                    throw new Exception('Action Not Allowed', '100');
-                }
-            }
-        } catch (Exception $e) {
+        if (!$user->success) {
             $body = json_encode([
-                'success' => false,
-                'message'  => $e->getMessage(),
+                'message' => $user->message,
             ]);
 
-            $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
+            $response = $response
+                ->withStatus($user->code, $user->message)
                 ->withHeader('Content-Type', 'application/json');
+            $response->getBody()->write($body);
 
-            $returnResponse->getBody()->write($body);
-
-            return $returnResponse;
+            return $response;
         }
 
+        # extract the HTTP BODY into an array
+        $requestBody = $this->userService->parseServerRequest($request);
         $result = $this->userService->updateUser($requestBody);
         $jsonRes = json_encode($result);
         $returnResponse = $response
