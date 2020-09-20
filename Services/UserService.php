@@ -267,7 +267,7 @@ class UserService extends BaseService
     {
         $user = $this->userModel->findUserById($guid);
 
-        $userRole = $user->results['roles'] ?? 'read';
+        $userRole = $user['roles'] ?? 'read';
 
         if (strcasecmp($userRole, 'create') === 0) {
             # this is the equivalent of "admin" so, grant it

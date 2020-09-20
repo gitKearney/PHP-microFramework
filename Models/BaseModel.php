@@ -82,7 +82,7 @@ abstract class BaseModel
             $pdo = $this->getPdoConnection('read');
         } catch( Exception $e) {
             logVar($e->getMessage(), 'Failed to establish connection to database', 'emergency');
-           throw new Exception('Error Establishing Connection to Database');
+            throw new Exception('Error Establishing Connection to Database');
         }
 
         try {
@@ -239,7 +239,9 @@ abstract class BaseModel
         # strip the trailing ANDs from the where clause
         $where = trim($where, 'AND ');
 
-        $sqlQuery->sql = 'SELECT * FROM '.$tableName.' WHERE '.$where;
+        $sqlQuery->sql = 'SELECT user_id AS id, first_name, last_name, email,'
+            .' birthday, roles AS role, active'
+            .' FROM '.$tableName.' WHERE '.$where;
 
         return $sqlQuery;
     }

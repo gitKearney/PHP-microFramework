@@ -146,56 +146,32 @@ class AuthController extends BaseController
         $requestBody = $this->parsePost($request, $response);
 
         if (count($requestBody) == 0) {
-            $res = ['error_code' => 400, 'error_msg' => 'No input data'];
-            $jsonRes = json_encode($res);
-            $returnResponse = $response->withHeader('Content-Type', 'application/json');
-            $returnResponse->getBody()->write($jsonRes);
-            return $returnResponse;
-        }
-
-        try {
-            $webToken = $this->authService->createJwt($requestBody);
-        }
-        catch (\TypeError $e) {
-            $error = new \stdClass();
-            $error->success = false;
-            $error->message  = 'Failed to create web token';
-
-            logVar('EXCEPTION CREATING TOKEN: ', $e->getMessage(), 'critical');
-            $jsonRes = json_encode($error);
-
-            $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
+            $res = ['message' => 'Invalid Data'];
+            $body = json_encode($res);
+            $response = $response
+                ->withStatus(401, 'Invalid User')
                 ->withHeader('Content-Type', 'application/json');
-            $returnResponse->getBody()->write($jsonRes);
-
-            return $returnResponse;
-        }
-        catch (\Exception $e) {
-            $error = new \stdClass();
-            $error->success = false;
-            $error->message  = $e->getMessage();
-            $jsonRes = json_encode($error);
-
-            $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
-                ->withHeader('Content-Type', 'application/json');
-            $returnResponse->getBody()->write($jsonRes);
-
-            return $returnResponse;
+            $response->getBody()->write($body);
+            return $response;
         }
 
-        $successResponse = new \stdClass();
-        
-        $successResponse->success = true;
-        $successResponse->message = 'success';
-        $successResponse->results = $webToken;
+        $webToken = $this->authService->createJwt($requestBody);
 
-        $jsonRes = json_encode($successResponse);
+
+        $success = new \stdClass();
+
+        $success->success = true;
+        $success->message = 'success';
+        $success->results = $webToken;
+
+        $body = json_encode($success);
 
         $returnResponse = $response
+            ->withStatus(200, 'OK')
             ->withHeader('Access-Control-Allow-Origin', '*')
             ->withHeader('Content-Type', 'application/json');
 
-        $returnResponse->getBody()->write($jsonRes);
+        $returnResponse->getBody()->write($body);
 
         return $returnResponse;
     }

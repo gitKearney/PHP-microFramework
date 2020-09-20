@@ -3,8 +3,9 @@
 namespace Main\Services;
 
 use Main\Models\Users;
+use stdClass;
 
-class AuthService
+class AuthService extends BaseService
 {
     /**
      * @var Users
@@ -24,36 +25,42 @@ class AuthService
 
     /**
      * @param array $requestBody
-     * @return string
-     * @throws \Exception
+     * @return stdClass
      */
     public function createJwt(array $requestBody)
     {
         $email = $requestBody['email'] ?? null;
 
+        $response = $this->createResponseObject();
+
         if (is_null($email)) {
-            throw new \Exception('No email passed in', 404);
+            $response->code = 401;
+            $response->message = 'Invalid User';
+            return $response;
         }
 
         # verify the user's information correct
-        $result = $this->users->findUserByEmail($requestBody['email']);
+        $user = $this->users->findUserByEmail($requestBody['email']);
 
-        if ($result->success === false || count($result->results) === 0) {
-            throw new \Exception('No user found', 404);
+        if (count($user) === 0) {
+            $response->code = 401;
+            $response->message = 'Invalid User';
+            return $response;
         }
 
-        $account = (object) $result->results;
-        logVar($account, 'ACCOUNT PULLED: ');
-
         # does the password from the body match the user's password?
-        $match = password_verify($requestBody['password'], $account->upassword);
+        $match = password_verify($requestBody['password'], $user['upassword']);
         if (!$match) {
-            throw new \Exception('No user found', 302);
+            $response->code = 401;
+            $response->message = 'Invalid User';
+            return $response;
         }
 
         # the user's credentials match, create a JWT for the user
-        $this->jwtService->createJwt($account->user_id, $account->email);
+        $this->jwtService->createJwt($user['user_id'], $user['email']);
 
-        return $this->jwtService->getJwt();
+        $response->results = $this->jwtService->getJwt();
+        $response->success = true;
+        return $response;
     }
 }

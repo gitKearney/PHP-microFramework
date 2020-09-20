@@ -127,6 +127,7 @@ class JwtService extends BaseService
             $decoded = JWT::decode($bearerToken, $config->jwt->key, array('HS256'));
         } catch (Exception $e) {
             $response->message = $e->getMessage();
+            $response->code = 401;
             return $response;
         }
 

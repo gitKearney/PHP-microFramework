@@ -34,7 +34,7 @@ function checkUserRole(array $requestHeaders,
         return $response;
     }
 
-    $userId = $response->results->data->userId;
+    $userId = $user->results->data->userId;
 
     $hasPermission = $userService->userAllowedAction($userId, $requiredRole);
     if (!$hasPermission) {

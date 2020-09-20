@@ -120,7 +120,7 @@ class UserController extends BaseController
         $id = $this->getUrlPathElements($request);
 
         # if the URI is just /users/, then our ID will be null, get all records
-        if ($id == null) {
+        if ($id === null) {
             $users = $this->userService->getAllUsers();
             $res = json_encode($users);
 
