@@ -10,6 +10,7 @@
         "ext-pdo": "*"
     },
     "autoload": {
+        "files": ["utils/checkUserRole.php"],
         "psr-4": {
             "Main\\": "./"
         }
