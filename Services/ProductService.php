@@ -72,17 +72,18 @@ class ProductService extends BaseService
      */
     public function getAllProducts()
     {
-        /** @var stdClass $response*/
         $response = $this->createResponseObject();
 
         try {
-            $this->products->getAllProducts();
+            $products = $this->products->getAllProducts();
         } catch (Exception $e) {
             $response->message = $e->getMessage();
+            $response->code = $e->getCode();
+
             return $response;
         }
 
-        $this->normalizeResponse($this->products, $response);
+        $response = $this->normalizeResponse($products);
         return $response;
     }
 

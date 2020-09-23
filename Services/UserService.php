@@ -116,7 +116,6 @@ class UserService extends BaseService
      */
     public function getAllUsers()
     {
-        /** @var stdClass $response */
         $response = $this->createResponseObject();
 
         try {

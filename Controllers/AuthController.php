@@ -3,9 +3,10 @@ namespace Main\Controllers;
 
 use Main\Services\AuthService;
 use Main\Services\UserService;
+use stdClass;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
-use Firebase\JWT\JWT;
+use Exception;
 
 /**
  * The controller MUST extend BaseController
@@ -57,7 +58,7 @@ class AuthController extends BaseController
     }
 
     /**
-     * Method to process HTTP GET reqeusts
+     * Method to process HTTP GET requests
      * @param ServerRequest $request
      * @param Response $response
      * @return Response
@@ -123,12 +124,12 @@ class AuthController extends BaseController
      * @param ServerRequest $request
      * @param Response $response
      * @return Response
-     * @throws \Exception
+     * @throws Exception
      */
     public function patch(ServerRequest $request, Response $response)
     {
         
-        $returnResponse = $response->withStatus(404);;
+        $returnResponse = $response->withStatus(404);
         $returnResponse->getBody()->write('Not Found');
         return $returnResponse;
     }
@@ -158,7 +159,7 @@ class AuthController extends BaseController
         $webToken = $this->authService->createJwt($requestBody);
 
 
-        $success = new \stdClass();
+        $success = new stdClass();
 
         $success->success = true;
         $success->message = 'success';
@@ -191,12 +192,14 @@ class AuthController extends BaseController
 
     /**
      * Parse the URI for path elements like /auth/ or /auth/{GUID}
+     * @param ServerRequest $request
+     * @return null|array
      */
     public function getUrlPathElements(ServerRequest $request)
     {
         # split the URI field on the route
-        $vals = preg_split('/\/auth\//', $request->getServerParams()['REQUEST_URI']);
-        if (empty($vals[1])) {
+        $parts = preg_split('/\/auth\//', $request->getServerParams()['REQUEST_URI']);
+        if (empty($parts[1])) {
             # if the URI is just 'http://example.com/auth/' then we won't have
             # anything to return, return null
             return null;
@@ -205,6 +208,6 @@ class AuthController extends BaseController
         # if the URI is 'http://example.com/auth/12345', then return '12345'
         # TODO: if your paths are something like http://example.com/auth/12345/valid
         #       you may want to do additional parsing
-        return $vals[1];
+        return $parts[1];
     }
 }

@@ -60,47 +60,53 @@ class ProductController extends BaseController
      */
     public function delete(ServerRequest $request, Response $response)
     {
-        $id = null;
-
-        $id = $this->getUrlPathElements($request);
-
         $config = getAppConfigSettings();
-        try {
-            if ($config->debug->authUsers) {
+        if ($config->debug->authUsers) {
+            $decoded = $this->jwtService->decodeWebToken($request->getHeaders());
 
-                /**
-                 * @var stdClass
-                 */
-                $decodedJwt = $this->jwtService->decodeWebToken($request->getHeaders());
+            if (!$decoded->success) {
+                $body = json_encode($decoded);
 
-                # does the user have access to this method?
-                $userId = $decodedJwt->data->userId;
-                $hasPermission = $this->userService->userAllowedAction($userId, 'create');
+                $response = $response
+                    ->withStatus(401, $decoded->message)
+                    ->withHeader('Access-Control-Allow-Origin', '*')
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withHeader('Content-Length', strval(strlen($body)));
 
-                if (!$hasPermission) {
-                    throw new Exception('Action Not Allowed', '100');
-                }
+                $response->getBody()->write($body);
+
+                return $response;
             }
+            # does the user have access to this method?
+            $userId = $decoded->data->userId;
+            $hasPermission = $this->userService->userAllowedAction($userId, 'create');
 
-        } catch (Exception $e) {
-            $body = json_encode([
-               'error_code' => $e->getCode(),
-               'error_msg'  => $e->getMessage(),
-           ]);
+            if (!$hasPermission) {
+                $response = $response
+                    ->withStatus(100, 'Action Not Allowed')
+                    ->withHeader('Content-Type', 'application/json');
 
-           $returnResponse = $response->withHeader('Content-Type', 'application/json');
-           $returnResponse->getBody()->write($body);
+                return $response;
+            }
+        }
 
-           return $returnResponse;
+        $qp = $this->getUrlPathElements($request);
+        if ($qp === null) {
+            $response = $response->withStatus(100, 'Not Allowed')
+                ->withHeader('Content-Type', 'application/json');
+            return $response;
         }
 
         # pass the id to the service method, where we'll validate if it's a
         # valid guid
-        $res = json_encode($this->productService->deleteProductById($id));
+        $result = $this->productService->deleteProductById($qp['guid']);
+        $res = json_encode($result);
 
-        $returnResponse = $response->withHeader('Content-Type', 'application/json');
-        $returnResponse->getBody()->write($res);
-        return $returnResponse;
+        $response = $response
+            ->withStatus($result->code, $result->message)
+            ->withHeader('Content-Type', 'application/json');
+        $response->getBody()->write($res);
+        return $response;
     }
 
     /**
@@ -111,31 +117,20 @@ class ProductController extends BaseController
      */
     public function get(ServerRequest $request, Response $response)
     {
-        try {
-            $config = getAppConfigSettings();
-            if ($config->debug->authUsers) {
-                $decodedJwt = $this->jwtService->decodeWebToken($request->getHeaders());
+        $config = getAppConfigSettings();
+        if ($config->debug->authUsers) {
+            $decoded = $this->jwtService->decodeWebToken($request->getHeaders());
 
-                # does the user have access to this method?
-                $userId = $decodedJwt->data->userId;
+            if (!$decoded->success) {
+                $body = json_encode($decoded);
 
-                $hasPermission = $this->userService->userAllowedAction($userId, 'create');
-                if (!$hasPermission) {
-                    throw new Exception('Action Not Allowed', '100');
-                }
+                $response = $response
+                    ->withStatus($decoded->code, $decoded->message)
+                    ->withHeader('Content-Type', 'application/json');
+                $response->getBody()->write($body);
+
+                return $response;
             }
-        } catch (Exception $e) {
-            $body = json_encode([
-                'error_code' => $e->getCode(),
-                'error_msg'  => $e->getMessage(),
-            ]);
-
-            $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
-                ->withHeader('Content-Type', 'application/json');
-
-            $returnResponse->getBody()->write($body);
-
-            return $returnResponse;
         }
 
         # read the URI string and see if a GUID was passed in
@@ -243,47 +238,61 @@ class ProductController extends BaseController
     public function post(ServerRequest $request, Response $response)
     {
         $config = getAppConfigSettings();
-        try {
-            if ($config->debug->authUsers) {
-                $decodedJwt = $this->jwtService->decodeWebToken($request->getHeaders());
+        if ($config->debug->authUsers) {
+            $decoded = $this->jwtService->decodeWebToken($request->getHeaders());
+            
+            if (!$decoded->success) {
+                $body = json_encode($decoded);
 
-                # does the user have access to this method?
-                $userId = $decodedJwt->data->userId;
+                $response = $response
+                    ->withStatus(401, $decoded->message)
+                    ->withHeader('Access-Control-Allow-Origin', '*')
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withHeader('Content-Length', strval(strlen($body)));
 
-                $hasPermission = $this->userService->userAllowedAction($userId, 'create');
-                if (!$hasPermission) {
-                    throw new Exception('Action Not Allowed', '100');
-                }
+                $response->getBody()->write($body);
+
+                return $response;
             }
-        } catch (Exception $e) {
-            $body = json_encode([
-               'error_code' => $e->getCode(),
-               'error_msg'  => $e->getMessage(),
-           ]);
 
-           $returnResponse = $response->withHeader('Content-Type', 'application/json');
-           $returnResponse->getBody()->write($body);
+            # does the user have access to this method?
+            $userId = $decoded->results->data->userId;
+            $hasPermission = $this->userService->userAllowedAction($userId, 'create');
+            if (!$hasPermission) {
+                $response = $response
+                    ->withStatus(100, 'Action Not Allowed')
+                    ->withHeader('Content-Type', 'application/json');
 
-           return $returnResponse;
+                return $response;
+            }
         }
 
-        $requestBody = $this->parsePost($request, $response);
+        $requestBody = $this->parsePost($request);
 
-        if (count($requestBody) == 0) {
-            $res = ['error_code' => 400, 'error_msg' => 'No input data'];
-            $jsonRes = json_encode($res);
-            $returnResponse = $response->withHeader('Content-Type', 'application/json');
-            $returnResponse->getBody()->write($jsonRes);
-            return $returnResponse;
+        if (count($requestBody) === 0) {
+            $body = json_encode([
+                'success' => false,
+                'message' => 'No input data',
+            ]);
+
+            $response = $response
+                ->withHeader('Content-Length', strval(strlen($body)))
+                ->withHeader('Content-Type', 'application/json');
+            $response->getBody()->write($body);
+            return $response;
         }
 
         $res = $this->productService->addNewProduct($requestBody);
 
-        $jsonRes = json_encode($res);
-        $returnResponse = $response->withHeader('Content-Type', 'application/json');
-        $returnResponse->getBody()->write($jsonRes);
+        $body = json_encode($res);
+        $response = $response
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Content-Length', strval(strlen($body)));
 
-        return $returnResponse;
+        $response->getBody()->write($body);
+
+        return $response;
     }
 
     /**

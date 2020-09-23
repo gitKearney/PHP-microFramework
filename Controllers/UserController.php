@@ -72,7 +72,6 @@ class UserController extends BaseController
 
             # does the user have access to this method?
             $userId = $user->results->data->userId;
-
             $hasPermission = $this->userService->userAllowedAction($userId, 'create');
             if (!$hasPermission) {
                 $response = $response
@@ -236,11 +235,10 @@ class UserController extends BaseController
      * @param ServerRequest $request
      * @param Response $response
      * @return Response
-     * @throws Exception
      */
     public function post(ServerRequest $request, Response $response)
     {
-        $requestBody = $this->parsePost($request, $response);
+        $requestBody = $this->parsePost($request);
 
         if (count($requestBody) == 0) {
             $body = json_encode([
@@ -257,14 +255,14 @@ class UserController extends BaseController
 
         $res = $this->userService->addNewUser($requestBody);
         $body = json_encode($res);
-        $returnResponse = $response
+        $response = $response
             ->withHeader('Access-Control-Allow-Origin', '*')
             ->withHeader('Content-Type', 'application/json')
             ->withHeader('Content-Length', strval(strlen($body)));
 
-        $returnResponse->getBody()->write($body);
+        $response->getBody()->write($body);
 
-        return $returnResponse;
+        return $response;
     }
 
     /**

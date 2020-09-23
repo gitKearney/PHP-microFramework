@@ -168,7 +168,7 @@ abstract class BaseController
         return $returnResponse;
     }
 
-    public function parsePost(ServerRequest $request, Response $response)
+    public function parsePost(ServerRequest $request)
     {
         # if the content type isn't set, default to empty string.
         $contentType = $request->getHeaders()['content-type'][0] ?? '';
