@@ -6,7 +6,7 @@
 $router->route('/auth/', function() {
 
     /**
-     * @var \Pimple\Container
+     * @var \Pimple\Container $container defined in index.php line 92
      */
     global $container;
 

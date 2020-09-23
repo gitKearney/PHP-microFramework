@@ -240,7 +240,7 @@ class ProductController extends BaseController
         $config = getAppConfigSettings();
         if ($config->debug->authUsers) {
             $decoded = $this->jwtService->decodeWebToken($request->getHeaders());
-            
+
             if (!$decoded->success) {
                 $body = json_encode($decoded);
 
