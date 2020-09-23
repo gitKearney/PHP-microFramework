@@ -47,21 +47,18 @@ class ProductService extends BaseService
 
         # test the GUID to see if it's good
         if (! $this->uuidService->isValidGuid($productId)) {
-            # user sent in an invalid GUID, return no records found
-            logVar($productId, "Invalid GUID: ");
-
             $response->message =  'No product found';
             return $response;
         }
 
         try {
-            $this->products->findProductById($productId);
+            $product = $this->products->findProductById($productId);
         } catch (Exception $e) {
             $response->message = $e->getMessage();
             return $response;
         }
 
-        $this->normalizeResponse($this->products, $response);
+        $response = $this->normalizeResponse($product);
 
         return $response;
     }
@@ -94,13 +91,13 @@ class ProductService extends BaseService
 
         try {
             $query = $this->products->getProductByParams($queryParams);
-            $this->products->select($query->sql, $query->params);
+            $products = $this->products->select($query->sql, $query->params);
         } catch (Exception $e) {
             $response->message = $e->getMessage();
             return $response;
         }
 
-        $this->normalizeResponse($this->products, $response);
+        $response = $this->normalizeResponse($products);
         return $response;
     }
 

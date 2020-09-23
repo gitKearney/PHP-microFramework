@@ -99,7 +99,11 @@ class UserService extends BaseService
 
         try {
             $sql = $this->userModel->buildSearchString($queryParams, 'users');
-            $users = $this->userModel->select($sql->sql, $sql->params);
+
+            $query = 'SELECT user_id as id, first_name, last_name, birthday,'
+                .' roles, email FROM users WHERE '.$sql->sql;
+
+            $users = $this->userModel->select($query, $sql->params);
         } catch (Exception $e) {
             $response->message = $e->getMessage();
             $response->code = $e->getCode();
@@ -256,11 +260,11 @@ class UserService extends BaseService
      * @param string $guid
      * @param string $requiredRole
      * @return bool
-     * @throws Exception
      */
     public function userAllowedAction($guid, $requiredRole)
     {
-        $user = $this->userModel->findUserById($guid);
+        $userRecord = $this->findUserById($guid);
+        $user = $userRecord->results;
 
         $userRole = $user['roles'] ?? 'read';
 

@@ -239,9 +239,7 @@ abstract class BaseModel
         # strip the trailing ANDs from the where clause
         $where = trim($where, 'AND ');
 
-        $sqlQuery->sql = 'SELECT user_id AS id, first_name, last_name, email,'
-            .' birthday, roles AS role, active'
-            .' FROM '.$tableName.' WHERE '.$where;
+        $sqlQuery->sql = $where;
 
         return $sqlQuery;
     }

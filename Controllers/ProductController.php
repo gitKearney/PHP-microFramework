@@ -8,7 +8,6 @@ use Main\Services\ProductService;
 use Main\Services\UserService;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
-use stdClass;
 
 /**
  * The controller MUST extend BaseController
@@ -137,17 +136,15 @@ class ProductController extends BaseController
         $id = $this->getUrlPathElements($request);
 
         # if the URI is just /products/, then our ID will be null, get all records
-        if ($id == null) {
+        if ($id === null) {
             # no GUID was passed in, get all records
             $body = json_encode($this->productService->getAllProducts());
 
             $returnResponse = $response->withHeader('Content-Type', 'application/json');
             $returnResponse->getBody()->write($body);
             return $returnResponse;
-        }
-
-        # is the ID a GUID or a query string?
-        if (is_array($id)) {
+        } else if (is_array($id)) {
+            # is the ID a GUID or a query string?
             $res = $this->productService->getProductsByQueryString($id);
         } else {
             # pass the id to the service method, where we'll validate it
@@ -318,7 +315,7 @@ class ProductController extends BaseController
     /**
      * Looks at the REQUEST_URI to see if it is /path/ or /path/{guid}
      * @param ServerRequest $request
-     * @return string | array
+     * @return null | string | array
      */
     protected function getUrlPathElements(ServerRequest $request)
     {
@@ -329,7 +326,7 @@ class ProductController extends BaseController
         $pathValues = preg_split('/\/products\/?\??/', $requestUri);
         if (empty($pathValues[1])) {
             # no second element found, path is /products
-            return '';
+            return null;
         }
 
         $matches = [];

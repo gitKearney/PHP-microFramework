@@ -12,7 +12,7 @@ $router->route($userRegex, function() {
     // if you have an aversion to global, then you could pass in $container to
     // the closure like so
     // function(Container $container) instead of using global
-    
+
     /**
      * @var \Pimple\Container $container defined in index.php line 92
      */

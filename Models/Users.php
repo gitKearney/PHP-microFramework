@@ -25,7 +25,6 @@ class Users extends BaseModel
     /**
      * @param string $userId
      * @return array
-     * @throws Exception
      */
     public function findUserById($userId)
     {

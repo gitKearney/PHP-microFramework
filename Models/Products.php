@@ -68,7 +68,11 @@ class Products extends BaseModel
      */
     public function getProductByParams($params)
     {
-        return $this->buildSearchString($params, 'products');
+        $query = $this->buildSearchString($params, 'products');
+        $sql = 'SELECT product_id AS id, title, price, quantity, created_at'
+            .' FROM products WHERE '.$query->sql;
+        $query->sql = $sql;
+        return $query;
     }
 
     /**
