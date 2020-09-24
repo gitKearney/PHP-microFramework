@@ -2,6 +2,8 @@
 
 namespace Main\Services;
 
+use DateInterval;
+use DateTime;
 use \Firebase\JWT\JWT;
 use stdClass;
 use Exception;
@@ -22,11 +24,11 @@ class JwtService extends BaseService
      * @param $userId
      * @param $userEmail
      * @return $this
-     * @throws \Exception
+     * @throws Exception
      */
     public function createJwt($userId, $userEmail)
     {
-        $result = new \stdClass();
+        $result = new stdClass();
         $result->success = false;
         $result->message = '';
         $result->results = [];
@@ -34,15 +36,15 @@ class JwtService extends BaseService
         # get the config
         $config    = getAppConfigSettings();
 
-        $tokenUserData =  new \stdClass();
+        $tokenUserData =  new stdClass();
 
         $tokenUserData->userId = $userId;
         $tokenUserData->email  = $userEmail;
 
-        $responseToken = new \stdClass();
+        $responseToken = new stdClass();
 
         // create a datetime object to work with
-        $currentTime = new \DateTime("now");
+        $currentTime = new DateTime("now");
 
         // set the issued at time
         $responseToken->iat = $currentTime->format('U');
@@ -59,12 +61,12 @@ class JwtService extends BaseService
 
         try
         {
-            $interval = new \DateInterval($ttl);
+            $interval = new DateInterval($ttl);
         }
-        catch (\Exception $e) {
+        catch (Exception $e) {
             // default to 1 hour
             logVar($e->getMessage(), 'ERROR: '.$e->getCode());
-            $interval = new \DateInterval('PT1H');
+            $interval = new DateInterval('PT1H');
         }
 
         $currentTime->add($interval);
@@ -73,7 +75,7 @@ class JwtService extends BaseService
         // set a unique JSON token ID
         try {
             $responseToken->jti = base64_encode(random_bytes(32));
-        } catch(\Exception $e) {
+        } catch(Exception $e) {
             logVar($e->getMessage(), 'ERROR: '.$e->getCode());
             throw $e;
         }
