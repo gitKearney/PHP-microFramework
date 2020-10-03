@@ -99,4 +99,8 @@ $appContainer['ProductController'] = function(Container $container) {
     return new ProductController($container['JwtService'], $container['ProductService'], $container['UserService']);
 };
 
+$appContainer['TransactionModel'] = function(Container $container) {
+    ;
+};
+
 return $appContainer;

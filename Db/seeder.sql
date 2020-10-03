@@ -1,4 +1,4 @@
-# PLEASE READ! You may learn something.
+
 
 -- You should *ALWAYS* create a read user and write user. They should never
 -- have drop permission, this is reserved for the root user only!
@@ -25,10 +25,9 @@ CREATE USER 'write_user'@'%' IDENTIFIED BY 'secret';
 -- performs a select
 GRANT SELECT, DELETE, INSERT, UPDATE ON demo.* TO 'write_user'@'%';
 
--- *OPTIONAL* a super user for the database only. Has essentially root permissions
--- but, only to 1 specific database.
--- Again, this user can only log into the MySQL instance from a remote host.
--- Any attempt to log in from local host will return an error
+-- *OPTIONAL* create a super user for 1 database only. This user can only log
+-- into the MySQL instance from a remote host. Any attempt to log in from
+-- localhost will return an error
 CREATE USER 'demo_superuser'@'%' IDENTIFIED BY 'super_secret';
 
 -- The 'DROP' permission is needed to truncate tables
@@ -68,25 +67,25 @@ INSERT INTO users
 )
 VALUES
 (
-    '12345678-1234-1234-1234-123456789abc', 'Johnny', 'Adams',
+    '12345678-1234-1234-1234-123456789000', 'Johnny', 'Adams',
     '$argon2id$v=19$m=1024,t=2,p=2$QTk3aDVpb1VHVVZYQU11WA$ccZGZdUdHKue5ovOdiOkn9TYEJ3i3lghGEx4kSz3Syk',
     'alex.hamilton@example.com', '2001-01-11', 'create', 'yes',
     '2017-12-31', NULL
 ),
 (
-    '12345678-1234-1234-1234-123456789abd', 'Tommy', 'Jefferson',
+    '12345678-1234-1234-1234-123456789001', 'Tommy', 'Jefferson',
     '$argon2id$v=19$m=1024,t=2,p=2$QTk3aDVpb1VHVVZYQU11WA$ccZGZdUdHKue5ovOdiOkn9TYEJ3i3lghGEx4kSz3Syk',
     'tom.jefferson@example.com', '2001-04-13', 'edit', 'yes',
     '2015-12-31', NULL
 ),
 (
-    '12345678-1234-1234-1234-123456789abe', 'G Dog', 'Washington',
+    '12345678-1234-1234-1234-123456789002', 'G Dog', 'Washington',
     '$argon2id$v=19$m=1024,t=2,p=2$QTk3aDVpb1VHVVZYQU11WA$ccZGZdUdHKue5ovOdiOkn9TYEJ3i3lghGEx4kSz3Syk',
     'g.w@example.com', '2001-12-14', 'read', 'yes',
     '2016-12-31', NULL
 ),
 (
-    '12345678-1234-1234-1234-123456789abf', 'Aaron', 'Burr',
+    '12345678-1234-1234-1234-123456789003', 'Aaron', 'Burr',
     '$argon2id$v=19$m=1024,t=2,p=2$QTk3aDVpb1VHVVZYQU11WA$ccZGZdUdHKue5ovOdiOkn9TYEJ3i3lghGEx4kSz3Syk',
     'aaron.burr@example.com', '2001-02-06', 'edit', 'yes',
     '2015-12-31', NULL
@@ -98,11 +97,25 @@ INSERT INTO users
     user_id, first_name, last_name,
     upassword,
     email, created_at, active,
-    birthday, updated_at
+    birthday, roles
 )
 VALUES (
-    '12345678-1234-1234-1234-123456789ac0', 'Frank', 'Pierce',
+    '12345678-1234-1234-1234-123456789abc', 'Frank', 'Pierce',
     '$argon2id$v=19$m=1024,t=2,p=2$QTk3aDVpb1VHVVZYQU11WA$ccZGZdUdHKue5ovOdiOkn9TYEJ3i3lghGEx4kSz3Syk',
     'frankie.p@example.com', '2001-04-08', 'yes',
-    '2015-12-31', NULL
+    '2015-12-31', 'edit'
 );
+
+-- default products
+INSERT INTO products
+(product_id, title, price, quantity, created_at, updated_at)
+VALUES
+('12345678-1234-1234-1234-123456789000', 'Red Socks', 5.99, 25, NOW(), NULL),
+('12345678-1234-1234-1234-123456789001', 'Orange Socks', 5.99, 25, NOW(), NULL),
+('12345678-1234-1234-1234-123456789002', 'Yellow Socks', 5.99, 25, NOW(), NULL),
+('12345678-1234-1234-1234-123456789003', 'Green Socks', 5.99, 25, NOW(), NULL),
+('12345678-1234-1234-1234-123456789004', 'Blue Socks', 5.99, 25, NOW(), NULL),
+('12345678-1234-1234-1234-123456789005', 'Indigo Socks', 5.99, 25, NOW(), NULL),
+('12345678-1234-1234-1234-123456789006', 'Violet Socks', 5.99, 25, NOW(), NULL),
+('12345678-1234-1234-1234-123456789007', 'White Socks', 5.99, 25, NOW(), NULL),
+('12345678-1234-1234-1234-123456789008', 'Black Socks', 5.99, 25, NOW(), NULL);

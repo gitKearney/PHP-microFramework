@@ -138,9 +138,11 @@ class ProductController extends BaseController
         # if the URI is just /products/, then our ID will be null, get all records
         if ($id === null) {
             # no GUID was passed in, get all records
-            $body = json_encode($this->productService->getAllProducts());
+            $res = $this->productService->getAllProducts();
+            $body = json_encode($res);
 
-            $returnResponse = $response->withHeader('Content-Type', 'application/json');
+            $returnResponse = $response
+                ->withHeader('Content-Type', 'application/json; charset=utf-8');
             $returnResponse->getBody()->write($body);
             return $returnResponse;
         } else if (is_array($id)) {
@@ -153,7 +155,7 @@ class ProductController extends BaseController
 
         $jsonRes = json_encode($res);
 
-        $returnResponse = $response->withHeader('Content-Type', 'application/json');
+        $returnResponse = $response->withHeader('Content-Type', 'application/json; charset=utf-8');
         $returnResponse->getBody()->write($jsonRes);
 
         return $returnResponse;

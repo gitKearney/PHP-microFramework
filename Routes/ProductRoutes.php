@@ -11,7 +11,7 @@ $router->route('/products/', function() {
     global $container;
 
     /**
-     * @var \Main\Controllers\AuthController
+     * @var \Main\Controllers\ProductController
      */
     $authController = $container['ProductController'];
 
