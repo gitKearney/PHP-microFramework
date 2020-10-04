@@ -22,7 +22,7 @@ class TransactionService extends BaseService
         $response = $this->createResponseObject();
 
         try {
-            $products = $this->transactions->getAllTransactions();
+            $trans = $this->transactions->getAllTransactions();
         } catch (Exception $e) {
             $response->message = $e->getMessage();
             $response->code = $e->getCode();
@@ -30,7 +30,7 @@ class TransactionService extends BaseService
             return $response;
         }
 
-        $response = $this->normalizeResponse($products);
+        $response = $this->normalizeResponse($trans);
         return $response;
     }
 }

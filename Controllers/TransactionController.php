@@ -33,8 +33,6 @@ class TransactionController extends BaseController
      */
     public function get(ServerRequest $request, Response $response)
     {
-        $config = getAppConfigSettings();
-
         $transactions = $this->transactionService->getAllTransactions();
         unset($transactions->code);
 
@@ -45,6 +43,7 @@ class TransactionController extends BaseController
             ->withHeader('Content-Type', 'application/json')
             ->withHeader('Content-Length', strval(strlen($body)));
 
+        $response->getBody()->write($body);
         return $response;
     }
 
