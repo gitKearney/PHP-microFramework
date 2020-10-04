@@ -5,18 +5,21 @@ use Pimple\Container;
 // Controllers
 use Main\Controllers\AuthController;
 use Main\Controllers\ProductController;
+use Main\Controllers\TransactionController;
 use Main\Controllers\UserController;
 
 // Services
 use Main\Services\AuthService;
 use Main\Services\JwtService;
 use Main\Services\ProductService;
+use Main\Services\TransactionService;
 use Main\Services\UserService;
 use Main\Services\UuidService;
 
 // Models
 use Main\Models\Users;
 use Main\Models\Products;
+use Main\Models\Transactions;
 
 /**
  * @var Container
@@ -99,8 +102,16 @@ $appContainer['ProductController'] = function(Container $container) {
     return new ProductController($container['JwtService'], $container['ProductService'], $container['UserService']);
 };
 
-$appContainer['TransactionModel'] = function(Container $container) {
-    ;
+$appContainer['Transactions'] = function(Container $container) {
+    return new Transactions();
+};
+
+$appContainer['TransactionService'] = function(Container $container) {
+    return new TransactionService($container['Transactions']);
+};
+
+$appContainer['TransactionController'] = function(Container $container) {
+    return new TransactionController($container['TransactionService']);
 };
 
 return $appContainer;
