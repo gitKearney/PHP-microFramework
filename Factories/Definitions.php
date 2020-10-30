@@ -20,6 +20,7 @@ use Main\Services\UuidService;
 use Main\Models\Users;
 use Main\Models\Products;
 use Main\Models\Transactions;
+use Main\Models\TransactionProducts;
 
 /**
  * @var Container
@@ -106,8 +107,13 @@ $appContainer['Transactions'] = function(Container $container) {
     return new Transactions();
 };
 
+$appContainer['TransactionProducts'] = function(Container $container) {
+    return new TransactionProducts();
+};
+
 $appContainer['TransactionService'] = function(Container $container) {
-    return new TransactionService($container['Transactions']);
+    return new TransactionService($container['UuidService'],
+        $container['Transactions'], $container['TransactionProducts']);
 };
 
 $appContainer['TransactionController'] = function(Container $container) {

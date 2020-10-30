@@ -159,16 +159,16 @@ class UserService extends BaseService
 
     /**
      * @param array $requestBody
-     * @throws Exception
      * @return stdClass
      */
     public function addNewUser(array $requestBody)
     {
-        # create a new GUID and add it to the body array
-        $requestBody['id'] = $this->uuid->generateUuid()->getUuid();
         $response = $this->createResponseObject();
 
         try {
+            # create a new GUID and add it to the body array
+            $requestBody['id'] = $this->uuid->generateUuid()->getUuid();
+
             $values = $this->getNewUserInfo($requestBody);
             $this->userModel->addNewUser($values);
         } catch(Exception $e) {

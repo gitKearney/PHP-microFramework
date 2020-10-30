@@ -134,7 +134,6 @@ class ProductService extends BaseService
      */
     public function addNewProduct(array $requestBody)
     {
-        /** @var stdClass $response */
         $response = $this->createResponseObject();
 
         try{
@@ -144,7 +143,6 @@ class ProductService extends BaseService
             $response->message = 'Error Creating Product';
             return $response;
         }
-
 
         try {
             $values = $this->products->setProductInfo($requestBody);
@@ -166,7 +164,7 @@ class ProductService extends BaseService
      */
     public function updateProduct(array $requestBody)
     {
-        /** @var stdClass $response */
+        /** @var stdClass */
         $response = $this->createResponseObject();
 
         if (! $this->uuidService->isValidGuid($requestBody['id'])) {

@@ -76,7 +76,21 @@ class TransactionController extends BaseController
      */
     public function post(ServerRequest $request, Response $response)
     {
-        // TODO: Implement post() method.
+        // TODO: decode the JWT to get the user info
+
+        // TODO: send to the service the products, user ID
+        $body = $this->parsePost($request);
+        $res = $this->transactionService->addNewTransaction($body);
+
+        $body = json_encode($res);
+        $response = $response
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Content-Length', strval(strlen($body)));
+
+        $response->getBody()->write($body);
+
+        return $response;
     }
 
     /**

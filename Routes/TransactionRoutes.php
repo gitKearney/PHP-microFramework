@@ -1,5 +1,7 @@
 <?php
 
+use Main\Controllers\BaseController;
+
 $transRegex = '/transactions(\/)?/';
 
 /**
@@ -11,6 +13,9 @@ $router->route($transRegex, function () {
      */
     global $container;
 
+    /**
+     * @var BaseController
+     */
     $transactionController = $container['TransactionController'];
 
     /**

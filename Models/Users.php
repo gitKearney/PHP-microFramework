@@ -3,7 +3,6 @@
 namespace Main\Models;
 
 use Exception;
-use stdClass;
 
 class Users extends BaseModel
 {
@@ -25,8 +24,9 @@ class Users extends BaseModel
     /**
      * @param string $userId
      * @return array
+     * @throws Exception
      */
-    public function findUserById($userId)
+    public function findUserById(string $userId)
     {
         $query = 'SELECT user_id as id, first_name, last_name, birthday,'
             .' roles, email'
@@ -40,6 +40,7 @@ class Users extends BaseModel
     /**
      * Returns all users form the database
      * @return array
+     * @throws Exception
      */
     public function getAllUsers()
     {
@@ -54,10 +55,10 @@ class Users extends BaseModel
 
     /**
      * @param string $userId
-     * @return stdClass
+     * @return void
      * @throws Exception
      */
-    public function deleteUserById($userId)
+    public function deleteUserById(string $userId)
     {
         $query = 'DELETE FROM users WHERE user_id = :user_id';
         $params = [':user_id' => $userId];
@@ -116,10 +117,11 @@ class Users extends BaseModel
 
     /**
      * @desc inserts a user into the database
-     * @array $values
+     * @param array $values
      * @return void
+     * @throws Exception
      */
-    public function addNewUser($values)
+    public function addNewUser(array $values)
     {
         $query = $this->buildInsertQuery($values, 'users');
         $this->insert($query->sql, $query->params);
@@ -128,8 +130,9 @@ class Users extends BaseModel
     /**
      * @param string $email
      * @return array
+     * @throws Exception
      */
-    public function findUserByEmail($email)
+    public function findUserByEmail(string $email)
     {
         $query  = 'SELECT * FROM users WHERE email = :email';
         $params = [':email' => $email,];

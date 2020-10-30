@@ -172,7 +172,7 @@ abstract class BaseModel
      * @return stdClass
      * @throws Exception
      */
-    public function buildInsertQuery(array $values, $tableName)
+    public function buildInsertQuery(array $values, string $tableName)
     {
         $sqlQuery = new stdClass;
         $sqlQuery->sql = '';
@@ -181,6 +181,7 @@ abstract class BaseModel
         if (count($values) === 0) {
             throw new Exception('Empty Body');
         }
+
         # add a create_at field to to the insert, update the value if it exists
         $values['created_at'] = date('Y-m-d H:i:s');
 
