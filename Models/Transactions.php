@@ -27,10 +27,39 @@ class Transactions extends BaseModel
      */
     public function getAllTransactions()
     {
-        $query = 'SELECT * FROM transactions GROUP BY transaction_id';
+        $query = 'SELECT trans.transaction_id,trans.user_id,tp.product_id
+            ,tp.product_price,trans.created_at
+             FROM transactions AS trans
+             INNER JOIN transaction_products tp on trans.transaction_id = tp.transaction_id
+             GROUP BY trans.transaction_id,trans.user_id,tp.product_id
+            ,tp.product_price,trans.created_at';
         $params = [];
 
         $result = $this->select($query, $params);
-        return $result;
+
+        # group the transactions into a single array
+        $records = [];
+        foreach($result as $index => $row) {
+            $trans_id = $row['transaction_id'];
+            if (array_key_exists($trans_id, $records)) {
+                $records[$trans_id][] = [
+                    'product_id' => $row['product_id'],
+                    'price' => $row['product_price'],
+                    'order_date' => $row['created_at'],
+                    'id' => $row['user_id'],
+                ];
+
+                continue;
+            }
+
+            $records[$trans_id] = [];
+            $records[$trans_id][] = [
+                'product_id' => $row['product_id'],
+                'price' => $row['product_price'],
+                'order_date' => $row['created_at'],
+                'id' => $row['user_id'],
+            ];
+        }
+        return $records;
     }
 }
