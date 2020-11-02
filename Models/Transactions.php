@@ -41,18 +41,10 @@ class Transactions extends BaseModel
         $records = [];
         foreach($result as $index => $row) {
             $trans_id = $row['transaction_id'];
-            if (array_key_exists($trans_id, $records)) {
-                $records[$trans_id][] = [
-                    'product_id' => $row['product_id'],
-                    'price' => $row['product_price'],
-                    'order_date' => $row['created_at'],
-                    'id' => $row['user_id'],
-                ];
-
-                continue;
+            if (array_key_exists($trans_id, $records) === false) {
+                $records[$trans_id] = [];
             }
 
-            $records[$trans_id] = [];
             $records[$trans_id][] = [
                 'product_id' => $row['product_id'],
                 'price' => $row['product_price'],
