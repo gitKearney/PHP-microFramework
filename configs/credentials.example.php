@@ -12,7 +12,7 @@
 # TODO: create a new file in this directory called "credentials.php"
 # TODO: copy the code here to the "credentials.php" file
 
-function credentials()
+function getAppConfigSettings()
 {
     $config = new stdClass();
 

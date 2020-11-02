@@ -28,19 +28,20 @@ use Main\Models\TransactionProducts;
 $appContainer = new Container;
 
 /**
- * @param Container $container
  * @return AuthController
  */
-$appContainer['AuthController'] = function(Container $container) {
-    return new AuthController($container['UserService'], $container['AuthService']);
+$appContainer['AuthController'] = function() {
+    global $appContainer;
+    return new AuthController($appContainer['UserService'],
+        $appContainer['AuthService']);
 };
 
 /**
- * @param Container $container
  * @return AuthService
  */
-$appContainer['AuthService'] = function(Container $container) {
-    return new AuthService($container['Users'], $container['JwtService']);
+$appContainer['AuthService'] = function() {
+    global $appContainer;
+    return new AuthService($appContainer['Users'], $appContainer['JwtService']);
 };
 
 /**
@@ -58,11 +59,11 @@ $appContainer['Users'] = function () {
 };
 
 /**
- * @param Container $container
  * @return UserController
  */
-$appContainer['UserController'] = function(Container $container) {
-    return new UserController($container['UserService'], $container['JwtService']);
+$appContainer['UserController'] = function() {
+    global $appContainer;
+    return new UserController($appContainer['UserService'], $appContainer['JwtService']);
 };
 
 /**
@@ -73,11 +74,11 @@ $appContainer['UuidService'] = function() {
 };
 
 /**
- * @param Container $container
  * @return UserService
  */
-$appContainer['UserService'] = function(Container $container) {
-    return new UserService($container['Users'], $container['UuidService']);
+$appContainer['UserService'] = function() {
+    global $appContainer;
+    return new UserService($appContainer['Users'], $appContainer['UuidService']);
 };
 
 /**
@@ -88,36 +89,52 @@ $appContainer['Products'] = function() {
 };
 
 /**
- * @param Container $container
  * @return ProductService
  */
-$appContainer['ProductService'] = function(Container $container) {
-    return new ProductService($container['Products'], $container['UuidService']);
+$appContainer['ProductService'] = function() {
+    global $appContainer;
+    return new ProductService($appContainer['Products'], $appContainer['UuidService']);
 };
 
 /**
- * @param Container $container
  * @return ProductController
  */
-$appContainer['ProductController'] = function(Container $container) {
-    return new ProductController($container['JwtService'], $container['ProductService'], $container['UserService']);
+$appContainer['ProductController'] = function() {
+    global $appContainer;
+    return new ProductController($appContainer['JwtService'],
+        $appContainer['ProductService'], $appContainer['UserService']);
 };
 
-$appContainer['Transactions'] = function(Container $container) {
+/**
+ * @return Transactions
+ */
+$appContainer['Transactions'] = function() {
     return new Transactions();
 };
 
-$appContainer['TransactionProducts'] = function(Container $container) {
+/**
+ * @return TransactionProducts
+ */
+$appContainer['TransactionProducts'] = function() {
     return new TransactionProducts();
 };
 
-$appContainer['TransactionService'] = function(Container $container) {
-    return new TransactionService($container['UuidService'],
-        $container['Transactions'], $container['TransactionProducts']);
+/**
+ * @return TransactionService
+ */
+$appContainer['TransactionService'] = function() {
+    global $appContainer;
+    return new TransactionService($appContainer['UuidService'],
+        $appContainer['Transactions'], $appContainer['TransactionProducts']);
 };
 
-$appContainer['TransactionController'] = function(Container $container) {
-    return new TransactionController($container['TransactionService']);
+/**
+ * @return TransactionController
+ */
+$appContainer['TransactionController'] = function() {
+    global $appContainer;
+    return new TransactionController($appContainer['TransactionService'],
+        $appContainer['JwtService'], $appContainer['UserService']);
 };
 
 return $appContainer;

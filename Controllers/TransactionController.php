@@ -4,7 +4,9 @@
 namespace Main\Controllers;
 
 
+use Main\Services\JwtService;
 use Main\Services\TransactionService;
+use Main\Services\UserService;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
 
@@ -15,9 +17,19 @@ class TransactionController extends BaseController
      */
     private $transactionService;
 
-    public function __construct(TransactionService $transactionService)
+    /** @var JwtService */
+    private $jwtService;
+
+    /** @var UserService */
+    private $userService;
+
+    public function __construct(TransactionService $transactionService,
+                                JwtService $jwtService,
+                                UserService $userService)
     {
         $this->transactionService = $transactionService;
+        $this->jwtService = $jwtService;
+        $this->userService = $userService;
     }
 
     /**
@@ -76,7 +88,35 @@ class TransactionController extends BaseController
      */
     public function post(ServerRequest $request, Response $response)
     {
-        // TODO: decode the JWT to get the user info
+        $config = getAppConfigSettings();
+        if ($config->debug->authUsers) {
+            $decoded = $this->jwtService->decodeWebToken($request->getHeaders());
+
+            if (!$decoded->success) {
+                $body = json_encode($decoded);
+
+                $response = $response
+                    ->withStatus(401, $decoded->message)
+                    ->withHeader('Access-Control-Allow-Origin', '*')
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withHeader('Content-Length', strval(strlen($body)));
+
+                $response->getBody()->write($body);
+
+                return $response;
+            }
+
+            # does the user have access to this method?
+            $userId = $decoded->results->data->userId;
+            $hasPermission = $this->userService->userAllowedAction($userId, 'create');
+            if (!$hasPermission) {
+                $response = $response
+                    ->withStatus(100, 'Action Not Allowed')
+                    ->withHeader('Content-Type', 'application/json');
+
+                return $response;
+            }
+        }
 
         // TODO: send to the service the products, user ID
         $body = $this->parsePost($request);

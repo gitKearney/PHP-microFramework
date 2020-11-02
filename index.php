@@ -8,6 +8,8 @@ use Monolog\Handler\StreamHandler;
 
 include_once 'configs/credentials.php';
 
+$config = getAppConfigSettings();
+
 /**
  * @param mixed $var
  * @param string $msg
@@ -74,22 +76,6 @@ function logVar($var, $msg = '', $level='debug')
             break;
     }
 }
-
-/**
- * returns the configuration settings for our app. Think of this like getenv()
- * only, it returns all the settings and you have to know what you're looking
- *
- * Hey! This is faster than reading environment variables
- * @return stdClass
- */
-function getAppConfigSettings()
-{
-    global $config;
-
-    return $config;
-}
-
-$config = credentials();
 
 # create a log channel
 try {
