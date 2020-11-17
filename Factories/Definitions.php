@@ -7,6 +7,7 @@ use Main\Controllers\AuthController;
 use Main\Controllers\ProductController;
 use Main\Controllers\TransactionController;
 use Main\Controllers\UserController;
+use Main\Controllers\CartController;
 
 // Services
 use Main\Services\AuthService;
@@ -15,12 +16,14 @@ use Main\Services\ProductService;
 use Main\Services\TransactionService;
 use Main\Services\UserService;
 use Main\Services\UuidService;
+use Main\Services\CartService;
 
 // Models
 use Main\Models\Users;
 use Main\Models\Products;
 use Main\Models\Transactions;
 use Main\Models\TransactionProducts;
+use Main\Models\Carts;
 
 /**
  * @var Container
@@ -135,6 +138,28 @@ $appContainer['TransactionController'] = function() {
     global $appContainer;
     return new TransactionController($appContainer['TransactionService'],
         $appContainer['JwtService'], $appContainer['UserService']);
+};
+
+/**
+ * @return Carts
+ */
+$appContainer['Carts'] = function() {
+    return new Carts;
+};
+
+/**
+ * @return CartService
+ */
+$appContainer['CartsService'] = function() {
+    global $appContainer;
+
+    return new CartService(($appContainer['Carts']));
+};
+
+$appContainer['CartController'] = function () {
+    global $appContainer;
+
+    return new CartController($appContainer['CartsService']);
 };
 
 return $appContainer;
