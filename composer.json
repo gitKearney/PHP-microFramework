@@ -1,6 +1,5 @@
 {
     "require": {
-        "vlucas/phpdotenv": "^2.4",
         "zendframework/zend-diactoros": "^1.3",
         "monolog/monolog": "^1.22",
         "pimple/pimple": "^3.2",
@@ -10,7 +9,7 @@
         "ext-pdo": "*"
     },
     "autoload": {
-        "files": ["utils/checkUserRole.php"],
+        "files": ["Utils/checkUserRole.php"],
         "psr-4": {
             "Main\\": "./"
         }

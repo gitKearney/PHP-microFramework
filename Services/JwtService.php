@@ -56,7 +56,7 @@ class JwtService extends BaseService
         $responseToken->iss = $config->jwt->issuer;
         $responseToken->aud = $config->jwt->audience;
 
-        // set the expiry time to x hour y minutes
+        // set the expiry time (time to live) to x hour y minutes
         $ttl = "PT".$config->jwt->max_hours."H".$config->jwt->max_minutes."M";
 
         try

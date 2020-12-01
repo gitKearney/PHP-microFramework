@@ -4,6 +4,7 @@ namespace Main\Services;
 
 use Main\Models\Users;
 use stdClass;
+use Exception;
 
 class AuthService extends BaseService
 {
@@ -26,6 +27,7 @@ class AuthService extends BaseService
     /**
      * @param array $requestBody
      * @return stdClass
+     * @throws Exception
      */
     public function createJwt(array $requestBody)
     {

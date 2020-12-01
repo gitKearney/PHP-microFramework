@@ -8,7 +8,7 @@ use stdClass;
 class Products extends BaseModel
 {
     /**
-     * Users constructor.
+     * @desc set the database connection
      */
     public function __construct()
     {
@@ -49,7 +49,7 @@ class Products extends BaseModel
      * @return array
      * @throws Exception
      */
-    public function findProductById($productId)
+    public function findProductById(string $productId)
     {
         $query = 'SELECT product_id as id, title, price, quantity,'
             .' created_at, updated_at'
@@ -78,6 +78,7 @@ class Products extends BaseModel
     /**
      * Returns all users form the database
      * @return array
+     * @throws Exception
      */
     public function getAllProducts()
     {

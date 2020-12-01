@@ -1,5 +1,3 @@
-
-
 -- You should *ALWAYS* create a read user and write user. They should never
 -- have drop permission, this is reserved for the root user only!
 
@@ -37,12 +35,12 @@ ON demo.* to 'demo_superuser'@'%';
 -- After adding a new user, run this command
 FLUSH PRIVILEGES;
 
--- Edit the /etc/mysql/mysql.conf.d/mysqld.cnf file
+-- Edit the file /etc/mysql/mariadb.conf.d/50-server.cnf
 -- change the line bind-address=127.0.0.1 to bind-address=0.0.0.0
--- then restart MySQL server: sudo service mysql restart
+-- then restart MariaDB server: sudo service mariadb restart
 
 -- now you can log into the MySQL server using the following command
--- mysql --user=demo_superuser --password=super_secret --database=demo --port=3306 --host=10.0.2.15
+-- mysql --user=demo_superuser --password=super_secret --database=demo --port=3306 --host=192.168.1.15
 
 /*** COOL MySQL DEBUGGING TRICKS ***/
 
@@ -69,7 +67,7 @@ VALUES
 (
     '12345678-1234-1234-1234-123456789000', 'Johnny', 'Adams',
     '$argon2id$v=19$m=1024,t=2,p=2$QTk3aDVpb1VHVVZYQU11WA$ccZGZdUdHKue5ovOdiOkn9TYEJ3i3lghGEx4kSz3Syk',
-    'alex.hamilton@example.com', '2001-01-11', 'create', 'yes',
+    'j.adams@example.com', '2001-01-11', 'create', 'yes',
     '2017-12-31', NULL
 ),
 (
@@ -119,3 +117,16 @@ VALUES
 ('12345678-1234-1234-1234-123456789006', 'Violet Socks', 5.99, 25, NOW(), NULL),
 ('12345678-1234-1234-1234-123456789007', 'White Socks', 5.99, 25, NOW(), NULL),
 ('12345678-1234-1234-1234-123456789008', 'Black Socks', 5.99, 25, NOW(), NULL);
+
+
+INSERT INTO user_cart (user_id, product_id)
+VALUES
+('12345678-1234-1234-1234-123456789003', '12345678-1234-1234-1234-123456789000'),
+('12345678-1234-1234-1234-123456789003', '12345678-1234-1234-1234-123456789000'),
+('12345678-1234-1234-1234-123456789003', '12345678-1234-1234-1234-123456789000'),
+('12345678-1234-1234-1234-123456789003', '12345678-1234-1234-1234-123456789004'),
+('12345678-1234-1234-1234-123456789003', '12345678-1234-1234-1234-123456789004'),
+('12345678-1234-1234-1234-123456789003', '12345678-1234-1234-1234-123456789004'),
+('12345678-1234-1234-1234-123456789003', '12345678-1234-1234-1234-123456789006'),
+('12345678-1234-1234-1234-123456789003', '12345678-1234-1234-1234-123456789006'),
+('12345678-1234-1234-1234-123456789003', '12345678-1234-1234-1234-123456789006');
