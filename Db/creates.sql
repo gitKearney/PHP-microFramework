@@ -16,7 +16,7 @@ CREATE TABLE demo.users
     active ENUM('no', 'yes') NOT NULL,
     created_at DATETIME NOT NULL DEFAULT NOW(),
     updated_at DATETIME NULL
-) ENGINE=INNODB CHARACTER SET "utf8" COLLATE utf8mb4_0900_ai_ci;
+) ENGINE=INNODB CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 ALTER TABLE users MODIFY updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP;
 
@@ -30,10 +30,9 @@ CREATE TABLE demo.products
     quantity INTEGER UNSIGNED NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT NOW(),
     updated_at DATETIME NULL
-) ENGINE=InnoDB CHARACTER SET "utf8" COLLATE utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 ALTER TABLE products MODIFY updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP;
-
 
 -- create a transaction history table
 DROP TABLE IF EXISTS demo.transactions;
@@ -43,12 +42,9 @@ CREATE TABLE demo.transactions
     user_id CHAR(36) NOT NULL,
     created_at DATETIME NOT NULL DEFAULT NOW(),
     updated_at DATETIME NULL
-) ENGINE=InnoDB CHARACTER SET "utf8mb4" COLLATE utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB CHARACTER SET "utf8" COLLATE utf8_general_ci;
 
 ALTER TABLE transactions MODIFY updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP;
-
-ALTER TABLE demo.transactions ADD CONSTRAINT FOREIGN KEY (user_id)
-REFERENCES demo.users(user_id);
 
 CREATE TABLE demo.transaction_products
 (
@@ -59,27 +55,25 @@ CREATE TABLE demo.transaction_products
     updated_at DATETIME NULL
 );
 
-ALTER TABLE transaction_products MODIFY updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP;
-
-ALTER TABLE demo.transaction_products
-ADD CONSTRAINT FOREIGN KEY (product_id)
-REFERENCES products(product_id);
-
-ALTER TABLE demo.transaction_products
-ADD CONSTRAINT FOREIGN KEY (transaction_id)
-REFERENCES demo.transactions(transaction_id);
-
 DROP TABLE IF EXISTS user_cart;
 CREATE TABLE user_cart (
-  user_id CHAR(36) NOT NULL,
-  product_id CHAR(36) NOT NULL,
-  created_at DATETIME NOT NULL DEFAULT NOW(),
-  updated_at DATETIME NULL
-) ENGINE=InnoDB CHARACTER SET "utf8mb4" COLLATE utf8mb4_0900_ai_ci;
+   user_id CHAR(36) NOT NULL,
+   product_id CHAR(36) NOT NULL,
+   created_at DATETIME NOT NULL DEFAULT NOW(),
+   updated_at DATETIME NULL
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-ALTER TABLE user_cart ADD CONSTRAINT FOREIGN KEY (product_id)
-REFERENCES products(product_id);
+-- add foreign constraints to our tables
+ALTER TABLE transaction_products MODIFY updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP;
 
-ALTER TABLE user_cart ADD CONSTRAINT FOREIGN KEY (product_id)
-REFERENCES products(product_id);
+ALTER TABLE demo.transactions ADD CONSTRAINT FOREIGN KEY (user_id) REFERENCES demo.users(user_id);
 
+ALTER TABLE demo.transaction_products
+ADD CONSTRAINT FOREIGN KEY (product_id) REFERENCES products(product_id);
+
+ALTER TABLE demo.transaction_products
+ADD CONSTRAINT FOREIGN KEY (transaction_id) REFERENCES demo.transactions(transaction_id);
+
+ALTER TABLE user_cart ADD CONSTRAINT FOREIGN KEY (product_id) REFERENCES products(product_id);
+
+ALTER TABLE user_cart ADD CONSTRAINT FOREIGN KEY (product_id) REFERENCES products(product_id);

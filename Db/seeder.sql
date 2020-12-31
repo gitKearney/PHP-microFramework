@@ -35,9 +35,13 @@ ON demo.* to 'demo_superuser'@'%';
 -- After adding a new user, run this command
 FLUSH PRIVILEGES;
 
--- Edit the file /etc/mysql/mariadb.conf.d/50-server.cnf
+-- UBUNTU SERVER - edit the file /etc/mysql/mariadb.conf.d/50-server.cnf
 -- change the line bind-address=127.0.0.1 to bind-address=0.0.0.0
 -- then restart MariaDB server: sudo service mariadb restart
+
+-- FEDORA - edit /etc/my.cnf.d/mariadb-server.cnf
+-- uncomment the line bind-address=0.0.0.0
+-- then restart MariaDB server: sudo systemctl restart mariadb.service
 
 -- now you can log into the MySQL server using the following command
 -- mysql --user=demo_superuser --password=super_secret --database=demo --port=3306 --host=192.168.1.15
