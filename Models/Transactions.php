@@ -2,7 +2,6 @@
 namespace Main\Models;
 
 use Exception;
-use stdClass;
 
 class Transactions extends BaseModel
 {

@@ -44,7 +44,7 @@ FLUSH PRIVILEGES;
 -- then restart MariaDB server: sudo systemctl restart mariadb.service
 
 -- now you can log into the MySQL server using the following command
--- mysql --user=demo_superuser --password=super_secret --database=demo --port=3306 --host=192.168.1.15
+-- mysql --user=demo_superuser --password=super_secret --database=demo --port=3306 --host=127.0.0.1
 
 /*** COOL MySQL DEBUGGING TRICKS ***/
 

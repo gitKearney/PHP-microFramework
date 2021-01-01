@@ -4,7 +4,9 @@
 namespace Main\Services;
 
 
+use Exception;
 use Main\Models\Carts;
+use stdClass;
 
 class CartService extends BaseService
 {
@@ -18,10 +20,21 @@ class CartService extends BaseService
 
     /**
      * @param string $userId
-     * @return array
+     * @return stdClass
      */
-    public function getUsersCart(string $userId)
+    public function getUsersCart(string $userId): stdClass
     {
-        return $this->carts->findCartById($userId);
+        $response = $this->createResponseObject();
+
+        try {
+            $cart = $this->carts->findCartById($userId);
+        } catch(Exception $e) {
+            $response->message = $e->getMessage();
+
+            return $response;
+        }
+
+        $response = $this->normalizeResponse($cart);
+        return $response;
     }
 }

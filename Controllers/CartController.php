@@ -32,6 +32,12 @@ class CartController extends BaseController
         # read the URI string and see if a GUID was passed in
         $id = $this->getUrlPathElements($request);
         $res = $this->cartService->getUsersCart($id);
+
+        $jsonRes= json_encode($res);
+        $returnResponse = $response->withHeader('Content-Type', 'application/json; charset=utf-8');
+        $returnResponse->getBody()->write($jsonRes);
+
+        return $returnResponse;
     }
 
     /**

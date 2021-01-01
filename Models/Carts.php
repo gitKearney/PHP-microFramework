@@ -16,8 +16,8 @@ class Carts extends BaseModel
 
         # You can also use the read/write key values. But, here, we're simulating
         # using a different database.
-        $this->setReadConnectionId('product_database');
-        $this->setWriteConnectionId('product_database');
+        $this->setReadConnectionId('read_database');
+        $this->setWriteConnectionId('write_database');
     }
 
     /**
@@ -48,12 +48,13 @@ class Carts extends BaseModel
 
     /**
      * @param string $userId
+     * @throws Exception
      */
     public function findCartById(string $userId)
     {
-        $query = 'SELECT product_id, createdAt, updatedAt FROM user_cart'.
-            ' WHERE user_id = :userId';
-        $params = [':userId' => $userId];
+        $query = 'SELECT product_id, created_at, updated_at FROM user_cart'.
+            ' WHERE user_id = :user_id';
+        $params = [':user_id' => $userId];
 
         $result = $this->select($query, $params);
 
