@@ -21,13 +21,13 @@ class UserController extends BaseController
     /**
      * @var UserService
      */
-    protected $userService;
+    protected UserService $userService;
 
 
     /**
      * @var JwtService
      */
-    protected $jwtService;
+    protected JwtService $jwtService;
 
     /**
      *
@@ -51,7 +51,7 @@ class UserController extends BaseController
      * @param Response $response
      * @return Response
      */
-    public function delete(ServerRequest $request, Response $response)
+    public function delete(ServerRequest $request, Response $response): Response
     {
         $config = getAppConfigSettings();
         if ($config->debug->authUsers) {
@@ -107,7 +107,7 @@ class UserController extends BaseController
      * @param bool $headRequest
      * @return Response
      */
-    public function get(ServerRequest $request, Response $response, $headRequest = false)
+    public function get(ServerRequest $request, Response $response, $headRequest = false): Response
     {
         $config = getAppConfigSettings();
 
@@ -159,7 +159,7 @@ class UserController extends BaseController
      * @param Response $response
      * @return Response
      */
-    public function head(ServerRequest $request, Response $response)
+    public function head(ServerRequest $request, Response $response): Response
     {
         # the HEAD request should return just the headers that a GET request
         # would return
@@ -172,7 +172,7 @@ class UserController extends BaseController
      * @param Response $response
      * @return Response
      */
-    public function options(ServerRequest $request, Response $response)
+    public function options(ServerRequest $request, Response $response): Response
     {
         return $this->defaultOptions($request, $response);
     }
@@ -185,7 +185,7 @@ class UserController extends BaseController
      * @throws Exception
      * @throws InvalidArgumentException
      */
-    public function patch(ServerRequest $request, Response $response)
+    public function patch(ServerRequest $request, Response $response): Response
     {
         $config = getAppConfigSettings();
         if ($config->debug->authUsers) {
@@ -236,7 +236,7 @@ class UserController extends BaseController
      * @param Response $response
      * @return Response
      */
-    public function post(ServerRequest $request, Response $response)
+    public function post(ServerRequest $request, Response $response): Response
     {
         $requestBody = $this->parsePost($request);
 
@@ -271,7 +271,7 @@ class UserController extends BaseController
      * @param Response $response
      * @return Response
      */
-    public function put(ServerRequest $request, Response $response)
+    public function put(ServerRequest $request, Response $response): Response
     {
         $config = getAppConfigSettings();
 //       ($request->getHeaders(),$config->debug->authUsers,

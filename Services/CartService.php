@@ -37,4 +37,40 @@ class CartService extends BaseService
         $response = $this->normalizeResponse($cart);
         return $response;
     }
+
+    /**
+     * @param array $body
+     * @return stdClass
+     */
+    public function addProductToCart(array $body): stdClass
+    {
+        $response = $this->createResponseObject();
+
+        try {
+            $this->carts->addToCart($body);
+        } catch(Exception $e) {
+            $response->message = $e->getMessage();
+            return $response;
+        }
+
+        $response->success = true;
+        $response->message = 'success';
+        return $response;
+    }
+
+    public function deleteProductFromCart(array $body): stdClass
+    {
+        $response = $this->createResponseObject();
+
+        try {
+            $this->carts->deleteItem($body);
+        } catch(Exception $e) {
+            $response->message = $e->getMessage();
+            return $response;
+        }
+
+        $response->success = true;
+        $response->message = 'success';
+        return $response;
+    }
 }

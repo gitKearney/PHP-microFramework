@@ -11,12 +11,12 @@ abstract class BaseController
     /**
      * @var ServerRequest
      */
-    protected $request;
+    protected ServerRequest $request;
 
     /**
      * @var Response
      */
-    protected $response;
+    protected Response $response;
 
     /**
      * Method to process HTTP DELETES
@@ -24,7 +24,7 @@ abstract class BaseController
      * @param Response $response
      * @return Response
      */
-    abstract public function delete(ServerRequest $request, Response $response);
+    abstract public function delete(ServerRequest $request, Response $response): Response;
 
     /**
      * Method to process HTTP GET requests
@@ -32,7 +32,7 @@ abstract class BaseController
      * @param Response $response
      * @return Response
      */
-    abstract public function get(ServerRequest $request, Response $response);
+    abstract public function get(ServerRequest $request, Response $response): Response;
 
     /**
      * Method to process HTTP HEAD
@@ -40,7 +40,7 @@ abstract class BaseController
      * @param Response $response
      * @return Response
      */
-    abstract public function head(ServerRequest $request, Response $response);
+    abstract public function head(ServerRequest $request, Response $response): Response;
 
     /**
      * Method to process HTTP OPTION requests
@@ -48,7 +48,7 @@ abstract class BaseController
      * @param Response $response
      * @return Response
      */
-    abstract public function options(ServerRequest $request, Response $response);
+    abstract public function options(ServerRequest $request, Response $response): Response;
 
     /**
      * Method to process HTTP PATCH requests
@@ -56,7 +56,7 @@ abstract class BaseController
      * @param Response $response
      * @return Response
      */
-    abstract public function patch(ServerRequest $request, Response $response);
+    abstract public function patch(ServerRequest $request, Response $response): Response;
 
     /**
      * Method to process HTTP POST requests
@@ -64,7 +64,7 @@ abstract class BaseController
      * @param Response $response
      * @return Response
      */
-    abstract public function post(ServerRequest $request, Response $response);
+    abstract public function post(ServerRequest $request, Response $response): Response;
 
     /**
      * Method to process HTTP PUT requests
@@ -72,13 +72,13 @@ abstract class BaseController
      * @param Response $response
      * @return Response
      */
-    abstract public function put(ServerRequest $request, Response $response);
+    abstract public function put(ServerRequest $request, Response $response): Response;
 
     /**
      * Use this if HTTP request method is not supported
      * @return Response
      */
-    public function unsupportedMethod()
+    public function unsupportedMethod(): Response
     {
         $response = new Response;
         
@@ -95,7 +95,7 @@ abstract class BaseController
      * It pulls in all server variables into an array
      * @return Response
      */
-    public function handleRequest()
+    public function handleRequest(): Response
     {
         $request = $this->processRequest();
 
@@ -108,28 +108,21 @@ abstract class BaseController
         switch ($request->getServerParams()['REQUEST_METHOD']) {
             case 'DELETE':
                 return $this->delete($request, $response);
-                break;
             case 'GET':
                 return $this->get($request, $response);
-                break;
             case 'HEAD':
                 return $this->head($request, $response);
-                break;
             case 'OPTIONS':
                 return $this->options($request, $response);
-                break;
             case 'PATCH':
                 return $this->patch($request, $response);
-                break;
             case 'POST':
                 return $this->post($request, $response);
-                break;
             case 'PUT':
                 return $this->put($request, $response);
-                break;
             default:
                 # This route catches the HTTP request types that no one uses
-                # like TRACE,
+                # like TRACE
                 return $this->unsupportedMethod();
         }
     }
@@ -141,7 +134,7 @@ abstract class BaseController
      * @param Response $response
      * @return Response
      */
-    public function defaultOptions(ServerRequest $request, Response $response)
+    public function defaultOptions(ServerRequest $request, Response $response): Response
     {
         $allowed = 'OPTIONS, GET, POST, PATCH, PUT, DELETE, HEAD';
 
@@ -168,6 +161,10 @@ abstract class BaseController
         return $returnResponse;
     }
 
+    /**
+     * @param ServerRequest $request
+     * @return array|mixed|object
+     */
     public function parsePost(ServerRequest $request)
     {
         # if the content type isn't set, default to empty string.

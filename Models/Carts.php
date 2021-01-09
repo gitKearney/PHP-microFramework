@@ -48,16 +48,31 @@ class Carts extends BaseModel
 
     /**
      * @param string $userId
+     * @return array
      * @throws Exception
      */
-    public function findCartById(string $userId)
+    public function findCartById(string $userId): array
     {
-        $query = 'SELECT product_id, created_at, updated_at FROM user_cart'.
+        $query = 'SELECT uc.product_id, p.title, p.price FROM user_cart AS uc'.
+            ' INNER JOIN products as p ON uc.product_id = p.product_id'.
             ' WHERE user_id = :user_id';
         $params = [':user_id' => $userId];
 
         $result = $this->select($query, $params);
 
         return $result;
+    }
+
+    /**
+     * @param array $userProduct
+     * @return void
+     * @throws Exception
+     */
+    public function deleteItem(array $userProduct): void
+    {
+        $query = 'DELETE FROM user_cart'.
+            ' WHERE user_id = :user_id AND product_id = :product_id';
+
+        $this->delete($query, $userProduct);
     }
 }
