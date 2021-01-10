@@ -12,17 +12,17 @@ class TransactionService extends BaseService
     /**
      * @var Transactions
      */
-    private $trans;
+    private Transactions $trans;
 
     /**
      * @var UuidService
      */
-    private $uuidService;
+    private UuidService $uuidService;
 
     /**
      * @var TransactionProducts
      */
-    private $transProds;
+    private TransactionProducts $transProds;
 
     public function __construct(
         UuidService $uuidService,
@@ -34,7 +34,10 @@ class TransactionService extends BaseService
         $this->transProds  = $transactionProducts;
     }
 
-    public function getAllTransactions()
+    /**
+     * @return stdClass
+     */
+    public function getAllTransactions(): stdClass
     {
         $response = $this->createResponseObject();
 
@@ -51,11 +54,26 @@ class TransactionService extends BaseService
         return $response;
     }
 
-    public function addNewTransaction(array $requestBody)
+    /**
+     * @param string $userId
+     * @return stdClass
+     */
+    public function getUsersTransactions(string $userId): stdClass
+    {
+        $response = $this->createResponseObject();
+        try {
+            $this->trans->getUsersTransactions($userId);
+        } catch(Exception $e) {
+            $response->message = $e->getMessage();
+            $response->code = $e->getCode();
+            return $response;
+        }
+    }
+
+    public function addNewTransaction(array $requestBody): stdClass
     {
         $response = $this->createResponseObject();
 
-        // TODO: create a new transaction UUID
         try {
             $transId = $this->uuidService->generateUuid()->getUuid();
         } catch (Exception $e) {
@@ -70,7 +88,6 @@ class TransactionService extends BaseService
             'user_id' => $requestBody['user_id'],
         ];
 
-        // TODO: insert record into the transaction table
         $transProducts = [];
         foreach($requestBody['products'] as $index => $product) {
             $transProducts[] = [

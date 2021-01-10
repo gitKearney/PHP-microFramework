@@ -85,10 +85,8 @@ try {
     die('INVALID CONFIGURATION: '.$e->getCode().'-'.$e->getMessage()."\n");
 }
 
-/**
- * @var \Pimple\Container
- */
-$container = require_once __DIR__.'/Factories/Definitions.php';
+$appContainer = null; # gets overridden in Factories/Definitions.php
+require_once __DIR__.'/Factories/Definitions.php';
 
 /**
  * @var RegexRouter
@@ -105,4 +103,4 @@ include_once __DIR__.'/Routes/CartRoutes.php';
 # no more routes below here
 include_once __DIR__.'/Routes/DefaultRoute.php';
 
-$router->execute($_SERVER['REQUEST_URI'], $container);
+$router->execute($_SERVER['REQUEST_URI'], $appContainer);

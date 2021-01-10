@@ -1,7 +1,6 @@
 <?php
 namespace Main\Controllers;
 
-
 use Main\Services\JwtService;
 use Main\Services\TransactionService;
 use Main\Services\UserService;
@@ -13,13 +12,13 @@ class TransactionController extends BaseController
     /**
      * @var TransactionService
      */
-    private $transactionService;
+    private TransactionService $transactionService;
 
     /** @var JwtService */
-    private $jwtService;
+    private JwtService $jwtService;
 
     /** @var UserService */
-    private $userService;
+    private UserService $userService;
 
     public function __construct(TransactionService $transactionService,
                                 JwtService $jwtService,
@@ -33,7 +32,7 @@ class TransactionController extends BaseController
     /**
      * @inheritDoc
      */
-    public function delete(ServerRequest $request, Response $response)
+    public function delete(ServerRequest $request, Response $response): Response
     {
         // TODO: Implement delete() method.
     }
@@ -41,14 +40,19 @@ class TransactionController extends BaseController
     /**
      * @inheritDoc
      */
-    public function get(ServerRequest $request, Response $response)
+    public function get(ServerRequest $request, Response $response): Response
     {
-        $transactions = $this->transactionService->getAllTransactions();
-        unset($transactions->code);
+        # read the URI string and see if a GUID was passed in
+        $id = $this->getUrlPathElements($request);
+        if (!$id) {
+            $transactions = $this->transactionService->getAllTransactions();
+        } else {
+            $transactions = $this->transactionService;
+        }
 
         $body = json_encode($transactions);
 
-        $response = $response->withStatus(200, 'OK')
+        $response = $response->withStatus($transactions->code, 'OK')
             ->withHeader('Access-Control-Allow-Origin', '*')
             ->withHeader('Content-Type', 'application/json')
             ->withHeader('Content-Length', strval(strlen($body)));
@@ -60,7 +64,7 @@ class TransactionController extends BaseController
     /**
      * @inheritDoc
      */
-    public function head(ServerRequest $request, Response $response)
+    public function head(ServerRequest $request, Response $response): Response
     {
         // TODO: Implement head() method.
     }
@@ -68,7 +72,7 @@ class TransactionController extends BaseController
     /**
      * @inheritDoc
      */
-    public function options(ServerRequest $request, Response $response)
+    public function options(ServerRequest $request, Response $response): Response
     {
         // TODO: Implement options() method.
     }
@@ -76,7 +80,7 @@ class TransactionController extends BaseController
     /**
      * @inheritDoc
      */
-    public function patch(ServerRequest $request, Response $response)
+    public function patch(ServerRequest $request, Response $response): Response
     {
         // TODO: Implement patch() method.
     }
@@ -84,7 +88,7 @@ class TransactionController extends BaseController
     /**
      * @inheritDoc
      */
-    public function post(ServerRequest $request, Response $response)
+    public function post(ServerRequest $request, Response $response): Response
     {
         $config = getAppConfigSettings();
         if ($config->debug->authUsers) {
@@ -134,7 +138,7 @@ class TransactionController extends BaseController
     /**
      * @inheritDoc
      */
-    public function put(ServerRequest $request, Response $response)
+    public function put(ServerRequest $request, Response $response): Response
     {
         // TODO: Implement put() method.
     }

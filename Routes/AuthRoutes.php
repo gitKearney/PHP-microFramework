@@ -5,15 +5,13 @@
  */
 $router->route('/auth/', function() {
 
-    /**
-     * @var \Pimple\Container $container defined in index.php line 92
-     */
-    global $container;
+    /** @var \Pimple\Container defined in Factories/Definition */
+    global $appContainer;
 
     /**
      * @var \Main\Controllers\AuthController
      */
-    $authController = $container['AuthController'];
+    $authController = $appContainer['AuthController'];
 
     /**
      * @var \Zend\Diactoros\Response

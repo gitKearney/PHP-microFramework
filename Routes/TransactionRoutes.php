@@ -8,15 +8,13 @@ $transRegex = '/transactions(\/)?/';
  * @var Main\Routers\RegexRouter $router
  */
 $router->route($transRegex, function () {
-    /**
-     * @var \Pimple\Container $container defined in index.php line 92
-     */
-    global $container;
+    /** @var \Pimple\Container defined in Factories/Definition */
+    global $appContainer;
 
     /**
      * @var BaseController
      */
-    $transactionController = $container['TransactionController'];
+    $transactionController = $appContainer['TransactionController'];
 
     /**
      * @var \Zend\Diactoros\Response

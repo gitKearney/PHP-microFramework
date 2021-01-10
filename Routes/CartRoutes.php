@@ -4,13 +4,10 @@ $userRegex = '/carts(\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
 
 /** @var Main\Routers\RegexRouter $router */
 $router->route($userRegex, function() {
-    // if you have an aversion to global, then you could pass in $container to
-    // the closure like so
-    // function(Container $container) instead of using global
+    /** @var \Pimple\Container defined in Factories/Definition */
+    global $appContainer;
 
-    global $container;
-
-    $userController = $container['CartController'];
+    $userController = $appContainer['CartController'];
 
     /** @var \Zend\Diactoros\Response */
     $response = $userController->handleRequest();

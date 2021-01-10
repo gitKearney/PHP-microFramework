@@ -4,16 +4,13 @@
  * @var Main\Routers\RegexRouter $router
  */
 $router->route('/products/', function() {
-
-    /**
-     * @var \Pimple\Container $container defined in index.php line 92
-     */
-    global $container;
+    /** @var \Pimple\Container defined in Factories/Definition */
+    global $appContainer;
 
     /**
      * @var \Main\Controllers\ProductController
      */
-    $authController = $container['ProductController'];
+    $authController = $appContainer['ProductController'];
 
     /**
      * @var \Zend\Diactoros\Response

@@ -161,5 +161,3 @@ $appContainer['CartController'] = function () {
 
     return new CartController($appContainer['CartsService']);
 };
-
-return $appContainer;

@@ -9,16 +9,10 @@ $userRegex = '/users(\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
  * @var Main\Routers\RegexRouter $router
  */
 $router->route($userRegex, function() {
-    // if you have an aversion to global, then you could pass in $container to
-    // the closure like so
-    // function(Container $container) instead of using global
+    /** @var \Pimple\Container defined in Factories/Definition */
+    global $appContainer;
 
-    /**
-     * @var \Pimple\Container $container defined in index.php line 92
-     */
-    global $container;
-
-    $userController = $container['UserController'];
+    $userController = $appContainer['UserController'];
 
     /**
      * @var \Zend\Diactoros\Response

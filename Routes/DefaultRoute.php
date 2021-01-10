@@ -3,7 +3,7 @@
 /**
  * @var \Main\Routers\RegexRouter $router
  */
-$router->route('/\//', function() {
+$router->route('/\/?/', function() {
     header('HTTP/1.1 200 OK');
     header("Access-Control-Allow-Origin: *");
     ob_start();

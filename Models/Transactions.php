@@ -24,15 +24,51 @@ class Transactions extends BaseModel
      * @return array
      * @throws Exception
      */
-    public function getAllTransactions()
+    public function getAllTransactions(): array
     {
-        $query = 'SELECT trans.transaction_id,trans.user_id,tp.product_id
-            ,tp.product_price,trans.created_at
-             FROM transactions AS trans
-             INNER JOIN transaction_products tp on trans.transaction_id = tp.transaction_id
-             GROUP BY trans.transaction_id,trans.user_id,tp.product_id
-            ,tp.product_price,trans.created_at';
+        $query = 'SELECT trans.transaction_id, trans.user_id, tp.product_id'.
+            ',tp.product_price,trans.created_at'.
+            ' FROM transactions AS trans'.
+            ' INNER JOIN transaction_products tp on trans.transaction_id = tp.transaction_id'.
+            ' GROUP BY trans.transaction_id,trans.user_id,tp.product_id'.
+            ',tp.product_price,trans.created_at';
         $params = [];
+
+        $result = $this->select($query, $params);
+
+        # group the transactions into a single array
+        $records = [];
+        foreach($result as $index => $row) {
+            $trans_id = $row['transaction_id'];
+            if (array_key_exists($trans_id, $records) === false) {
+                $records[$trans_id] = [];
+            }
+
+            $records[$trans_id][] = [
+                'product_id' => $row['product_id'],
+                'price' => $row['product_price'],
+                'order_date' => $row['created_at'],
+                'id' => $row['user_id'],
+            ];
+        }
+        return $records;
+    }
+
+    /**
+     * @param $userId
+     * @return array
+     * @throws Exception
+     */
+    public function getUsersTransactions($userId): array
+    {
+        $query = 'SELECT trans.transaction_id, trans.user_id, tp.product_id'.
+            ',tp.product_price,trans.created_at'.
+            ' FROM transactions AS trans'.
+            ' WHERE trans.user_id = :user_id'.
+            ' INNER JOIN transaction_products tp on trans.transaction_id = tp.transaction_id'.
+            ' GROUP BY trans.transaction_id,trans.user_id,tp.product_id'.
+            ',tp.product_price,trans.created_at';
+        $params = [':user_id' => $userId];
 
         $result = $this->select($query, $params);
 
