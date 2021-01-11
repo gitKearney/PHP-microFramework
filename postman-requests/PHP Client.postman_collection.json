@@ -1,0 +1,203 @@
+{
+	"info": {
+		"_postman_id": "76ba730e-6981-4463-9244-b43148e40c8b",
+		"name": "PHP Client",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "GET USERS",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/users",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET USER",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/users/12345678-1234-1234-1234-123456789abc",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"users",
+						"12345678-1234-1234-1234-123456789abc"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET PRODUCTS",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/products",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET PRODUCT",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/products/12345678-1234-1234-1234-123456789008",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"products",
+						"12345678-1234-1234-1234-123456789008"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET USER CART",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/carts/12345678-1234-1234-1234-123456789abc",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"carts",
+						"12345678-1234-1234-1234-123456789abc"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST USER CART",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_id\": \"12345678-1234-1234-1234-123456789abc\",\n    \"product_id\": \"12345678-1234-1234-1234-123456789000\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/carts",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"carts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "REMOVE ITEM FROM CART",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"quantity\": 0,\n    \"product_id\": \"12345678-1234-1234-1234-123456789000\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/carts/12345678-1234-1234-1234-123456789abc",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"carts",
+						"12345678-1234-1234-1234-123456789abc"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ADD TRANSACTION",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"products\": [\n        {\"id\": \"12345678-1234-1234-1234-123456789002\", \"price\": 3.50},\n        {\"id\": \"12345678-1234-1234-1234-123456789002\", \"price\": 1.50},\n        {\"id\": \"12345678-1234-1234-1234-123456789005\", \"price\": 3.50},\n        {\"id\": \"12345678-1234-1234-1234-123456789005\", \"price\": 1.50}\n    ],\n    \"user_id\": \"12345678-1234-1234-1234-123456789002\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/transactions",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"transactions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET USER TRANSACTIONS",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/transactions/12345678-1234-1234-1234-123456789002",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"transactions",
+						"12345678-1234-1234-1234-123456789002"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
