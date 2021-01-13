@@ -21,20 +21,6 @@ class Carts extends BaseModel
     }
 
     /**
-     * @desc parses the HTTP body and gets the values
-     * @param array $body
-     * @return array
-     * @TODO move to service class
-     */
-    public function getCartValue(array $body): array
-    {
-        $values = [];
-        $values['product_id'] = $body['product_id'] ?? null;
-        $values['user_id']    = $body['id'] ?? null;
-        return $values;
-    }
-
-    /**
      * @desc adds a product to the cart associated with a user
      * @param array $userProduct
      * @throws Exception
@@ -74,5 +60,12 @@ class Carts extends BaseModel
             ' WHERE user_id = :user_id AND product_id = :product_id';
 
         $this->delete($query, $userProduct);
+    }
+
+    public function clearCart(string $userId)
+    {
+        $query = 'DELETE FROM user_cart WHERE user_id = :user_id';
+        $params = [':user_id' => $userId];
+        $this->delete($query, $params);
     }
 }

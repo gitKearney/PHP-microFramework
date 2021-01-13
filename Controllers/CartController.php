@@ -98,8 +98,9 @@ class CartController extends BaseController
     {
         $config = getAppConfigSettings();
         $requestBody = $this->parsePost($request);
+        $values = $this->cartService->getCartValue($requestBody);
 
-        if (count($requestBody) === 0) {
+        if (count($values) === 0) {
             $body = json_encode([
                 'success' => false,
                 'message' => 'No input data',

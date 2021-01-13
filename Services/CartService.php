@@ -73,4 +73,18 @@ class CartService extends BaseService
         $response->message = 'success';
         return $response;
     }
+
+
+    /**
+     * @desc parses the HTTP body and gets the values
+     * @param array $body
+     * @return array
+     */
+    public function getCartValue(array $body): array
+    {
+        $values = [];
+        $values['product_id'] = $body['product_id'] ?? null;
+        $values['user_id']    = $body['id'] ?? null;
+        return $values;
+    }
 }

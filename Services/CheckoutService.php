@@ -70,6 +70,9 @@ class CheckoutService extends BaseService
 
             $transValues = ['transaction_id' => $transId, 'user_id' => $userId];
             $this->transactions->addNewTransaction($transValues);
+
+            # now delete the user's cart
+            $this->carts->clearCart($userId);
         } catch (Exception $e) {
             $response->message = $e->getMessage();
             return $response;
