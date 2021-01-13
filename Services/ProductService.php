@@ -84,7 +84,7 @@ class ProductService extends BaseService
         return $response;
     }
 
-    public function getProductsByQueryString(array $queryParams)
+    public function getProductsByQueryString(array $queryParams): stdClass
     {
         /** @var stdClass $response */
         $response = $this->createResponseObject();

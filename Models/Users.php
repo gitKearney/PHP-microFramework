@@ -26,15 +26,15 @@ class Users extends BaseModel
      * @return array
      * @throws Exception
      */
-    public function findUserById(string $userId)
+    public function findUserById(string $userId): array
     {
-        $query = 'SELECT user_id as id, first_name, last_name, birthday,'
-            .' roles, email'
-            .' FROM users WHERE user_id = :user_id LIMIT 1';
+        $query = <<<QUERY
+            SELECT user_id as id,first_name,last_name,birthday,roles,email
+            FROM users WHERE user_id = :user_id LIMIT 1
+QUERY;
         $params = [':user_id' => $userId];
 
-        $users = $this->select($query, $params);
-        return $users;
+        return $this->select($query, $params);
     }
 
     /**
@@ -42,15 +42,15 @@ class Users extends BaseModel
      * @return array
      * @throws Exception
      */
-    public function getAllUsers()
+    public function getAllUsers(): array
     {
-        $query = 'SELECT user_id as id, first_name, last_name, birthday,'
-            .' email, created_at'
-            .' FROM users';
+        $query = <<<QUERY
+            SELECT user_id as id,first_name,last_name,birthday,email,created_at
+            FROM users
+QUERY;
         $params = [];
 
-        $users = $this->select($query, $params);
-        return $users;
+        return $this->select($query, $params);
     }
 
     /**
@@ -132,12 +132,11 @@ class Users extends BaseModel
      * @return array
      * @throws Exception
      */
-    public function findUserByEmail(string $email)
+    public function findUserByEmail(string $email): array
     {
         $query  = 'SELECT * FROM users WHERE email = :email';
         $params = [':email' => $email,];
 
-        $users = $this->select($query, $params);
-        return $users;
+        return $this->select($query, $params);
     }
 }

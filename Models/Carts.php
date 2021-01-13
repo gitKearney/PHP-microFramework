@@ -39,14 +39,14 @@ class Carts extends BaseModel
      */
     public function findCartById(string $userId): array
     {
-        $query = 'SELECT uc.product_id, p.title, p.price FROM user_cart AS uc'.
-            ' INNER JOIN products as p ON uc.product_id = p.product_id'.
-            ' WHERE user_id = :user_id';
+        $query = <<<'QUERY'
+            SELECT uc.product_id, p.title, p.price FROM user_cart AS uc
+            INNER JOIN products as p ON uc.product_id = p.product_id
+            WHERE user_id = :user_id
+QUERY;
         $params = [':user_id' => $userId];
 
-        $result = $this->select($query, $params);
-
-        return $result;
+        return $this->select($query, $params);
     }
 
     /**
@@ -56,13 +56,20 @@ class Carts extends BaseModel
      */
     public function deleteItem(array $userProduct): void
     {
-        $query = 'DELETE FROM user_cart'.
-            ' WHERE user_id = :user_id AND product_id = :product_id';
+        $query = <<<'QUERY'
+            DELETE FROM user_cart
+            WHERE user_id = :user_id AND product_id = :product_id
+QUERY;
 
         $this->delete($query, $userProduct);
     }
 
-    public function clearCart(string $userId)
+    /**
+     * @param string $userId
+     * @throws Exception
+     * @return void
+     */
+    public function clearCart(string $userId): void
     {
         $query = 'DELETE FROM user_cart WHERE user_id = :user_id';
         $params = [':user_id' => $userId];

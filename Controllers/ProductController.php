@@ -57,7 +57,7 @@ class ProductController extends BaseController
      * @return Response
      * @throws Exception
      */
-    public function delete(ServerRequest $request, Response $response)
+    public function delete(ServerRequest $request, Response $response): Response
     {
         $config = getAppConfigSettings();
         if ($config->debug->authUsers) {
@@ -167,7 +167,7 @@ class ProductController extends BaseController
      * @param Response $response
      * @return Response
      */
-    public function head(ServerRequest $request, Response $response)
+    public function head(ServerRequest $request, Response $response): Response
     {
         $jsonRes = json_encode(['TODO' => 'NEED TO IMPLEMENT']);
         $returnResponse = $response->withHeader('Content-Type', 'application/json');
@@ -182,7 +182,7 @@ class ProductController extends BaseController
      * @param Response $response
      * @return Response
      */
-    public function options(ServerRequest $request, Response $response)
+    public function options(ServerRequest $request, Response $response): Response
     {
         return $this->defaultOptions($request, $response);
     }
@@ -193,7 +193,7 @@ class ProductController extends BaseController
      * @param Response $response
      * @return Response
      */
-    public function patch(ServerRequest $request, Response $response)
+    public function patch(ServerRequest $request, Response $response): Response
     {
         $config = getAppConfigSettings();
         try {
@@ -300,7 +300,7 @@ class ProductController extends BaseController
      * @param Response $response
      * @return Response
      */
-    public function put(ServerRequest $request, Response $response)
+    public function put(ServerRequest $request, Response $response): Response
     {
         # extract the HTTP BODY into an array
         $requestBody = $this->productService->parseServerRequest($request);

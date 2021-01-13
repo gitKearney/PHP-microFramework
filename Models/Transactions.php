@@ -26,12 +26,12 @@ class Transactions extends BaseModel
      */
     public function getAllTransactions(): array
     {
-        $query = 'SELECT trans.transaction_id, trans.user_id, tp.product_id'.
-            ',tp.product_price,trans.created_at'.
-            ' FROM transactions AS trans'.
-            ' INNER JOIN transaction_products tp on trans.transaction_id = tp.transaction_id'.
-            ' GROUP BY trans.transaction_id,trans.user_id,tp.product_id'.
-            ',tp.product_price,trans.created_at';
+        $query = <<<'QUERY'
+            SELECT trans.transaction_id, trans.user_id, tp.product_id,tp.product_price,trans.created_at
+            FROM transactions AS trans
+                INNER JOIN transaction_products tp on trans.transaction_id = tp.transaction_id
+            GROUP BY trans.transaction_id,trans.user_id,tp.product_id,tp.product_price,trans.created_at
+QUERY;
         $params = [];
 
         $result = $this->select($query, $params);
@@ -51,6 +51,7 @@ class Transactions extends BaseModel
                 'id' => $row['user_id'],
             ];
         }
+
         return $records;
     }
 
@@ -61,13 +62,13 @@ class Transactions extends BaseModel
      */
     public function getUsersTransactions($userId): array
     {
-        $query = 'SELECT trans.transaction_id, trans.user_id, tp.product_id'.
-            ',tp.product_price,trans.created_at'.
-            ' FROM transactions AS trans'.
-            ' WHERE trans.user_id = :user_id'.
-            ' INNER JOIN transaction_products tp on trans.transaction_id = tp.transaction_id'.
-            ' GROUP BY trans.transaction_id,trans.user_id,tp.product_id'.
-            ',tp.product_price,trans.created_at';
+        $query = <<<'QUERY'
+            SELECT trans.transaction_id, trans.user_id, tp.product_id,tp.product_price,trans.created_at
+            FROM transactions AS trans
+                INNER JOIN transaction_products tp on trans.transaction_id = tp.transaction_id
+            WHERE trans.user_id = :user_id
+            GROUP BY trans.transaction_id,trans.user_id,tp.product_id,tp.product_price,trans.created_at
+QUERY;
         $params = [':user_id' => $userId];
 
         $result = $this->select($query, $params);
@@ -87,6 +88,7 @@ class Transactions extends BaseModel
                 'id' => $row['user_id'],
             ];
         }
+
         return $records;
     }
 }

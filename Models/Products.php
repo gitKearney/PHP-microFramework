@@ -49,16 +49,14 @@ class Products extends BaseModel
      * @return array
      * @throws Exception
      */
-    public function findProductById(string $productId)
+    public function findProductById(string $productId): array
     {
         $query = 'SELECT product_id as id, title, price, quantity,'
             .' created_at, updated_at'
             .' FROM products WHERE product_id = :product_id LIMIT 1';
         $params = [':product_id' => $productId];
 
-        $result = $this->select($query, $params);
-
-        return $result;
+        return $this->select($query, $params);
     }
 
     /**
@@ -80,13 +78,12 @@ class Products extends BaseModel
      * @return array
      * @throws Exception
      */
-    public function getAllProducts()
+    public function getAllProducts(): array
     {
         $query = 'SELECT product_id as id, title, price, quantity, created_at FROM products';
         $params = [];
 
-        $result = $this->select($query, $params);
-        return $result;
+        return $this->select($query, $params);
     }
 
     /**
@@ -94,11 +91,10 @@ class Products extends BaseModel
      * @return stdClass
      * @throws Exception
      */
-    public function deleteProductById($productId): stdClass
+    public function deleteProductById(string $productId): stdClass
     {
         $query = 'DELETE FROM products WHERE product_id = :product_id';
         $params = [':product_id' => $productId];
-
 
         $this->delete($query, $params);
     }
@@ -112,18 +108,9 @@ class Products extends BaseModel
         $where = '';
         $set = '';
         $updateValues = [];
+
+        # build a query string here
         foreach ($values as $key => $value) {
-            # we need to build the query string
-
-            # remove the spaces from the value, we don't ever want to allow spaces
-            # TODO: we probably should allow them to "clear" out info
-            #$value = trim($value);
-            #if ( strlen($value) == 0) {
-            #    # catch someone who just puts in empty spaces for the user
-            #    # information, and ignore this field
-            #    continue;
-            #}
-
             # if the key is the id, then, set the where clause, otherwise
             # add the key to the where clause
             if ($key == 'id') {
@@ -166,16 +153,15 @@ class Products extends BaseModel
     }
 
     /**
-     * @param $title
+     * @param string $title
      * @return array
      * @throws Exception
      */
-    public function findProductByTitle($title)
+    public function findProductByTitle(string $title): array
     {
         $query  = 'SELECT * FROM products WHERE title LIKE  "%:title%"';
         $params = [':title' => $title,];
 
-        $products = $this->select($query, $params);
-        return $products;
+        return $this->select($query, $params);
     }
 }
