@@ -26,7 +26,7 @@ class Carts extends BaseModel
      * @return array
      * @TODO move to service class
      */
-    public function getCartValue(array $body)
+    public function getCartValue(array $body): array
     {
         $values = [];
         $values['product_id'] = $body['product_id'] ?? null;

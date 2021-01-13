@@ -32,7 +32,7 @@ class Products extends BaseModel
      * @param array
      * @return array
      */
-    public function setProductInfo($httpBody)
+    public function setProductInfo($httpBody): array
     {
         $postValues = [];
 
@@ -66,7 +66,7 @@ class Products extends BaseModel
      * @return stdClass
      * @throws Exception
      */
-    public function getProductByParams($params)
+    public function getProductByParams($params): stdClass
     {
         $query = $this->buildSearchString($params, 'products');
         $sql = 'SELECT product_id AS id, title, price, quantity, created_at'
@@ -94,7 +94,7 @@ class Products extends BaseModel
      * @return stdClass
      * @throws Exception
      */
-    public function deleteProductById($productId)
+    public function deleteProductById($productId): stdClass
     {
         $query = 'DELETE FROM products WHERE product_id = :product_id';
         $params = [':product_id' => $productId];

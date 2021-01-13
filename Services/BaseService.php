@@ -9,7 +9,7 @@ class BaseService
     /**
      * @return stdClass
      */
-    public function createResponseObject()
+    public function createResponseObject(): stdClass
     {
         $response = new stdClass();
         $response->success = false;

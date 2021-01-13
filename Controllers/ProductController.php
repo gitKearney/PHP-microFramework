@@ -114,7 +114,7 @@ class ProductController extends BaseController
      * @param Response $response
      * @return Response
      */
-    public function get(ServerRequest $request, Response $response)
+    public function get(ServerRequest $request, Response $response): Response
     {
         $config = getAppConfigSettings();
         if ($config->debug->authUsers) {

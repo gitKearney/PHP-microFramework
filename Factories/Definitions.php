@@ -1,5 +1,7 @@
 <?php
 
+use Main\Controllers\CheckoutController;
+use Main\Services\CheckoutService;
 use Pimple\Container;
 
 // Controllers
@@ -102,7 +104,7 @@ $appContainer['ProductService'] = function() {
 /**
  * @return ProductController
  */
-$appContainer['ProductController'] = function() {
+$appContainer['ProductController'] = function () {
     global $appContainer;
     return new ProductController($appContainer['JwtService'],
         $appContainer['ProductService'], $appContainer['UserService']);
@@ -111,21 +113,21 @@ $appContainer['ProductController'] = function() {
 /**
  * @return Transactions
  */
-$appContainer['Transactions'] = function() {
+$appContainer['Transactions'] = function () {
     return new Transactions();
 };
 
 /**
  * @return TransactionProducts
  */
-$appContainer['TransactionProducts'] = function() {
+$appContainer['TransactionProducts'] = function () {
     return new TransactionProducts();
 };
 
 /**
  * @return TransactionService
  */
-$appContainer['TransactionService'] = function() {
+$appContainer['TransactionService'] = function () {
     global $appContainer;
     return new TransactionService($appContainer['UuidService'],
         $appContainer['Transactions'], $appContainer['TransactionProducts']);
@@ -134,7 +136,7 @@ $appContainer['TransactionService'] = function() {
 /**
  * @return TransactionController
  */
-$appContainer['TransactionController'] = function() {
+$appContainer['TransactionController'] = function () {
     global $appContainer;
     return new TransactionController($appContainer['TransactionService'],
         $appContainer['JwtService'], $appContainer['UserService']);
@@ -143,21 +145,37 @@ $appContainer['TransactionController'] = function() {
 /**
  * @return Carts
  */
-$appContainer['Carts'] = function() {
+$appContainer['Carts'] = function () {
     return new Carts;
 };
 
 /**
  * @return CartService
  */
-$appContainer['CartsService'] = function() {
+$appContainer['CartsService'] = function () {
     global $appContainer;
 
-    return new CartService(($appContainer['Carts']));
+    return new CartService($appContainer['Carts']);
 };
 
 $appContainer['CartController'] = function () {
     global $appContainer;
 
     return new CartController($appContainer['CartsService']);
+};
+
+$appContainer['CheckoutService'] = function () {
+    global $appContainer;
+
+    return new CheckoutService($appContainer['Carts'],
+        $appContainer['TransactionProducts'],
+        $appContainer['Transactions'],
+        $appContainer['UuidService']
+    );
+};
+
+$appContainer['CheckoutController'] = function () {
+    global $appContainer;
+
+    return new CheckoutController($appContainer['CheckoutService']);
 };

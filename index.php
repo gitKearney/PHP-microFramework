@@ -99,6 +99,7 @@ include_once __DIR__.'/Routes/UserRoutes.php';
 include_once __DIR__.'/Routes/ProductRoutes.php';
 include_once __DIR__.'/Routes/TransactionRoutes.php';
 include_once __DIR__.'/Routes/CartRoutes.php';
+include_once __DIR__.'/Routes/CheckoutRoutes.php';
 
 # no more routes below here
 include_once __DIR__.'/Routes/DefaultRoute.php';

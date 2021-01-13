@@ -198,6 +198,33 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "CHECKOUT",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"12345678-1234-1234-1234-123456789abc\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/checkout",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"checkout"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }

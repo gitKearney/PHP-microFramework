@@ -16,12 +16,11 @@ class TransactionProducts extends BaseModel
     /**
      * @param array $values
      * @throws Exception
+     * @return void
      */
-    public function addTransactionProduct(array $values)
+    public function addTransactionProduct(array $values): void
     {
         $query = $this->buildInsertQuery($values, 'transaction_products');
         $this->insert($query->sql, $query->params);
     }
-
-
 }

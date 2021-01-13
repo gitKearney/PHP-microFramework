@@ -143,6 +143,7 @@ abstract class BaseModel
      * @param string $query
      * @param array $params
      * @return void
+     * @throws Exception
      */
     public function delete($query, array $params)
     {
