@@ -225,6 +225,33 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "ADD PRODUCT",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"Rosé Socks\",\n    \"price\": 2.49,\n    \"quantity\": 9\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/products",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"products"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }
