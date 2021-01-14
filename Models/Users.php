@@ -94,7 +94,7 @@ QUERY;
             }
 
             if ($key == 'password') {
-                $updateValues[':upassword'] = password_hash($value, PASSWORD_DEFAULT);
+                $updateValues[':upassword'] = password_hash($value,  PASSWORD_ARGON2ID);
                 $set .= 'upassword = :upassword,';
             }
 

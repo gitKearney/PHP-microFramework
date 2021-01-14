@@ -94,7 +94,7 @@ class JwtService extends BaseService
      * @param array $httpHeaders
      * @return stdClass
      */
-    public function decodeWebToken($httpHeaders)
+    public function decodeWebToken(array $httpHeaders): stdClass
     {
         $config = getAppConfigSettings();
         $response = $this->createResponseObject();

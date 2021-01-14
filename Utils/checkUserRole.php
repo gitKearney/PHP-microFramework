@@ -1,6 +1,10 @@
 <?php
 namespace Main\Utils;
 
+/**
+ * This file is loaded from the composer.json file. It's an example of how
+ * to autoload a config file using PSR
+ */
 use stdClass;
 use Main\Services\UserService;
 use Main\Services\JwtService;
@@ -14,14 +18,14 @@ use Main\Services\JwtService;
  * @return stdClass
  */
 function checkUserRole(array $requestHeaders,
-                       bool $authUser,
                        string $requiredRole,
                        JwtService $jwtService,
-                       UserService $userService)
+                       UserService $userService): stdClass
 {
     $response = createResponse();
+    $config = getAppConfigSettings();
 
-    if (!$authUser) {
+    if (!$config->debug->authUsers) {
         $response->true;
         return $response;
     }
@@ -47,7 +51,7 @@ function checkUserRole(array $requestHeaders,
     return $response;
 }
 
-function createResponse()
+function createResponse(): stdClass
 {
     $response = new stdClass();
     $response->success = false;

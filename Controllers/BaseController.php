@@ -127,7 +127,39 @@ abstract class BaseController
         }
     }
 
-    abstract protected function getUrlPathElements(ServerRequest $request);
+    /**
+     * Looks at the REQUEST_URI to see if it is /path/ or /path/{guid}
+     * or /path/{guid}?param1=value1 or /path/?param1=value1
+     * @param ServerRequest $request
+     * @return null | string | array
+     */
+    protected function getUrlPathElements(ServerRequest $request, string $route)
+    {
+        $config = getAppConfigSettings();
+
+        # split the URI field on the route
+        $requestUri = $request->getServerParams()['REQUEST_URI'];
+        $queryParams = $request->getQueryParams();;
+
+        $params = preg_split("/\/$route\/?\??/", $requestUri);
+        if (empty($params[1])) {
+            # no second element found, path is /products
+            return null;
+        }
+
+        $matches = [];
+        preg_match($config->regex->guid, $params[1], $matches);
+
+        if (!empty($matches[0])) {
+            # we found a UUID
+            # strip any ? though since our regex is inclusive. If the user
+            # passed in a UUID **AND** query params, default to use the UUID
+            return trim($matches[0], '?');
+        }
+
+        # no GUID, expand on the question mark and get the query params
+        return $queryParams;
+    }
 
     /**
      * @param ServerRequest $request

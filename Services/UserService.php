@@ -261,7 +261,7 @@ class UserService extends BaseService
      * @param string $requiredRole
      * @return bool
      */
-    public function userAllowedAction($guid, $requiredRole)
+    public function userAllowedAction($guid, $requiredRole): bool
     {
         $userRecord = $this->findUserById($guid);
         $user = $userRecord->results;
