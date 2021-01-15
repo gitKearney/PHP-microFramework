@@ -7,6 +7,8 @@ use Main\Services\UserService;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
 
+use function Main\Utils\checkUserRole as userCheck;
+
 class TransactionController extends BaseController
 {
     /**
@@ -40,8 +42,26 @@ class TransactionController extends BaseController
     /**
      * @inheritDoc
      */
-    public function get(ServerRequest $request, Response $response): Response
+    public function get(ServerRequest $request, Response $response, $headRequest=false): Response
     {
+        $auth = userCheck($request->getHeaders(),
+            'read',
+            $this->jwtService,
+            $this->userService);
+
+        if (!$auth->success) {
+            $body = json_encode($auth->message);
+
+            $response = $response
+                ->withStatus($auth->code)
+                ->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Content-Type', 'application/json')
+                ->withHeader('Content-Length', strval(strlen($body)));
+
+            $response->getBody()->write($body);
+
+            return $response;
+        }
         # read the URI string and see if a GUID was passed in
         $id = $this->getUrlPathElements($request);
         if (!$id) {
@@ -52,10 +72,15 @@ class TransactionController extends BaseController
 
         $body = json_encode($transactions);
 
-        $response = $response->withStatus($transactions->code, 'OK')
+        $response = $response
+            ->withStatus($transactions->code)
             ->withHeader('Access-Control-Allow-Origin', '*')
             ->withHeader('Content-Type', 'application/json')
             ->withHeader('Content-Length', strval(strlen($body)));
+
+        if($headRequest) {
+            return $response;
+        }
 
         $response->getBody()->write($body);
         return $response;
@@ -66,7 +91,7 @@ class TransactionController extends BaseController
      */
     public function head(ServerRequest $request, Response $response): Response
     {
-        // TODO: Implement head() method.
+        return $this->get($request, $response, true);
     }
 
     /**
@@ -74,7 +99,7 @@ class TransactionController extends BaseController
      */
     public function options(ServerRequest $request, Response $response): Response
     {
-        // TODO: Implement options() method.
+        return $this->defaultOptions($request, $response);
     }
 
     /**
@@ -82,7 +107,11 @@ class TransactionController extends BaseController
      */
     public function patch(ServerRequest $request, Response $response): Response
     {
-        // TODO: Implement patch() method.
+        $returnResponse = $response
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('HTTP/1.0', '404 Not Found');
+        $returnResponse->getBody()->write('');
+        return $returnResponse;
     }
 
     /**
@@ -90,42 +119,31 @@ class TransactionController extends BaseController
      */
     public function post(ServerRequest $request, Response $response): Response
     {
-        $config = getAppConfigSettings();
-        if ($config->debug->authUsers) {
-            $decoded = $this->jwtService->decodeWebToken($request->getHeaders());
+        $auth = userCheck($request->getHeaders(),
+            'read',
+            $this->jwtService,
+            $this->userService);
 
-            if (!$decoded->success) {
-                $body = json_encode($decoded);
+        if (!$auth->success) {
+            $body = json_encode($auth->message);
 
-                $response = $response
-                    ->withStatus(401, $decoded->message)
-                    ->withHeader('Access-Control-Allow-Origin', '*')
-                    ->withHeader('Content-Type', 'application/json')
-                    ->withHeader('Content-Length', strval(strlen($body)));
+            $response = $response
+                ->withStatus($auth->code)
+                ->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Content-Type', 'application/json')
+                ->withHeader('Content-Length', strval(strlen($body)));
 
-                $response->getBody()->write($body);
+            $response->getBody()->write($body);
 
-                return $response;
-            }
-
-            # does the user have access to this method?
-            $userId = $decoded->results->data->userId;
-            $hasPermission = $this->userService->userAllowedAction($userId, 'create');
-            if (!$hasPermission) {
-                $response = $response
-                    ->withStatus(100, 'Action Not Allowed')
-                    ->withHeader('Content-Type', 'application/json');
-
-                return $response;
-            }
+            return $response;
         }
 
-        // TODO: send to the service the products, user ID
         $body = $this->parsePost($request);
         $res = $this->transactionService->addNewTransaction($body);
 
         $body = json_encode($res);
         $response = $response
+            ->withStatus($res->code)
             ->withHeader('Access-Control-Allow-Origin', '*')
             ->withHeader('Content-Type', 'application/json')
             ->withHeader('Content-Length', strval(strlen($body)));
@@ -140,11 +158,10 @@ class TransactionController extends BaseController
      */
     public function put(ServerRequest $request, Response $response): Response
     {
-        // TODO: Implement put() method.
-    }
-
-    protected function getUrlPathElements(ServerRequest $request)
-    {
-        // TODO: Implement getUrlPathElements() method.
+        $returnResponse = $response
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('HTTP/1.0', '404 Not Found');
+        $returnResponse->getBody()->write('');
+        return $returnResponse;
     }
 }

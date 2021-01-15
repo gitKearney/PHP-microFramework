@@ -10,7 +10,7 @@ trait RequestTrait
     /**
      * @return ServerRequest
      */
-    function processRequest()
+    function processRequest(): ServerRequest
     {
         return ServerRequestFactory::fromGlobals(
             $_SERVER,

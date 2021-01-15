@@ -161,7 +161,7 @@ $appContainer['CartsService'] = function () {
 $appContainer['CartController'] = function () {
     global $appContainer;
 
-    return new CartController($appContainer['CartsService']);
+    return new CartController($appContainer['CartsService'], $appContainer['JwtService'], $appContainer['UserService']);
 };
 
 $appContainer['CheckoutService'] = function () {
@@ -177,5 +177,6 @@ $appContainer['CheckoutService'] = function () {
 $appContainer['CheckoutController'] = function () {
     global $appContainer;
 
-    return new CheckoutController($appContainer['CheckoutService']);
+    return new CheckoutController($appContainer['CheckoutService'],
+        $appContainer['JwtService'], $appContainer['UserService']);
 };

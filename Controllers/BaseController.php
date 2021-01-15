@@ -131,6 +131,7 @@ abstract class BaseController
      * Looks at the REQUEST_URI to see if it is /path/ or /path/{guid}
      * or /path/{guid}?param1=value1 or /path/?param1=value1
      * @param ServerRequest $request
+     * @param string $route
      * @return null | string | array
      */
     protected function getUrlPathElements(ServerRequest $request, string $route)

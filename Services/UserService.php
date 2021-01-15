@@ -72,7 +72,7 @@ class UserService extends BaseService
      * @param string $userId
      * @return stdClass
      */
-    public function findUserById($userId)
+    public function findUserById($userId): stdClass
     {
         $response = $this->createResponseObject();
 

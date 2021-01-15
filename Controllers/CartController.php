@@ -6,16 +6,21 @@ use Main\Services\JwtService;
 use Main\Services\UserService;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
+use function Main\Utils\checkUserRole as userCheck;
 
 class CartController extends BaseController
 {
     private UserService $userService;
     private JwtService $jwtService;
     private CartService $cartService;
-    
-    public function __construct(CartService $cartService)
+
+    const ROUTE = 'carts';
+
+    public function __construct(CartService $cartService, JwtService $jwtService, UserService $userService)
     {
         $this->cartService = $cartService;
+        $this->jwtService = $jwtService;
+        $this->userService = $userService;
     }
 
     /**
@@ -33,15 +38,43 @@ class CartController extends BaseController
     /**
      * @inheritDoc
      */
-    public function get(ServerRequest $request, Response $response): Response
+    public function get(ServerRequest $request, Response $response, $headRequest = false): Response
     {
+        $auth = userCheck($request->getHeaders(),
+            'read',
+            $this->jwtService,
+            $this->userService);
+
+        if (!$auth->success) {
+            $body = json_encode($auth->message);
+
+            $response = $response
+                ->withStatus($auth->code)
+                ->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Content-Type', 'application/json; charset=utf-8')
+                ->withHeader('Content-Length', strval(strlen($body)));
+
+            $response->getBody()->write($body);
+
+            return $response;
+        }
+
         # read the URI string and see if a GUID was passed in
-        $id = $this->getUrlPathElements($request);
+        $id = $this->getUrlPathElements($request, self::ROUTE);
         $res = $this->cartService->getUsersCart($id);
 
-        $jsonRes= json_encode($res);
-        $returnResponse = $response->withHeader('Content-Type', 'application/json; charset=utf-8');
-        $returnResponse->getBody()->write($jsonRes);
+        $body = json_encode($res);
+        $returnResponse = $response
+            ->withStatus(200, 'OK')
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Content-Type', 'application/json; charset=utf-8')
+            ->withHeader('Content-Length', strval(strlen($body)));
+
+        if ($headRequest) {
+            return $returnResponse;
+        }
+
+        $returnResponse->getBody()->write($body);
 
         return $returnResponse;
     }
@@ -51,7 +84,7 @@ class CartController extends BaseController
      */
     public function head(ServerRequest $request, Response $response): Response
     {
-        // TODO: Implement head() method.
+        return $this->get($request, $response, true);
     }
 
     /**
@@ -59,7 +92,28 @@ class CartController extends BaseController
      */
     public function options(ServerRequest $request, Response $response): Response
     {
-        // TODO: Implement options() method.
+        $allowed = 'OPTIONS, GET, HEAD, PATCH, POST';
+
+        # get the headers, if the request is a CORS preflight request OPTIONS method
+        $httpHeaders = $request->getHeaders();
+
+        # the Content-Length header MUST BE "0"
+        if (! isset($httpHeaders['access-control-request-method'])) {
+            $returnResponse = $response->withAddedHeader('Allow', $allowed)
+                ->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Content-Type', 'text/plain')
+                ->withHeader('Content-Length', "0");
+        } else {
+            $returnResponse = $response->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
+                ->withHeader('Access-Control-Allow-Methods', $allowed)
+                ->withHeader('Content-Type', 'text/plain')
+                ->withHeader('Content-Length', "0");
+        }
+
+        $returnResponse->getBody()->write("");
+
+        return $returnResponse;
     }
 
     /**
@@ -67,20 +121,36 @@ class CartController extends BaseController
      */
     public function patch(ServerRequest $request, Response $response): Response
     {
-        # get the user's GUID from the URI
-        $uriParts = preg_split('/\/carts\//', $request->getServerParams()['REQUEST_URI']);
-        $userId = $uriParts[1];
+        $auth = userCheck($request->getHeaders(),
+            'read',
+            $this->jwtService,
+            $this->userService);
 
-        # get the body which contains the product GUID and the new quantity
-        $requestBody = json_decode($request->getBody()->__toString(), true);
+        if (!$auth->success) {
+            $body = json_encode($auth->message);
+
+            $response = $response
+                ->withStatus($auth->code, $auth->message)
+                ->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Content-Type', 'application/json: charset=utf-8')
+                ->withHeader('Content-Length', strval(strlen($body)));
+
+            $response->getBody()->write($body);
+
+            return $response;
+        }
+
+        $userId = $this->getUrlPathElements($request, self::ROUTE);
+        $requestBody = $this->parsePost($request);
 
         # next we need to remove the item from the user cart table
-        $params = [':user_id' => $userId, ':product_id' => $requestBody['product_id']];
-        $res = $this->cartService->deleteProductFromCart($params);
+        $requestBody['user_id'] = $userId;
+        $res = $this->cartService->deleteProductFromCart($requestBody);
         $body = json_encode($res);
         $response = $response
+            ->withStatus($res->code, $res->message)
             ->withHeader('Access-Control-Allow-Origin', '*')
-            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Content-Type', 'application/json; charset=utf-8')
             ->withHeader('Content-Length', strval(strlen($body)));
 
         $response->getBody()->write($body);
@@ -96,19 +166,39 @@ class CartController extends BaseController
      */
     public function post(ServerRequest $request, Response $response): Response
     {
-        $config = getAppConfigSettings();
+        $auth = userCheck($request->getHeaders(),
+            'read',
+            $this->jwtService,
+            $this->userService);
+
+        if (!$auth->success) {
+            $body = json_encode($auth->message);
+
+            $response = $response
+                ->withStatus($auth->code)
+                ->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Content-Type', 'application/json; charset=utf-8')
+                ->withHeader('Content-Length', strval(strlen($body)));
+
+            $response->getBody()->write($body);
+
+            return $response;
+        }
+
         $requestBody = $this->parsePost($request);
         $values = $this->cartService->getCartValue($requestBody);
 
-        if (count($values) === 0) {
+        if ($values['product_id'] === null || $values['user_id'] === null) {
             $body = json_encode([
                 'success' => false,
                 'message' => 'No input data',
             ]);
 
             $response = $response
+                ->withStatus(401)
+                ->withHeader('Access-Control-Allow-Origin', '*')
                 ->withHeader('Content-Length', strval(strlen($body)))
-                ->withHeader('Content-Type', 'application/json');
+                ->withHeader('Content-Type', 'application/json; charset=utf-8');
             $response->getBody()->write($body);
             return $response;
         }
@@ -117,8 +207,9 @@ class CartController extends BaseController
 
         $body = json_encode($res);
         $response = $response
+            ->withAddedHeader($res->code, 'OK')
             ->withHeader('Access-Control-Allow-Origin', '*')
-            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Content-Type', 'application/json; charset=utf-8')
             ->withHeader('Content-Length', strval(strlen($body)));
 
         $response->getBody()->write($body);
@@ -131,38 +222,8 @@ class CartController extends BaseController
      */
     public function put(ServerRequest $request, Response $response): Response
     {
-        // TODO: Implement put() method.
-    }
-
-    /**
-     * Looks at the REQUEST_URI to see if it is /path/ or /path/{guid}
-     * @param ServerRequest $request
-     * @return null | string | array
-     */
-    protected function getUrlPathElements(ServerRequest $request)
-    {
-        $config = getAppConfigSettings();
-
-        # split the URI field on the route
-        $requestUri = $request->getServerParams()['REQUEST_URI'];
-        $pathValues = preg_split('/\/carts\/?\??/', $requestUri);
-        if (empty($pathValues[1])) {
-            # no second element found, path is /products
-            return null;
-        }
-
-        $matches = [];
-
-        # search for only the GUID
-        preg_match($config->regex->guid, $pathValues[1], $matches);
-
-        if (!empty($matches[0])) {
-            # we found a GUID
-            # strip any ? though since our regex is inclusive
-            return trim($matches[0], '?');
-        }
-
-        # no GUID, expand on the question mark and get the query params
-        return $request->getQueryParams();
+        $response = $response->withStatus(404);
+        $response->getBody()->write('Not Found');
+        return $response;
     }
 }

@@ -11,7 +11,6 @@ use Main\Services\JwtService;
 
 /**
  * @param array $requestHeaders
- * @param boolean $authUser
  * @param string $requiredRole
  * @param JwtService $jwtService
  * @param UserService $userService
@@ -26,7 +25,7 @@ function checkUserRole(array $requestHeaders,
     $config = getAppConfigSettings();
 
     if (!$config->debug->authUsers) {
-        $response->true;
+        $response->success = true;
         return $response;
     }
 

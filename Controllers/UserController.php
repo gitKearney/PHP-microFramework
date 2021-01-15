@@ -65,7 +65,7 @@ class UserController extends BaseController
             $response = $response
                 ->withStatus($auth->code, $auth->message)
                 ->withHeader('Access-Control-Allow-Origin', '*')
-                ->withHeader('Content-Type', 'application/json')
+                ->withHeader('Content-Type', 'application/json; charset=utf-8')
                 ->withHeader('Content-Length', strval(strlen($body)));
 
             $response->getBody()->write($body);
@@ -77,8 +77,8 @@ class UserController extends BaseController
         if ($qp === null) {
             $response = $response
                 ->withStatus(100, 'Not Allowed')
-                ->withHeader('Content-Type', 'application/json')
-                ->withHeader('Content-Type', 'application/json')
+                ->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Content-Type', 'text/plain; charset=utf-8')
                 ->withHeader('Content-Length', strval(strlen('Invalid User ID')));
             return $response;
         }
@@ -88,8 +88,10 @@ class UserController extends BaseController
         $result = $this->userService->deleteUserById($qp['guid']);
         $res = json_encode($result);
 
-        $response = $response->withStatus($result->code, $result->message)
-            ->withHeader('Content-Type', 'application/json');
+        $response = $response
+            ->withStatus($result->code, $result->message)
+            ->withHeader('Content-Type', 'application/json; charset=utf-8')
+            ->withHeader('Content-Length', strval(strlen('Invalid User ID')));
         $response->getBody()->write($res);
         return $response;
     }
@@ -112,9 +114,9 @@ class UserController extends BaseController
             $body = json_encode($auth->message);
 
             $response = $response
-                ->withStatus($auth->code, $auth->message)
+                ->withStatus($auth->code)
                 ->withHeader('Access-Control-Allow-Origin', '*')
-                ->withHeader('Content-Type', 'application/json')
+                ->withHeader('Content-Type', 'application/json; charset=utf-8')
                 ->withHeader('Content-Length', strval(strlen($body)));
 
             $response->getBody()->write($body);
@@ -128,19 +130,20 @@ class UserController extends BaseController
         # if the URI is just /users/, then our ID will be null, get all records
         if ($params === null) {
             $users = $this->userService->getAllUsers();
-        } else if (empty($params['guid'])) {
+        } else if (is_array($params)) {
             unset($params['guid']);
             $users = $this->userService->findUserByQueryString($params);
         } else {
-            $users = $this->userService->findUserById($params['guid']);
+            $users = $this->userService->findUserById($params);
         }
 
         unset($users->code);
         $body = json_encode($users);
 
-        $response = $response->withStatus(200, 'OK')
+        $response = $response
+            ->withStatus(200, 'OK')
             ->withHeader('Access-Control-Allow-Origin', '*')
-            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Content-Type', 'application/json; charset=utf-8')
             ->withHeader('Content-Length', strval(strlen($body)));
 
         if (!$headRequest) {
@@ -195,7 +198,7 @@ class UserController extends BaseController
             $response = $response
                 ->withStatus($auth->code, $auth->message)
                 ->withHeader('Access-Control-Allow-Origin', '*')
-                ->withHeader('Content-Type', 'application/json')
+                ->withHeader('Content-Type', 'application/json; charset=utf-8')
                 ->withHeader('Content-Length', strval(strlen($body)));
 
             $response->getBody()->write($body);
@@ -213,7 +216,7 @@ class UserController extends BaseController
         $body = json_encode($res);
         $response = $response
             ->withHeader('Access-Control-Allow-Origin', '*')
-            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Content-Type', 'application/json; charset=utf-8')
             ->withHeader('Content-Length', strval(strlen($body)));
 
         $response->getBody()->write($body);
@@ -238,7 +241,7 @@ class UserController extends BaseController
 
             $response = $response
                 ->withHeader('Content-Length', strval(strlen($body)))
-                ->withHeader('Content-Type', 'application/json')
+                ->withHeader('Content-Type', 'application/json; charset=utf-8')
                 ->withHeader('Content-Length', strval(strlen($body)));
 
             $response->getBody()->write($body);
@@ -249,7 +252,7 @@ class UserController extends BaseController
         $body = json_encode($res);
         $response = $response
             ->withHeader('Access-Control-Allow-Origin', '*')
-            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Content-Type', 'application/json; charset=utf-8')
             ->withHeader('Content-Length', strval(strlen($body)));
 
         $response->getBody()->write($body);
@@ -273,7 +276,7 @@ class UserController extends BaseController
             $response = $response
                 ->withStatus($auth->code, $auth->message)
                 ->withHeader('Access-Control-Allow-Origin', '*')
-                ->withHeader('Content-Type', 'application/json')
+                ->withHeader('Content-Type', 'application/json; charset=utf-8')
                 ->withHeader('Content-Length', strval(strlen($body)));
 
             $response->getBody()->write($body);
@@ -287,7 +290,7 @@ class UserController extends BaseController
         $body = json_encode($result);
         $response = $response
             ->withHeader('Access-Control-Allow-Origin', '*')
-            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Content-Type', 'application/json; charset=utf-8')
             ->withHeader('Content-Length', strval(strlen($body)));
         $response->getBody()->write($body);
 

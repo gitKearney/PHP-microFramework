@@ -83,13 +83,19 @@ class TransactionService extends BaseService
             return $response;
         }
 
+        $values = $this->getTransactionInfo($requestBody);
+        if ($values['user_id'] === null || $values['products'] === null) {
+            $response->code = 406;
+            return $response;
+        }
+
         $transaction = [
             'transaction_id' => $transId,
-            'user_id' => $requestBody['user_id'],
+            'user_id' => $values['user_id'],
         ];
 
         $transProducts = [];
-        foreach($requestBody['products'] as $index => $product) {
+        foreach($values['products'] as $index => $product) {
             $transProducts[] = [
                 'transaction_id' => $transId,
                 'product_id' => $product['id'],
@@ -105,7 +111,6 @@ class TransactionService extends BaseService
 
             return $response;
         }
-
 
         try {
             foreach($transProducts as $index => $transProduct) {
@@ -127,5 +132,17 @@ class TransactionService extends BaseService
         $response->results['id'] = $transId;
 
         return $response;
+    }
+
+    /**
+     * @param array $body
+     * @return array
+     */
+    public function getTransactionInfo(array $body): array
+    {
+        $params = [];
+
+        $params['user_id'] = $body['id'] ?? null;
+        $params['products'] = $body['products'] ?? null;
     }
 }

@@ -25,7 +25,7 @@ class BaseService
      * @param array $results
      * @return stdClass
      */
-    public function normalizeResponse($results)
+    public function normalizeResponse(array $results): stdClass
     {
         $response = $this->createResponseObject();
         $response->success = true;

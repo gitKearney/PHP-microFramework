@@ -18,7 +18,6 @@ use function Main\Utils\checkUserRole as userCheck;
  */
 class ProductController extends BaseController
 {
-
     /**
      * @var JwtService
      */
@@ -72,7 +71,7 @@ class ProductController extends BaseController
             $body = json_encode($auth->message);
 
             $response = $response
-                ->withStatus($auth->code, $auth->message)
+                ->withStatus($auth->code)
                 ->withHeader('Access-Control-Allow-Origin', '*')
                 ->withHeader('Content-Type', 'application/json')
                 ->withHeader('Content-Length', strval(strlen($body)));
@@ -84,20 +83,24 @@ class ProductController extends BaseController
 
         $qp = $this->getUrlPathElements($request, self::ROUTE);
         if ($qp === null) {
-            $response = $response->withStatus(100, 'Not Allowed')
-                ->withHeader('Content-Type', 'application/json');
+            $response = $response
+                ->withStatus(406)
+                ->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Content-Type', 'application/json; charset=utf-8');
             return $response;
         }
 
         # pass the id to the service method, where we'll validate if it's a
         # valid guid
         $result = $this->productService->deleteProductById($qp['guid']);
-        $res = json_encode($result);
+        $body = json_encode($result);
 
         $response = $response
-            ->withStatus($result->code, $result->message)
-            ->withHeader('Content-Type', 'application/json');
-        $response->getBody()->write($res);
+            ->withStatus(200)
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Content-Type', 'application/json; charset=utf-8')
+            ->withHeader('Content-Length', strval(strlen($body)));
+        $response->getBody()->write($body);
         return $response;
     }
 
@@ -105,9 +108,10 @@ class ProductController extends BaseController
      * Method to process HTTP GET reqeusts
      * @param ServerRequest $request
      * @param Response $response
+     * @param bool $headRequest
      * @return Response
      */
-    public function get(ServerRequest $request, Response $response): Response
+    public function get(ServerRequest $request, Response $response, $headRequest = false): Response
     {
         $auth = userCheck($request->getHeaders(),
             'read',
@@ -118,9 +122,9 @@ class ProductController extends BaseController
             $body = json_encode($auth->message);
 
             $response = $response
-                ->withStatus($auth->code, $auth->message)
+                ->withStatus($auth->code)
                 ->withHeader('Access-Control-Allow-Origin', '*')
-                ->withHeader('Content-Type', 'application/json')
+                ->withHeader('Content-Type', 'application/json; charset=utf-8')
                 ->withHeader('Content-Length', strval(strlen($body)));
 
             $response->getBody()->write($body);
@@ -138,8 +142,12 @@ class ProductController extends BaseController
             $body = json_encode($res);
 
             $returnResponse = $response
-                ->withHeader('Content-Type', 'application/json; charset=utf-8');
+                ->withStatus(200)
+                ->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Content-Type', 'application/json; charset=utf-8')
+                ->withHeader('Content-Length', strval(strlen($body)));
             $returnResponse->getBody()->write($body);
+
             return $returnResponse;
         } else if (is_array($id)) {
             # is the ID a GUID or a query string?
@@ -149,10 +157,19 @@ class ProductController extends BaseController
             $res = $this->productService->getProductInfo($id);
         }
 
-        $jsonRes = json_encode($res);
+        $body = json_encode($res);
 
-        $returnResponse = $response->withHeader('Content-Type', 'application/json; charset=utf-8');
-        $returnResponse->getBody()->write($jsonRes);
+        $returnResponse = $response
+            ->withStatus(200)
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Content-Type', 'application/json; charset=utf-8')
+            ->withHeader('Content-Length', strval(strlen($body)));
+
+        if ($headRequest) {
+            return $response;
+        }
+
+        $returnResponse->getBody()->write($body);
 
         return $returnResponse;
     }
@@ -165,11 +182,7 @@ class ProductController extends BaseController
      */
     public function head(ServerRequest $request, Response $response): Response
     {
-        $jsonRes = json_encode(['TODO' => 'NEED TO IMPLEMENT']);
-        $returnResponse = $response->withHeader('Content-Type', 'application/json');
-        $returnResponse->getBody()->write($jsonRes);
-
-        return $returnResponse;
+        return $this->get($request, $response, true);
     }
 
     /**
@@ -200,9 +213,9 @@ class ProductController extends BaseController
             $body = json_encode($auth->message);
 
             $response = $response
-                ->withStatus($auth->code, $auth->message)
+                ->withStatus($auth->code)
                 ->withHeader('Access-Control-Allow-Origin', '*')
-                ->withHeader('Content-Type', 'application/json')
+                ->withHeader('Content-Type', 'application/json; charset=utf-8')
                 ->withHeader('Content-Length', strval(strlen($body)));
 
             $response->getBody()->write($body);
@@ -210,16 +223,18 @@ class ProductController extends BaseController
             return $response;
         }
 
-        # get the POST body as a string: $request->getBody()->__toString()
-
         # extract the HTTP BODY into an array
         $requestBody = $this->productService->parseServerRequest($request);
 
         $res = $this->productService->updateProduct($requestBody);
 
-        $jsonRes = json_encode($res);
-        $returnResponse = $response->withHeader('Content-Type', 'application/json');
-        $returnResponse->getBody()->write($jsonRes);
+        $body = json_encode($res);
+        $returnResponse = $response
+            ->withStatus($res->code)
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Content-Type', 'application/json; charset=utf-8')
+            ->withHeader('Content-Length', strval(strlen($body)));
+        $returnResponse->getBody()->write($body);
 
         return $returnResponse;
     }
@@ -233,7 +248,7 @@ class ProductController extends BaseController
     public function post(ServerRequest $request, Response $response): Response
     {
         $auth = userCheck($request->getHeaders(),
-            'create',
+            'read',
             $this->jwtService,
             $this->userService);
 
@@ -241,9 +256,9 @@ class ProductController extends BaseController
             $body = json_encode($auth->message);
 
             $response = $response
-                ->withStatus($auth->code, $auth->message)
+                ->withStatus($auth->code)
                 ->withHeader('Access-Control-Allow-Origin', '*')
-                ->withHeader('Content-Type', 'application/json')
+                ->withHeader('Content-Type', 'application/json; charset=utf-8')
                 ->withHeader('Content-Length', strval(strlen($body)));
 
             $response->getBody()->write($body);
@@ -252,7 +267,6 @@ class ProductController extends BaseController
         }
 
         $requestBody = $this->parsePost($request);
-
         if (count($requestBody) === 0) {
             $body = json_encode([
                 'success' => false,
@@ -260,8 +274,11 @@ class ProductController extends BaseController
             ]);
 
             $response = $response
+                ->withStatus(406)
                 ->withHeader('Content-Length', strval(strlen($body)))
-                ->withHeader('Content-Type', 'application/json');
+                ->withHeader('Content-Type', 'application/json; charset=utf-8')
+                ->withHeader('Content-Length', strval(strlen($body)));
+
             $response->getBody()->write($body);
             return $response;
         }
@@ -270,8 +287,9 @@ class ProductController extends BaseController
 
         $body = json_encode($res);
         $response = $response
+            ->withStatus($res->code)
             ->withHeader('Access-Control-Allow-Origin', '*')
-            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Content-Type', 'application/json; charset=utf-8')
             ->withHeader('Content-Length', strval(strlen($body)));
 
         $response->getBody()->write($body);
@@ -296,9 +314,9 @@ class ProductController extends BaseController
             $body = json_encode($auth->message);
 
             $response = $response
-                ->withStatus($auth->code, $auth->message)
+                ->withStatus($auth->code)
                 ->withHeader('Access-Control-Allow-Origin', '*')
-                ->withHeader('Content-Type', 'application/json')
+                ->withHeader('Content-Type', 'application/json; charset=utf-8')
                 ->withHeader('Content-Length', strval(strlen($body)));
 
             $response->getBody()->write($body);
@@ -307,12 +325,13 @@ class ProductController extends BaseController
         }
 
         # extract the HTTP BODY into an array
-        $requestBody = $this->userService->parseServerRequest($request);
-        $result = $this->userService->updateUser($requestBody);
+        $requestBody = $this->productService->parseServerRequest($request);
+        $result = $this->productService->updateProduct($requestBody);
         $body = json_encode($result);
         $response = $response
+            ->withStatus($auth->code)
             ->withHeader('Access-Control-Allow-Origin', '*')
-            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Content-Type', 'application/json; charset=utf-8')
             ->withHeader('Content-Length', strval(strlen($body)));
         $response->getBody()->write($body);
 

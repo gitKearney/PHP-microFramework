@@ -27,7 +27,6 @@ class AuthService extends BaseService
     /**
      * @param array $requestBody
      * @return stdClass
-     * @throws Exception
      */
     public function createJwt(array $requestBody)
     {
@@ -42,7 +41,13 @@ class AuthService extends BaseService
         }
 
         # verify the user's information correct
-        $user = $this->users->findUserByEmail($requestBody['email']);
+        try {
+            $user = $this->users->findUserByEmail($requestBody['email']);
+        } catch(Exception $e) {
+            $response->code = $e->getCode();
+            $response->message = $e->getMessage();
+            return $response;
+        }
 
         if (count($user) === 0) {
             $response->code = 401;
@@ -59,7 +64,13 @@ class AuthService extends BaseService
         }
 
         # the user's credentials match, create a JWT for the user
-        $this->jwtService->createJwt($user['user_id'], $user['email']);
+        try {
+            $this->jwtService->createJwt($user['user_id'], $user['email']);
+        }catch (Exception $e) {
+            $response->code = $e->getCode();
+            $response->message = $e->getMessage();
+            return $response;
+        }
 
         $response->results = $this->jwtService->getJwt();
         $response->success = true;

@@ -132,7 +132,7 @@ class ProductService extends BaseService
      * @param array $requestBody
      * @return stdClass
      */
-    public function addNewProduct(array $requestBody)
+    public function addNewProduct(array $requestBody): stdClass
     {
         $response = $this->createResponseObject();
 
@@ -162,7 +162,7 @@ class ProductService extends BaseService
      * @param array $requestBody
      * @return stdClass
      */
-    public function updateProduct(array $requestBody)
+    public function updateProduct(array $requestBody): stdClass
     {
         /** @var stdClass */
         $response = $this->createResponseObject();
@@ -172,6 +172,7 @@ class ProductService extends BaseService
             logVar($requestBody['id'], "invalid GUID: ");
 
             $response->message =  'No product found';
+            $response->code = 406;
             return $response;
         }
 
@@ -196,7 +197,7 @@ class ProductService extends BaseService
      * @param ServerRequest $request
      * @return array
      */
-    public function parseServerRequest(ServerRequest $request)
+    public function parseServerRequest(ServerRequest $request): array
     {
         # get the body from the HTTP request
         $requestBody = json_decode($request->getBody()->__toString(), true);

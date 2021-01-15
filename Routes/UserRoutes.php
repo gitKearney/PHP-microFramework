@@ -14,9 +14,7 @@ $router->route($userRegex, function() {
 
     $userController = $appContainer['UserController'];
 
-    /**
-     * @var \Zend\Diactoros\Response
-     */
+    /** @var \Zend\Diactoros\Response */
     $response = $userController->handleRequest();
 
     # you MUST output the header before any HTML

@@ -50,18 +50,22 @@ QUERY;
     }
 
     /**
-     * @param array $userProduct
+     * @param array $body
      * @return void
      * @throws Exception
      */
-    public function deleteItem(array $userProduct): void
+    public function deleteItem(array $body): void
     {
         $query = <<<'QUERY'
             DELETE FROM user_cart
             WHERE user_id = :user_id AND product_id = :product_id
 QUERY;
 
-        $this->delete($query, $userProduct);
+        $params = [
+            ':user_id' => $body['user_id'],
+            ':product_id' => $body['id']
+        ];
+        $this->delete($query, $params);
     }
 
     /**

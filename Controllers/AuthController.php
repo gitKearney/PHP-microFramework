@@ -18,12 +18,12 @@ class AuthController extends BaseController
     /**
      * @var UserService
      */
-    private $userService;
+    private UserService $userService;
 
     /**
      * @var AuthService
      */
-    private $authService;
+    private AuthService $authService;
 
     /**
      *
@@ -47,9 +47,8 @@ class AuthController extends BaseController
      * @param Response $response
      * @return Response
      */
-    public function delete(ServerRequest $request, Response $response)
+    public function delete(ServerRequest $request, Response $response): Response
     {
-
         $returnResponse = $response
             ->withHeader('Access-Control-Allow-Origin', '*')
             ->withHeader('HTTP/1.0', '404 Not Found');
@@ -63,7 +62,7 @@ class AuthController extends BaseController
      * @param Response $response
      * @return Response
      */
-    public function get(ServerRequest $request, Response $response)
+    public function get(ServerRequest $request, Response $response): Response
     {
         // $returnResponse = $response
         //    ->withHeader('Access-Control-Allow-Origin', '*');
@@ -79,7 +78,7 @@ class AuthController extends BaseController
      * @param Response $response
      * @return Response
      */
-    public function head(ServerRequest $request, Response $response)
+    public function head(ServerRequest $request, Response $response): Response
     {
         $returnResponse = $response
             ->withHeader('Access-Control-Allow-Origin', '*');
@@ -93,9 +92,9 @@ class AuthController extends BaseController
      * @param Response $response
      * @return Response
      */
-    public function options(ServerRequest $request, Response $response)
+    public function options(ServerRequest $request, Response $response): Response
     {
-        $allowed = 'OPTIONS, HEAD, POST';
+        $allowed = 'OPTIONS, POST';
 
         # get the headers, if the request is a CORS preflight request OPTIONS method
         $httpHeaders = $request->getHeaders();
@@ -126,7 +125,7 @@ class AuthController extends BaseController
      * @return Response
      * @throws Exception
      */
-    public function patch(ServerRequest $request, Response $response)
+    public function patch(ServerRequest $request, Response $response): Response
     {
         
         $returnResponse = $response->withStatus(404);
@@ -142,35 +141,29 @@ class AuthController extends BaseController
      * @param Response $response
      * @return Response
      */
-    public function post(ServerRequest $request, Response $response)
+    public function post(ServerRequest $request, Response $response): Response
     {
-        $requestBody = $this->parsePost($request, $response);
+        $requestBody = $this->parsePost($request);
 
         if (count($requestBody) == 0) {
             $res = ['message' => 'Invalid Data'];
             $body = json_encode($res);
             $response = $response
                 ->withStatus(401, 'Invalid User')
-                ->withHeader('Content-Type', 'application/json');
+                ->withHeader('Content-Type', 'application/json; charset=utf-8')
+                ->withHeader('Content-Length', strval(strlen($body)));
             $response->getBody()->write($body);
             return $response;
         }
 
-        $webToken = $this->authService->createJwt($requestBody);
-
-
-        $success = new stdClass();
-
-        $success->success = true;
-        $success->message = 'success';
-        $success->results = $webToken;
-
-        $body = json_encode($success);
+        $token = $this->authService->createJwt($requestBody);
+        $body = json_encode($token);
 
         $returnResponse = $response
             ->withStatus(200, 'OK')
             ->withHeader('Access-Control-Allow-Origin', '*')
-            ->withHeader('Content-Type', 'application/json');
+            ->withHeader('Content-Type', 'application/json; charset=utf-8')
+            ->withHeader('Content-Length', strval(strlen($body)));
 
         $returnResponse->getBody()->write($body);
 
@@ -183,31 +176,10 @@ class AuthController extends BaseController
      * @param Response $response
      * @return Response
      */
-    public function put(ServerRequest $request, Response $response)
+    public function put(ServerRequest $request, Response $response): Response
     {
         $returnResponse = $response->withStatus(404);
         $returnResponse->getBody()->write('Not Found');
         return $returnResponse;
-    }
-
-    /**
-     * Parse the URI for path elements like /auth/ or /auth/{GUID}
-     * @param ServerRequest $request
-     * @return null|array
-     */
-    public function getUrlPathElements(ServerRequest $request)
-    {
-        # split the URI field on the route
-        $parts = preg_split('/\/auth\//', $request->getServerParams()['REQUEST_URI']);
-        if (empty($parts[1])) {
-            # if the URI is just 'http://example.com/auth/' then we won't have
-            # anything to return, return null
-            return null;
-        }
-
-        # if the URI is 'http://example.com/auth/12345', then return '12345'
-        # TODO: if your paths are something like http://example.com/auth/12345/valid
-        #       you may want to do additional parsing
-        return $parts[1];
     }
 }
