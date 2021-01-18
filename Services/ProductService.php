@@ -105,9 +105,8 @@ class ProductService extends BaseService
      * @param string $productId
      * @return stdClass
      */
-    public function deleteProductById($productId)
+    public function deleteProductById($productId): stdClass
     {
-        /** @var stdClass $response */
         $response = $this->createResponseObject();
 
         if (! $this->uuidService->isValidGuid($productId)) {

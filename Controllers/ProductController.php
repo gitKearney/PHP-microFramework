@@ -73,7 +73,7 @@ class ProductController extends BaseController
             $response = $response
                 ->withStatus($auth->code)
                 ->withHeader('Access-Control-Allow-Origin', '*')
-                ->withHeader('Content-Type', 'application/json')
+                ->withHeader('Content-Type', 'application/json; charset=utf-8')
                 ->withHeader('Content-Length', strval(strlen($body)));
 
             $response->getBody()->write($body);
@@ -81,18 +81,19 @@ class ProductController extends BaseController
             return $response;
         }
 
-        $qp = $this->getUrlPathElements($request, self::ROUTE);
-        if ($qp === null) {
+        $id = $this->getUrlPathElements($request, self::ROUTE);
+        if ($id === null || is_array($id)) {
             $response = $response
                 ->withStatus(406)
                 ->withHeader('Access-Control-Allow-Origin', '*')
-                ->withHeader('Content-Type', 'application/json; charset=utf-8');
+                ->withHeader('Content-Type', 'application/json; charset=utf-8')
+                ->withHeader('Content-Length', strval(strlen('Invalid Product')));
             return $response;
         }
 
         # pass the id to the service method, where we'll validate if it's a
         # valid guid
-        $result = $this->productService->deleteProductById($qp['guid']);
+        $result = $this->productService->deleteProductById($id);
         $body = json_encode($result);
 
         $response = $response

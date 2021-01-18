@@ -71,10 +71,47 @@ QUERY;
 QUERY;
         $params = [':user_id' => $userId];
 
+        return $this->getTransactionBy($query, $params);
+    }
+
+    /**
+     * @param string $transactionId
+     * @return array
+     * @throws Exception
+     */
+    public function getTransactionById(string $transactionId)
+    {
+        $query = <<<'QUERY'
+SELECT trans.transaction_id, trans.user_id, tp.product_id,tp.product_price,trans.created_at
+FROM transactions AS trans
+INNER JOIN transaction_products tp on trans.transaction_id = tp.transaction_id
+WHERE trans.transaction_id = :transaction_id
+GROUP BY trans.transaction_id,trans.user_id,tp.product_id,tp.product_price,trans.created_at 
+QUERY;
+
+        $params = [':transaction_id' => $transactionId];
+        return $this->getTransactionBy($query, $params);
+    }
+
+    /**
+     * @param $query
+     * @param $params
+     * @return array
+     * @throws Exception
+     */
+    private function getTransactionBy($query, $params): array
+    {
         $result = $this->select($query, $params);
 
         # group the transactions into a single array
         $records = [];
+
+        # if the result is not an array or arrays turn it into one
+        if (!isset($result[0])) {
+            $_r = [0 => $result];
+            $result = $_r;
+        }
+
         foreach($result as $index => $row) {
             $trans_id = $row['transaction_id'];
             if (array_key_exists($trans_id, $records) === false) {

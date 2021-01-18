@@ -72,7 +72,7 @@ class UserService extends BaseService
      * @param string $userId
      * @return stdClass
      */
-    public function findUserById($userId): stdClass
+    public function findUserById(string $userId): stdClass
     {
         $response = $this->createResponseObject();
 
@@ -93,7 +93,7 @@ class UserService extends BaseService
      * @param array $queryParams
      * @return stdClass
      */
-    public function findUserByQueryString(array $queryParams)
+    public function findUserByQueryString(array $queryParams): stdClass
     {
         $response = $this->createResponseObject();
 
@@ -118,7 +118,7 @@ class UserService extends BaseService
     /**
      * @return stdClass
      */
-    public function getAllUsers()
+    public function getAllUsers(): stdClass
     {
         $response = $this->createResponseObject();
 

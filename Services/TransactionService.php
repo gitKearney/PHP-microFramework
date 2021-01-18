@@ -62,12 +62,14 @@ class TransactionService extends BaseService
     {
         $response = $this->createResponseObject();
         try {
-            $this->trans->getUsersTransactions($userId);
+            $transactions = $this->trans->getUsersTransactions($userId);
         } catch(Exception $e) {
             $response->message = $e->getMessage();
             $response->code = $e->getCode();
             return $response;
         }
+
+       return $this->normalizeResponse($transactions);
     }
 
     public function addNewTransaction(array $requestBody): stdClass
@@ -135,6 +137,25 @@ class TransactionService extends BaseService
     }
 
     /**
+     * @param string $transactionId
+     * @return stdClass
+     */
+    public function getTransactionById(string $transactionId): stdClass
+    {
+        try {
+            $result = $this->trans->getTransactionById($transactionId);
+        } catch(Exception $e) {
+            $result = $this->createResponseObject();
+            $result->code = $e->getCode();
+            $result->message = $e->getMessage();
+            $result->success = false;
+            return $result;
+        }
+
+        return $this->normalizeResponse($result);
+    }
+
+    /**
      * @param array $body
      * @return array
      */
@@ -144,5 +165,7 @@ class TransactionService extends BaseService
 
         $params['user_id'] = $body['id'] ?? null;
         $params['products'] = $body['products'] ?? null;
+
+        return $params;
     }
 }

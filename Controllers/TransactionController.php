@@ -22,6 +22,8 @@ class TransactionController extends BaseController
     /** @var UserService */
     private UserService $userService;
 
+    const ROUTE = 'transactions';
+
     public function __construct(TransactionService $transactionService,
                                 JwtService $jwtService,
                                 UserService $userService)
@@ -36,7 +38,9 @@ class TransactionController extends BaseController
      */
     public function delete(ServerRequest $request, Response $response): Response
     {
-        // TODO: Implement delete() method.
+        $response = $response->withStatus(404);
+        $response->getBody()->write('Not Found');
+        return $response;
     }
 
     /**
@@ -63,11 +67,13 @@ class TransactionController extends BaseController
             return $response;
         }
         # read the URI string and see if a GUID was passed in
-        $id = $this->getUrlPathElements($request);
+        $id = $this->getUrlPathElements($request, self::ROUTE);
         if (!$id) {
             $transactions = $this->transactionService->getAllTransactions();
+        } else if (is_array($id)) {
+            $transactions = $this->transactionService->getTransactionById($id['transaction']);
         } else {
-            $transactions = $this->transactionService;
+            $transactions = $this->transactionService->getUsersTransactions($id);
         }
 
         $body = json_encode($transactions);

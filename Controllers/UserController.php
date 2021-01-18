@@ -73,10 +73,10 @@ class UserController extends BaseController
             return $response;
         }
 
-        $qp = $this->getUrlPathElements($request, self::ROUTE);
-        if ($qp === null) {
+        $id = $this->getUrlPathElements($request, self::ROUTE);
+        if ($id === null || is_array($id)) {
             $response = $response
-                ->withStatus(100, 'Not Allowed')
+                ->withStatus(406)
                 ->withHeader('Access-Control-Allow-Origin', '*')
                 ->withHeader('Content-Type', 'text/plain; charset=utf-8')
                 ->withHeader('Content-Length', strval(strlen('Invalid User ID')));
@@ -85,13 +85,13 @@ class UserController extends BaseController
 
         # pass the id to the service method, where we'll validate if it's a
         # valid guid
-        $result = $this->userService->deleteUserById($qp['guid']);
+        $result = $this->userService->deleteUserById($id);
         $res = json_encode($result);
 
         $response = $response
-            ->withStatus($result->code, $result->message)
+            ->withStatus(200)
             ->withHeader('Content-Type', 'application/json; charset=utf-8')
-            ->withHeader('Content-Length', strval(strlen('Invalid User ID')));
+            ->withHeader('Content-Length', strval(strlen($res)));
         $response->getBody()->write($res);
         return $response;
     }
@@ -231,6 +231,7 @@ class UserController extends BaseController
      */
     public function post(ServerRequest $request, Response $response): Response
     {
+        // DO NOT DO USER AUTH TO CREATE A NEW USER
         $requestBody = $this->parsePost($request);
 
         if (count($requestBody) == 0) {
@@ -240,6 +241,7 @@ class UserController extends BaseController
             ]);
 
             $response = $response
+                ->withStatus(406)
                 ->withHeader('Content-Length', strval(strlen($body)))
                 ->withHeader('Content-Type', 'application/json; charset=utf-8')
                 ->withHeader('Content-Length', strval(strlen($body)));
@@ -274,7 +276,7 @@ class UserController extends BaseController
             $body = json_encode($auth->message);
 
             $response = $response
-                ->withStatus($auth->code, $auth->message)
+                ->withStatus($auth->code)
                 ->withHeader('Access-Control-Allow-Origin', '*')
                 ->withHeader('Content-Type', 'application/json; charset=utf-8')
                 ->withHeader('Content-Length', strval(strlen($body)));
@@ -289,6 +291,7 @@ class UserController extends BaseController
         $result = $this->userService->updateUser($requestBody);
         $body = json_encode($result);
         $response = $response
+            ->withStatus(200)
             ->withHeader('Access-Control-Allow-Origin', '*')
             ->withHeader('Content-Type', 'application/json; charset=utf-8')
             ->withHeader('Content-Length', strval(strlen($body)));
