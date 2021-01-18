@@ -3,8 +3,8 @@ CREATE DATABASE demo;
 USE demo;
 
 -- create a user table
-DROP TABLE IF EXISTS demo.users;
-CREATE TABLE demo.users
+DROP TABLE IF EXISTS users;
+CREATE TABLE users
 (
     user_id CHAR(36) PRIMARY KEY,
     first_name VARCHAR(40) NOT NULL,
@@ -21,8 +21,8 @@ CREATE TABLE demo.users
 ALTER TABLE users MODIFY updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP;
 
 -- create a products table
-DROP TABLE IF EXISTS demo.products;
-CREATE TABLE demo.products
+DROP TABLE IF EXISTS products;
+CREATE TABLE products
 (
     product_id CHAR(36) PRIMARY KEY,
     title VARCHAR(32) NOT NULL,
@@ -35,8 +35,8 @@ CREATE TABLE demo.products
 ALTER TABLE products MODIFY updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP;
 
 -- create a transaction history table
-DROP TABLE IF EXISTS demo.transactions;
-CREATE TABLE demo.transactions
+DROP TABLE IF EXISTS transactions;
+CREATE TABLE transactions
 (
     transaction_id CHAR(36) PRIMARY KEY,
     user_id CHAR(36) NOT NULL,
@@ -45,16 +45,25 @@ CREATE TABLE demo.transactions
 ) ENGINE=InnoDB CHARACTER SET "utf8" COLLATE utf8_general_ci;
 
 ALTER TABLE transactions MODIFY updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP;
+ALTER TABLE transactions ADD CONSTRAINT trans_user_id FOREIGN KEY (user_id) REFERENCES users(user_id);
 
-CREATE TABLE demo.transaction_products
+-- create a transaction product table
+DROP TABLE IF EXISTS transaction_products;
+CREATE TABLE transaction_products
 (
     transaction_id CHAR(36) NOT NULL,
     product_id CHAR(36) NOT NULL,
     product_price DECIMAL(10,2) NOT NULL,
     created_at DATETIME NOT NULL DEFAULT NOW(),
     updated_at DATETIME NULL
-);
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
+ALTER TABLE transaction_products MODIFY updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP;
 
+ALTER TABLE transaction_products
+ADD CONSTRAINT `fk_product_id` FOREIGN KEY (product_id) REFERENCES products (product_id)
+ON DELETE CASCADE;
+
+-- create a cart for each user
 DROP TABLE IF EXISTS user_cart;
 CREATE TABLE user_cart (
    user_id CHAR(36) NOT NULL,
@@ -63,17 +72,5 @@ CREATE TABLE user_cart (
    updated_at DATETIME NULL
 ) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
 
--- add foreign constraints to our tables
 ALTER TABLE transaction_products MODIFY updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP;
-
-ALTER TABLE demo.transactions ADD CONSTRAINT FOREIGN KEY (user_id) REFERENCES demo.users(user_id);
-
-ALTER TABLE demo.transaction_products
-ADD CONSTRAINT FOREIGN KEY (product_id) REFERENCES products(product_id);
-
-ALTER TABLE demo.transaction_products
-ADD CONSTRAINT FOREIGN KEY (transaction_id) REFERENCES demo.transactions(transaction_id);
-
-ALTER TABLE user_cart ADD CONSTRAINT FOREIGN KEY (product_id) REFERENCES products(product_id);
-
-ALTER TABLE user_cart ADD CONSTRAINT FOREIGN KEY (product_id) REFERENCES products(product_id);
+ALTER TABLE user_cart ADD CONSTRAINT `cart_product_id` FOREIGN KEY (product_id) REFERENCES products(product_id);
