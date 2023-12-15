@@ -1,0 +1,33 @@
+services:
+  lighttpd:
+    container_name: lighttpd_dev
+    image: gists/lighttpd
+    networks:
+      - internal
+    ports:
+      - "8080:80"
+    volumes:
+      - ./lighttpd.conf:/etc/lighttpd/lighttpd.conf
+      - ./mod_fastcgi_fpm.conf:/etc/lighttpd/mod_fastcgi_fpm.conf
+      - ./code:/var/www/html
+  php-fpm:
+    build:
+      context: ./
+      dockerfile: fpm.Dockerfile
+    networks:
+      - internal
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./code:/var/www/html
+      - ./xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+      - ./error_reporting.ini:/usr/local/etc/php/conf.d/error_reporting.ini
+  php_composer:
+      container_name: php_composer
+      image: composer:2.4.1 #lock PHP to 8.1.10
+      volumes:
+        - ./code:/app #composer's default working dir is app
+      command: ["composer", "install"]
+networks:
+  internal:
+    driver: bridge
