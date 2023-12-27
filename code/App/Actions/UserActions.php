@@ -16,7 +16,28 @@ class UserActions
 
     public function GET(ServerRequest $request): Response
     {
-        return setServerResponse([], ['msg' => 'GET'], 'JSON');
+            $query = <<<'query'
+SELECT li.id, li.name, COUNT(tuesday_items.lunch_item_id) as amt
+FROM lunch_items li
+LEFT OUTER JOIN (
+    SELECT loi.lunch_item_id
+    FROM lunch_order_items loi
+             INNER JOIN lunch_orders lo ON loi.lunch_order_id = lo.id
+    WHERE lo.weekday = 'TUESDAY'
+) AS tuesday_items ON li.id = tuesday_items.lunch_item_id
+GROUP BY li.name, li.id
+ORDER BY li.id;
+query;
+
+        $response = [];
+
+        try {
+            $response = select($query, []);
+        } catch(Exception $e) {
+            $response = ['code' => $e->getCode(), 'msg' => $e->getMessage()];
+        }
+
+        return setServerResponse([], $response, 'JSON');
     }
 
     public function HEAD(ServerRequest $request): Response
